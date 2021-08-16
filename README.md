@@ -11,8 +11,9 @@ In validateWwmUOST_ICE.py 3 functions are invoked:
  performed once, unless the user wants to change the parameter latdelta, or the time extent of the sat data.
  The input data for this routine are provided by the GlobWave database
  (http://globwave.ifremer.fr/)
+
 !!!!!!!!!!!!!!!!!!!!!!!!!
- FOR ARON: for our stuff you can skip this step, as you can find the output here:
+ FOR ARON: for our stuff you can skip this step, as you can find its output here:
    https://www.dropbox.com/sh/y8e364if6m9bs9f/AAAJySeZRLuGXixHcEOuo186a?dl=0
 !!!!!!!!!!!!!!!!!!!!!!!!!
 
