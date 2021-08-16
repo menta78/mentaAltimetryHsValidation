@@ -11,6 +11,10 @@ In validateWwmUOST_ICE.py 3 functions are invoked:
  performed once, unless the user wants to change the parameter latdelta, or the time extent of the sat data.
  The input data for this routine are provided by the GlobWave database
  (http://globwave.ifremer.fr/)
+!!!!!!!!!!!!!!!!!!!!!!!!!
+ FOR ARON: for our stuff you can skip this step, as you can find the output here:
+   https://www.dropbox.com/sh/y8e364if6m9bs9f/AAAJySeZRLuGXixHcEOuo186a?dl=0
+!!!!!!!!!!!!!!!!!!!!!!!!!
 
 - interpolateModelToCoarsenedSatData_schismWWM: this routine, located in the module interpolateModelToCoarsenedSatData, interpolates the model results at the observation points, along the satellite tracks. This function does the job with the results of the schismWWM model, while similar functions (interpolateModelToCoarsenedSatData_WW3 and interpolateModelToCoarsenedSatData_WWMExperimental) do the job for WW3 and the standalone WWM. The results (the couple of obsrved and modelled Hs along the tracks) are saved in the numpy binary format.
 
