@@ -6,7 +6,7 @@ The subdirectory altHsValidation contain the library functions, while the subdir
 
 In validateWwmUOST_ICE.py 3 functions are invoked:
 
-- coarsenSatData: the raw altimetry estimations of Hs come with high frequency (one every few seconds) and noise. This routine averages them on segments along the track with latitudinal extent
+- coarsenSatData: the raw altimetry estimations of Hs come with high frequency and noise. This routine averages them on segments along the track with latitudinal extent
  given by the parameter latdelta (0.4 deg in the example). The results are saved in the crsSatDataDir in the numpy format. The result of this operation does not depend on the model, and can be
  performed once, unless the user wants to change the parameter latdelta, or the time extent of the sat data.
  The input data for this routine are provided by the GlobWave database
