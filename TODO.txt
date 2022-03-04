@@ -1,25 +1,21 @@
-TODO: download and explore the copernicus data for sea surface height anomalies: 
-https://www.copernicus.eu/en/access-data/copernicus-services-catalogue/global-ocean-along-track-l3-sea-surface-heights
+TODO Lorenzo: download the data from https://resources.marine.copernicus.eu/product-detail/SEALEVEL_GLO_PHY_L3_MY_008_062/DATA-ACCESS and check that everything works for you as well
 
-TODO: create a new branch dev in the repository
+TODO Guille: you can find some model output to carry on the work here:
+    https://www.dropbox.com/sh/6dzfrk23pheenwe/AADxZhnzhxAzpSwu2y-UtHc3a?dl=0
 
-TODO: in the dev branch:
-   - create a new directory in the git repo: altSshValidation, where Ssh stands for sea surface height
-   - add an empty file __init__.py
-   - implement a module/function coarsenCmemsSshSatData.py similar to altHsValidation.coarsenSatData, but elaborates the copernicus data of ssh of CMEMS.
-     - the objective of this function is to coarsen and smooth the satellite data.
-     - this functin should create a npy file for each satellite/year, with name SSH_SATELLITENAME_year.npy, e.g. SSH_Jason-1_2005.npy
-     - each file contains a Nx4 numpy array, with these columns:
-         - time stamp (created with the function datetime.timestamp(avgtm), see lines 106, 111 of the module coarsenData)
-         - lon
-         - lat
-         - value of ssh
-     - the input parameters of the function should be similar to the one of coarsenSatData: 
-            rootdir: dir where the CMEMS data are placed, 
-            outputdir: dir where the output npy files will be placed, 
-            startdate, enddate
-            latdelta: this indicates a latitudinal distance over which the data are aggregated, say this is 0.5degs, this means that one output record is produced every 0.5 latitude degrees along the satellite tracks.
-            areaRectangles: rectangles (optional) identifying subareas of interest (apparently now handles correctly only 1 rectangle)
+TODO Guille: adapt the module interpolateModelToCoarsenedSatData.py for SSH. The function to be used is interpolateModelToCoarsenedSatData_schismWWM, but in this function the variable taken from the output files is WWM_1, which is Hs. Instead, the variable corresponding to the water elevation must be taken.
+  IDEA: to avoid copy-pasting the code, add a parameter to interpolateModelToCoarsenedSatData_schismWWM where you indicate the netcdf variable name to be used. For retro-compatibility, the default value of this parameter is "WWM_1", but for water elevation it will be changed calling the function. 
 
-     - the logics which produce the aggregation are the same as in coarsenSatData (see lines 78-118): divide the data by
-      
+TODO Guille: the module interpolateModelToCoarsenedSatData.py will be exactly the same for Hs and for Ssh, so instead of duplicating the module in the 2 directories altHsValidation and altSshValidation, modify directly the one in altHsValidation and link it dynamically in altSshValidation with the command 
+    "cd ../altSshValidation; ln -s ../altHsValidation/interpolateModelToCoarsenedSatData.py ./".
+
+TODO Guille: same as the previous point for the module mapByLonLat.py
+
+TODO Guille: the approach used for Hs to compute the statistical measures has the drawback that you cannot compute percentiles. For Ssh I would use a simpler approach, loading all in memory and computing the quantities directly.
+     the module computeSshStats.py will:
+         - load *all* the data (couples observation/prediction) in ram (I assume after the coarsening this won't be too much data)
+         - bin the couples in the mesh using the method mapByLonLat.mapByLonLat
+         - loop the cells and for each cell compute directly all the statistics for each cell
+         - save the maps of statistics as csv files
+
+

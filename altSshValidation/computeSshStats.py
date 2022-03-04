@@ -3,8 +3,6 @@ import numpy as np
 from datetime import datetime
 from matplotlib import pyplot as plt
 
-import coarsenSatData
-
 
 import mapByLonLat as mll
 
@@ -22,6 +20,9 @@ def elaborateMeasures(startDate, endDate, hsSatAndModelDir, outputDir, latlims=[
   years = []
  
   def iterateByYear():
+    """
+    iterateByYear, creates the summable cumulative deviations necessary to compute the statistical indices.
+    """
     fls_ = [f for f in os.listdir(hsSatAndModelDir) if re.match('(.*)\.npy', f)]
     pttrn = '(.*)_hsModelAndSatObs_([0-9]{8}).npy'
     dtstrs = [re.match(pttrn, f).groups(0)[1] for f in fls_]
