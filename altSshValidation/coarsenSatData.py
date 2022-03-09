@@ -1,0 +1,1 @@
+../altHsValidation/coarsenSatData.py

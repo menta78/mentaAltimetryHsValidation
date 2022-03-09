@@ -4,6 +4,7 @@ sys.path.append("../altSshValidation/")
 from coarsenCmemsSshSatData import coarsenCmemsSshSatData
 from interpolateModelToCoarsenedSatData import (
     interpolateModelTocoarsenCmemsSshSatData_schismWWM,
+    interpolateModelToCoarsenedSatData_schismWWM,
 )
 import computeSshStats
 from datetime import datetime
@@ -52,10 +53,11 @@ if doCoarsenSatData:
         rawSatDataDir, crsSatDataDir, startDate, endDate, latdelta
     )
 
-doInterpolateModelToSat = False
+doInterpolateModelToSat = True
 if doInterpolateModelToSat:
     # interpolating the model hs along the sat tracks
     interpolateModelTocoarsenCmemsSshSatData_schismWWM(
+#    interpolateModelToCoarsenedSatData_schismWWM(
         crsSatDataDir,
         modelNcFilesDir,
         hsModelAndSatObsDir,
@@ -75,6 +77,7 @@ latlims = [-90, 90]
 computeSshStats.elaborateMeasures(
     startDate,
     endDate,
+    crsSatData,
     hsModelAndSatObsDir,
     statsDir,
     dx=dx,
