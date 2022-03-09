@@ -14,9 +14,8 @@ def coarsenCmemsSshSatData(
     rootdir, outputdir, startdate, enddate, latdelta, areaRectangles=[]
 ):
     # areaRectangles is a list of rectangles [minlon minlat, maxlon, maxlat]
-
     drs = list([d for d in os.listdir(rootdir) if re.match("[0-9]{4}", d)])
-    #drs = list([d for d in os.listdir(rootdir)])
+    # drs = list([d for d in os.listdir(rootdir)])
     drs.sort()
     print(drs)
 
@@ -40,7 +39,6 @@ def coarsenCmemsSshSatData(
         drpth = os.path.join(rootdir, dr)
         monthdirs = [d for d in os.listdir(drpth) if re.match("[0-9]{2}", d)]
         monthdirs.sort()
-        print(monthdirs)
 
         year = dr
         dataBySatellite = {}
@@ -59,7 +57,7 @@ def coarsenCmemsSshSatData(
                 print("elaborating file " + f)
                 fpath = os.path.join(mdrpath, f)
                 ds = netCDF4.Dataset(fpath)
-                #sats = np.array(ds.variables["satellite"])
+                # sats = np.array(ds.variables["satellite"])
                 timevar = ds.variables["time"]
                 times = np.array(timevar)
                 lons = np.array(ds.variables["longitude"])
@@ -80,16 +78,16 @@ def coarsenCmemsSshSatData(
                     sats = sats[cnd]
 
                 for satid in satIds:
-                    #stms = times[sats == satid]
+                    # stms = times[sats == satid]
                     stms = times
 
-                    #slons = lons[sats == satid]
+                    # slons = lons[sats == satid]
                     slons = lons
 
-                    #slats = lats[sats == satid]
+                    # slats = lats[sats == satid]
                     slats = lats
 
-                    #shss = hss[sats == satid]
+                    # shss = hss[sats == satid]
                     shss = hss
 
                     # average data are by time, lon, lat, hs
