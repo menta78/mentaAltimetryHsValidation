@@ -7,6 +7,7 @@ from interpolateModelToCoarsenedSatData import (
     interpolateModelToCoarsenedSatData_schismWWM,
 )
 import computeSshStats
+import computeStats
 from datetime import datetime
 
 # Directory where the raw globwave files are located
@@ -75,9 +76,9 @@ computeSshStats.maskPointsCloseToTheCoast = False
 
 latlims = [-90, 90]
 computeSshStats.elaborateMeasures(
+#computeStats.elaborateMeasures(
     startDate,
     endDate,
-    crsSatData,
     hsModelAndSatObsDir,
     statsDir,
     dx=dx,
