@@ -9,6 +9,8 @@ TODO Guille: limit the estimation of the skills on SSH to pairs observation-mode
 
 TODO Guille: as an indicator for SSH skill compute the Nash-Sutcliffe efficiency (https://en.wikipedia.org/wiki/Nash%E2%80%93Sutcliffe_model_efficiency_coefficient) also called R2 (https://en.wikipedia.org/wiki/Coefficient_of_determination) 
 
+TODO Guille: the module altSshValidation.coarsenCmemsSshSatData should be able to hanlde all the directories of the CMEMS dataset along track, as each directory corresponds to a different mission (see the dataset documentation, at section VI.1.2)
+
 TODO Guille: in computeSshStats.py remove commented source code where it is not necessary
 
 TODO Guille: in computeSshStats.py, between lines 216 and 244, handle the new architecture (you can also comment the code and throw a "unsupported" exception)
