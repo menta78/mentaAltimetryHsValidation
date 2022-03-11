@@ -3,19 +3,15 @@ TODO Lorenzo: download the data from https://resources.marine.copernicus.eu/prod
 TODO Guille: you can find some model output to carry on the work here:
     https://www.dropbox.com/sh/6dzfrk23pheenwe/AADxZhnzhxAzpSwu2y-UtHc3a?dl=0
 
-TODO Guille: adapt the module interpolateModelToCoarsenedSatData.py for SSH. The function to be used is interpolateModelToCoarsenedSatData_schismWWM, but in this function the variable taken from the output files is WWM_1, which is Hs. Instead, the variable corresponding to the water elevation must be taken.
-  IDEA: to avoid copy-pasting the code, add a parameter to interpolateModelToCoarsenedSatData_schismWWM where you indicate the netcdf variable name to be used. For retro-compatibility, the default value of this parameter is "WWM_1", but for water elevation it will be changed calling the function. 
+TODO Guille: remove the mean from observations and measurements before computing the model skills
 
-TODO Guille: the module interpolateModelToCoarsenedSatData.py will be exactly the same for Hs and for Ssh, so instead of duplicating the module in the 2 directories altHsValidation and altSshValidation, modify directly the one in altHsValidation and link it dynamically in altSshValidation with the command 
-    "cd ../altSshValidation; ln -s ../altHsValidation/interpolateModelToCoarsenedSatData.py ./".
+TODO Guille: limit the estimation of the skills on SSH to pairs observation-model where both are beyond their respective 90th percentiles.
 
-TODO Guille: same as the previous point for the module mapByLonLat.py
+TODO Guille: as an indicator for SSH skill compute the Nash-Sutcliffe efficiency (https://en.wikipedia.org/wiki/Nash%E2%80%93Sutcliffe_model_efficiency_coefficient) also called R2 (https://en.wikipedia.org/wiki/Coefficient_of_determination) 
 
-TODO Guille: the approach used for Hs to compute the statistical measures has the drawback that you cannot compute percentiles. For Ssh I would use a simpler approach, loading all in memory and computing the quantities directly.
-     the module computeSshStats.py will:
-         - load *all* the data (couples observation/prediction) in ram (I assume after the coarsening this won't be too much data)
-         - bin the couples in the mesh using the method mapByLonLat.mapByLonLat
-         - loop the cells and for each cell compute directly all the statistics for each cell
-         - save the maps of statistics as csv files
+TODO Guille: in computeSshStats.py remove commented source code where it is not necessary
 
+TODO Guille: in computeSshStats.py, between lines 216 and 244, handle the new architecture (you can also comment the code and throw a "unsupported" exception)
+
+TODO Guille: review the computeStats.py module for Hs, giving it the same architecture of computeSshStats.py (so that it will be possible to estimate the percentiles)
 
