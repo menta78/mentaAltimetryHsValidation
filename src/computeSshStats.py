@@ -274,8 +274,6 @@ def elaborateMeasures(
     sat_mean = msrs_sum / _consideredCells
     mod_mean = mods_sum / _consideredCells
 
-    print(np.nanmax(deviation))
-    print(np.nanmin(deviation))
     print("considered cells: ", _consideredCells)
 
     # flatting array
@@ -291,26 +289,34 @@ def elaborateMeasures(
     filter_data_sat = []
     filter_data_mod = []
 
-    for i in range(len(data_mod)):
-        if data_mod[i] >= pth_data_mod and data_sat[i] >= pth_data_mod:
-            filter_data_mod.append(data_mod[i])
-            filter_data_sat.append(data_sat[i])
-
-
     # compute NSE and Coefficient of determination
     nse_ = 0
     ssres = 0
     sstot = 0
-    for i in range(len(filter_data_sat)):
-        msrs = filter_data_sat[i] - sat_mean
-        mods = filter_data_mod[i] - mod_mean
-        print(msrs, mods)
+    _consideredCellsFilter = 0
+    for ix in range(len(maplons)):
+        for iy in range(len(maplats)):
+            data = mp.get((ix, iy))
+            if not data:
+                continue
+            msrs = np.array(data[3]) - sat_mean
+            mods = np.array(data[4]) - mod_mean
+            for i in range(len(msrs)):
+                if msrs[i] >= pth_data_sat and mods[i] >= pth_data_sat:
+                    msrs_ = np.sum(msrs[i])
+                    mods_ = np.sum(mods[i])
+                    msrs_sum = np.sum(msrs_)
+                    mods_sum = np.sum(mods_)
 
-        # in this case, msrs_sum mean is zero? or is the mean before substract the mean?
-        nse_ += (mods - msrs)**2/(msrs_sum - sat_mean)**2
-        ssres += mods - msrs
-        sstot += msrs - sat_mean
+                    # in this case, msrs_sum mean is zero? or is the mean before substract the mean?
+                    nse_ = np.sum((mods - msrs)**2)/np.sum((msrs_sum - sat_mean)**2)
+                    ssres = np.sum(mods - msrs)
+                    sstot = np.sum(msrs - sat_mean)
+                    #_consideredCellsFilter += 1
+                else:
+                    continue
 
+#    print("considered cells after percentile filtering: ", _consideredCellsFilter)
     nse = 1 - nse_
     r2 = 1 - ssres/sstot
     print("NSE = ", nse)
@@ -334,10 +340,14 @@ def elaborateMeasures(
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 TOTAL ERROR INDICATORS:
 rmse: {rmseTot:2.5f}
+NSE: {nse:2.5f}
+R2: {r2:2.5f}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
     totIndStr = totIndStr.format(
         rmseTot=rmseTot,
+        nse=nse,
+        r2=r2,
     )
     print("")
     print(totIndStr)

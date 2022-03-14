@@ -83,5 +83,5 @@ computeSshStats.elaborateMeasures(
     filterLowHs=filterLowHs,
     filterHsThreshold=filterHsThreshold,
     latlims=latlims,
-    pth = 50,
+    pth = 1,
 )
