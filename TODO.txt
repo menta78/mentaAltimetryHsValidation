@@ -1,7 +1,14 @@
-TODO Lorenzo: download the data from https://resources.marine.copernicus.eu/product-detail/SEALEVEL_GLO_PHY_L3_MY_008_062/DATA-ACCESS and check that everything works for you as well
+TODO Lorenzo: test that everything works
+
+TODO Guille: check that everything works in the committed script validateSsh.py
 
 TODO Guille: you can find some model output to carry on the work here:
     https://www.dropbox.com/sh/6dzfrk23pheenwe/AADxZhnzhxAzpSwu2y-UtHc3a?dl=0
+
+TODO Guille: verify the validation scripts by using the whole available time series (a couple of months)
+
+
+
 
 TODO Guille: remove the mean from observations and measurements before computing the model skills
 
