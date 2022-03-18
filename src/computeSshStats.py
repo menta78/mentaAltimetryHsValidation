@@ -290,7 +290,8 @@ def elaborateMeasures(
     filter_data_mod = []
 
     # compute NSE and Coefficient of determination
-    nse_ = 0
+    nse1 = 0
+    nse2 = 0
     ssres = 0
     sstot = 0
     _consideredCellsFilter = 0
@@ -302,22 +303,23 @@ def elaborateMeasures(
             msrs = np.array(data[3]) - sat_mean
             mods = np.array(data[4]) - mod_mean
             for i in range(len(msrs)):
-                if msrs[i] >= pth_data_sat and mods[i] >= pth_data_sat:
-                    msrs_ = np.sum(msrs[i])
-                    mods_ = np.sum(mods[i])
-                    msrs_sum = np.sum(msrs_)
-                    mods_sum = np.sum(mods_)
-
+                if msrs[i] >= pth_data_sat and mods[i] >= pth_data_mod:
                     # in this case, msrs_sum mean is zero? or is the mean before substract the mean?
-                    nse_ = np.sum((mods - msrs)**2)/np.sum((msrs_sum - sat_mean)**2)
-                    ssres = np.sum(mods - msrs)
-                    sstot = np.sum(msrs - sat_mean)
+                    nse1 += (mods[i] - msrs[i])**2
+                    nse2 += (msrs[i] - 0 )**2
+                    #ssres += np.sum((mods - msrs)**2)
+                    ssres += (mods[i] - msrs[i])**2
+                    #sstot += np.sum((msrs - 0)**2)
+                    sstot += (msrs[i] - 0)**2
+                    #print(ssres)
+                    #print(sstot)
                     #_consideredCellsFilter += 1
                 else:
                     continue
 
+    print(pth_data_mod)
 #    print("considered cells after percentile filtering: ", _consideredCellsFilter)
-    nse = 1 - nse_
+    nse = 1 - nse1/nse2
     r2 = 1 - ssres/sstot
     print("NSE = ", nse)
     print("R2 = ", r2)
