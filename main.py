@@ -9,25 +9,28 @@ from datetime import datetime
 
 # Directory where the raw globwave files are located
 #rawSatDataDir = "/home/ggarcia/Projects/mentaAltimetryHsValidation/satData/rawData"
-rawSatDataDir = "/media/ggarcia/TOSHIBA EXT/SATELLITES/SEALEVEL_GLO"
+
+rootDir = "/home/guille/Projects/mentaAltimetryHsValidation/"
+
+rawSatDataDir = rootDir + "data/rawData"
 
 # Directory where the coarsened satellite data are located
 # the coarsening is performed by the coarsenSatData function. If you already performed this operation you don't need to repeat it
-crsSatDataDir = "/home/ggarcia/Projects/mentaAltimetryHsValidation/satData/crsSatData"
+crsSatDataDir = rootDir + "data/crsSatData"
 
 # Directory where the model nc files are located
-modelNcFilesDir = "/home/ggarcia/Projects/mentaAltimetryHsValidation/outputs_final/"
+modelNcFilesDir = rootDir + "data/schismwwm"
 
 # Directory where the pairs observation/model are to be generated
 hsModelAndSatObsDir = (
-    "/home/ggarcia/Projects/mentaAltimetryHsValidation/satData/satModelPairs/"
+    rootDir + "data/satModelPairs/"
 )
 
 # Directory where the stats are generated
-statsDir = "/home/ggarcia/Projects/mentaAltimetryHsValidation/satData/stats/"
+statsDir = rootDir + "data/stats/"
 
 # time interval
-startDate, endDate = datetime(2000, 3, 1), datetime(2000, 3, 30)
+startDate, endDate = datetime(2000, 1, 1), datetime(2000, 3, 30)
 overwriteExisting = False
 
 # number of processes to be used for the interpolation
@@ -40,7 +43,7 @@ filterLowHs = filterHsThreshold > 0
 # set this if you need to limit your analysis to a subdomain
 boundaries = None
 
-doCoarsenSatData = False
+doCoarsenSatData = True
 if doCoarsenSatData:
     # coarsening the sat data.
     # This must be done because single alt observation are noisy and too numerous.
