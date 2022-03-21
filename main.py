@@ -37,13 +37,13 @@ overwriteExisting = False
 nParWorker = 4
 
 # threshold above which hs should be considered
-filterHsThreshold = 0.5
-filterLowHs = filterHsThreshold > 0
+filterSshMaximum = 100
+filterHighSsh = True
 
 # set this if you need to limit your analysis to a subdomain
 boundaries = None
 
-doCoarsenSatData = True
+doCoarsenSatData = False
 if doCoarsenSatData:
     # coarsening the sat data.
     # This must be done because single alt observation are noisy and too numerous.
@@ -54,7 +54,7 @@ if doCoarsenSatData:
         rawSatDataDir, crsSatDataDir, startDate, endDate, latdelta
     )
 
-doInterpolateModelToSat = True
+doInterpolateModelToSat = False
 if doInterpolateModelToSat:
     # interpolating the model hs along the sat tracks
     interpolateModelTocoarsenCmemsSshSatData_schismWWM(
@@ -76,15 +76,14 @@ computeSshStats.maskPointsCloseToTheCoast = False
 
 latlims = [-90, 90]
 computeSshStats.elaborateMeasures(
-#computeStats.elaborateMeasures(
     startDate,
     endDate,
     hsModelAndSatObsDir,
     statsDir,
     dx=dx,
     dy=dy,
-    filterLowHs=filterLowHs,
-    filterHsThreshold=filterHsThreshold,
+    filterHighSsh=True,
+    filterSshMaximum=filterSshMaximum,
     latlims=latlims,
     pth = 90,
 )
