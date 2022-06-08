@@ -2,5 +2,10 @@ netCDF4
 numpy
 scipy 
 matplotlib
-xarray
 basemap
+pandas==1.2.4
+xarray==0.20.1
+black
+flake8
+isort
+pytest

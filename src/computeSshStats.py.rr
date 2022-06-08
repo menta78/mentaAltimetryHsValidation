@@ -241,30 +241,22 @@ def elaborateMeasures(
     obsTotMax[cnd] = np.nan
     mdlTotMax[cnd] = np.nan
 
-    nbiTot = np.nansum(devSum) / np.nansum(obsSum)
-    absBiasTot = np.nansum(devSum) / np.nansum(dtcount)
-    nrmseTot = np.sqrt(np.nansum(sqDevSum) / np.nansum(sqObsSum))
-    hhTot = np.sqrt(np.nansum(sqDevSum) / np.nansum(mdlByObsSum))
-    nbiYMaxTot = np.nansum(mdlMaxSum - obsMaxSum) / np.nansum(obsMaxSum)
-    nbiTotMaxTot = np.nansum(mdlTotMax - obsTotMax) / np.nansum(obsTotMax)
+    N = np.nansum(dtcount)
+    rmseTot = np.sqrt(np.nansum(sqDevSum) / N)
+    nse = 0
+    r2 = 0
     totIndStr = """
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 TOTAL ERROR INDICATORS:
-nbi:   {nbiTot:2.5f}
-absbi: {absbiTot:2.5f}
-nrmse: {nrmseTot:2.5f}
-hh: {hhTot:2.5f}
-nbiYMax: {nbiYMaxTot:2.5f}
-nbiTotMax: {nbiTotMaxTot:2.5f}
+rmse: {rmseTot:2.5f}
+NSE: {nse:2.5f}
+R2: {r2:2.5f}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
     totIndStr = totIndStr.format(
-        nbiTot=nbiTot,
-        nrmseTot=nrmseTot,
-        hhTot=hhTot,
-        nbiYMaxTot=nbiYMaxTot,
-        nbiTotMaxTot=nbiTotMaxTot,
-        absbiTot=absBiasTot,
+        rmseTot = rmseTot,
+        nse     = nse,
+        r2      = r2,
     )
     print("")
     print(totIndStr)

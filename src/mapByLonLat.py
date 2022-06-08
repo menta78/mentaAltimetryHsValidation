@@ -131,6 +131,67 @@ def computeCumDeviations(lons, lats, mapdata):
             _consideredCells += 1
     print("        considered cells: " + str(_consideredCells))
     return obsSum, sqObsSum, devSum, sqDevSum, mdlByObsSum, dtcount
+    
+
+def computeMean(lons, lats, mapdata):
+    mod_mean = 0
+    sat_mean = 0
+    _consideredCells = 0
+    for ix in range(len(lons)):
+        for iy in range(len(lats)):
+            data = mapdata.get((ix, iy))
+            if not data:
+                continue
+            msrs = np.array(data[3])
+            mods = np.array(data[4])
+            if len(mods) < nminobs:
+                continue
+            _mod_mean += np.sum(mods)
+            _sat_mean += np.sum(msrs)
+            _consideredCells += 1
+    print("        considered cells: " + str(_consideredCells))
+    sat_mean = _sat_mean/_consideredCells
+    mod_mean = _mod_mean/_consideredCells
+    return sat_mean, mod_mean
+
+def computeSkillsSsh(lons, lats, mapdata):
+    sqObsSum = np.ones((len(lats), len(lons))) * np.nan
+    dtcount = np.ones((len(lats), len(lons))) * np.nan
+    _consideredCells = 0
+    for ix in range(len(lons)):
+        for iy in range(len(lats)):
+            data = mapdata.get((ix, iy))
+            if not data:
+                continue
+            msrs = np.array(data[3])
+            mods = np.array(data[4])
+            if len(mods) < nminobs:
+                continue
+            _sqDevSum = np.sum((mods - msrs) ** 2.0)
+            sqDevSum[iy, ix] = _sqDevSum
+            dtcount[iy, ix] = len(mods)
+#            print(iy, ix)
+            _consideredCells += 1
+    print("        considered cells: " + str(_consideredCells))
+    return sqDevSum, dtcount
+
+
+def computeMaxima(lons, lats, mapdata):
+    mxMsrs = np.ones((len(lats), len(lons))) * np.nan
+    mxMdl = np.ones((len(lats), len(lons))) * np.nan
+    for ix in range(len(lons)):
+        for iy in range(len(lats)):
+            data = mapdata.get((ix, iy))
+            if not data:
+                continue
+            msrs = np.array(data[3])
+            mods = np.array(data[4])
+            if len(mods) < nminobs:
+                continue
+
+            mxMsrs[iy, ix] = np.nanmax(msrs)
+            mxMdl[iy, ix] = np.nanmax(mods)
+    return mxMsrs, mxMdl
 
 
 def computeMaxima(lons, lats, mapdata):

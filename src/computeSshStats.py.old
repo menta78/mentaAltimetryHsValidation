@@ -1,4 +1,5 @@
-import os, re
+import os, re, sys
+import glob
 import numpy as np
 from datetime import datetime
 from matplotlib import pyplot as plt
@@ -9,7 +10,7 @@ import src.coarsenSatData
 import src.mapByLonLat as mll
 
 
-maskPointsCloseToTheCoast = False
+maskPointsCloseToTheCoast = True
 minDistFromCoast = 20000
 minObsForValidation = 0
 maskShallowPoints = False
@@ -28,10 +29,11 @@ def elaborateMeasures(
     filterHsThreshold=0.0,
     dx=0.2,
     dy=0.2,
-    pth = 90,
+    pth = 90, 
 ):
 
     years = []
+
 
     def iterateByYear():
         fls_ = [f for f in os.listdir(hsSatAndModelDir) if re.match("(.*)\.npy", f)]
@@ -62,16 +64,22 @@ def elaborateMeasures(
                 satdts = satdts[cnd, :]
             return satdts
 
+        def _elab_ssh(dts, lons, lats, saths, modhs):
+            maplons, maplats, mapdata = mll.mapByLonLat(
+                dts, lons, lats, saths, modhs, dx, dy, lonlims=lonlims, latlims=latlims
+            )
+            return (
+                maplons,
+                maplats,
+                mapdata,
+            )
+
         def _elab(dts, lons, lats, saths, modhs):
             maplons, maplats, mapdata = mll.mapByLonLat(
                 dts, lons, lats, saths, modhs, dx, dy, lonlims=lonlims, latlims=latlims
             )
             (
-                obsSum,
-                sqObsSum,
-                devSum,
                 sqDevSum,
-                mdlByObsSum,
                 dtcount,
             ) = mll.computeCumDeviations(maplons, maplats, mapdata)
             obsMax, mdlMax = mll.computeMaxima(maplons, maplats, mapdata)
@@ -110,94 +118,50 @@ def elaborateMeasures(
                 lats = satdts[:, 2]
                 saths = satdts[:, 3]
                 modhs = satdts[:, 4]
-                yield _elab(dts, lons, lats, saths, modhs)
+                yield _elab_ssh(dts, lons, lats, saths, modhs)
                 satdts = satdts_
                 loopYear = currYr
                 years.append(loopYear)
                 print("  loading year " + str(loopYear))
+
         # yielding the last year
         dts = satdts[:, 0]
         lons = satdts[:, 1]
         lats = satdts[:, 2]
         saths = satdts[:, 3]
         modhs = satdts[:, 4]
-        yield _elab(dts, lons, lats, saths, modhs)
+        yield _elab_ssh(dts, lons, lats, saths, modhs)
 
     (
-        obsSum,
-        sqObsSum,
-        devSum,
         sqDevSum,
         dtcount,
-        obsMaxSum,
-        mdlMaxSum,
-        obsTotMax,
-        mdlTotMax,
-    ) = (None, None, None, None, None, None, None, None, None)
+    ) = (None, None)
     for blob in iterateByYear():
         (
             maplons,
             maplats,
-            _obsSum,
-            _sqObsSum,
-            _devSum,
             _sqDevSum,
-            _mdlByObsSum,
             _dtcount,
-            _obsMax,
-            _mdlMax,
         ) = blob
-        if _obsSum is None:
+        if _sqDevSum is None:
             continue
-        if obsSum is None:
+        if sqDevSum is None:
             (
-                obsSum,
-                sqObsSum,
-                devSum,
                 sqDevSum,
-                mdlByObsSum,
                 dtcount,
-                obsMaxSum,
-                mdlMaxSum,
-                obsTotMax,
-                mdlTotMax,
             ) = (
-                _obsSum,
-                _sqObsSum,
-                _devSum,
                 _sqDevSum,
-                _mdlByObsSum,
                 _dtcount,
-                _obsMax,
-                _mdlMax,
-                _obsMax,
-                _mdlMax,
             )
         else:
-            obsSum = np.nansum([obsSum, _obsSum], 0)
-            sqObsSum = np.nansum([sqObsSum, _sqObsSum], 0)
-            devSum = np.nansum([devSum, _devSum], 0)
             sqDevSum = np.nansum([sqDevSum, _sqDevSum], 0)
-            mdlByObsSum = np.nansum([mdlByObsSum, _mdlByObsSum], 0)
             dtcount = np.nansum([dtcount, _dtcount], 0)
-            obsMaxSum = np.nansum([obsMaxSum, _obsMax], 0)
-            mdlMaxSum = np.nansum([mdlMaxSum, _mdlMax], 0)
-            obsTotMax = np.nanmax([obsTotMax, _obsMax], 0)
-            mdlTotMax = np.nanmax([mdlTotMax, _mdlMax], 0)
 
     if not latlims is None:
         cnd = np.logical_and(maplats >= latlims[0], maplats <= latlims[1])
         maplats = maplats[cnd]
-        obsSum = obsSum[cnd, :]
-        sqObsSum = sqObsSum[cnd, :]
-        devSum = devSum[cnd, :]
         sqDevSum = sqDevSum[cnd, :]
-        mdlByObsSum = mdlByObsSum[cnd, :]
         dtcount = dtcount[cnd, :]
-        obsMaxSum = obsMaxSum[cnd, :]
-        mdlMaxSum = mdlMaxSum[cnd, :]
-        obsTotMax = obsTotMax[cnd, :]
-        mdlTotMax = mdlTotMax[cnd, :]
 
     if maskPointsCloseToTheCoast:
         msk = mll.createCoastlinePointsMask(
@@ -230,41 +194,136 @@ def elaborateMeasures(
         mdlTotMax[cnd] = np.nan
 
     cnd = dtcount < minObsForValidation
-    obsSum[cnd] = np.nan
-    sqObsSum[cnd] = np.nan
-    devSum[cnd] = np.nan
     sqDevSum[cnd] = np.nan
-    mdlByObsSum[cnd] = np.nan
-    dtcount[cnd] = np.nan
-    obsMaxSum[cnd] = np.nan
-    mdlMaxSum[cnd] = np.nan
-    obsTotMax[cnd] = np.nan
-    mdlTotMax[cnd] = np.nan
+    diff = np.nansum(sqDevSum)
+    print(diff)
 
-    nbiTot = np.nansum(devSum) / np.nansum(obsSum)
-    absBiasTot = np.nansum(devSum) / np.nansum(dtcount)
-    nrmseTot = np.sqrt(np.nansum(sqDevSum) / np.nansum(sqObsSum))
-    hhTot = np.sqrt(np.nansum(sqDevSum) / np.nansum(mdlByObsSum))
-    nbiYMaxTot = np.nansum(mdlMaxSum - obsMaxSum) / np.nansum(obsMaxSum)
-    nbiTotMaxTot = np.nansum(mdlTotMax - obsTotMax) / np.nansum(obsTotMax)
+
+    # Compute rmse and extract mean from data
+    sat_mean, mod_mean = mll.computeMean(maplons, maplats, mapdata)
+
+    deviation_ = np.ones((len(maplats), len(maplons))) * np.nan
+    _consideredCells = 0
+    data_sat_ = []
+    data_sat = []
+    data_mod_ = []
+    data_mod = []
+    for ix in range(len(maplons)):
+        for iy in range(len(maplats)):
+            data = mp.get((ix, iy))
+            if not data:
+                continue
+            msrs = np.array(data[3])
+            data_sat_.append(msrs)
+            mods = np.array(data[4])
+            data_mod_.append(mods)
+
+            msrs_sum = np.sum(np.array(data[3]))
+            mods_sum = np.sum(np.array(data[4]))
+
+            deviation_[iy, ix] = np.sum((mods - msrs) ** 2.0)
+#            print(deviation_[iy, ix])
+#            print(iy, ix)
+            _consideredCells += 1
+
+    deviation = deviation_/(_consideredCells)
+    sat_mean = msrs_sum / _consideredCells
+    mod_mean = mods_sum / _consideredCells
+
+    print("considered cells: ", _consideredCells)
+
+    # flatting array
+    for i in range(len(data_sat_)):
+      data_sat.extend(data_sat_[i])
+    for i in range(len(data_mod_)):
+      data_mod.extend(data_mod_[i])
+
+    #sat_mean = np.nanmean(data_sat)
+    #mod_mean = np.nanmean(data_mod)
+    print("mean sat data = ", sat_mean)
+    print("mean mod data = ", mod_mean)
+
+    data_mod = data_mod - mod_mean
+#    data_sat = data_sat - sat_mean
+
+#    sat_meann = np.nanmean(data_sat)
+#    print("mean sat data after remove mean = ", sat_meann)
+
+    pth_data_mod = np.nanpercentile(data_mod, pth)
+    pth_data_sat = np.nanpercentile(data_sat, pth)
+    print("pth sat = " , pth_data_sat)
+    print("pth mod = " , pth_data_mod)
+
+    filter_data_sat = []
+    filter_data_mod = []
+
+    # compute NSE and Coefficient of determination
+    nse1 = 0
+    nse2 = 0
+    ssres = 0
+    sstot = 0
+    _consideredCellsFilter = 0
+    for ix in range(len(maplons)):
+        for iy in range(len(maplats)):
+            data = mp.get((ix, iy))
+            if not data:
+                continue
+            msrs = np.array(data[3])
+            mods = np.array(data[4])
+            for i in range(len(msrs)):
+                if msrs[i] >= pth_data_sat and mods[i] >= pth_data_mod:
+      #              nse1 += (mods[i] - msrs[i])**2
+      #              nse2 += (msrs[i] - sat_mean)**2
+      #              ssres += (mods[i] - msrs[i])**2
+      #              sstot += (msrs[i] - sat_mean)**2
+                    filter_data_sat.append(msrs[i])
+                    filter_data_mod.append(mods[i])
+                else:
+                    continue
+
+    filt_data_sat = np.array(filter_data_sat)
+    filt_data_mod = np.array(filter_data_mod)
+
+    print("mean filt_data_sat = ", np.nanmean(filt_data_sat))
+    nse1 = np.sum((filt_data_mod - filt_data_sat)**2)
+    nse2 = np.sum((filt_data_sat - np.nanmean(filt_data_sat))**2)
+    # It is exactly the same, right?
+    ssres = np.sum((filt_data_mod - filt_data_sat)**2)
+    sstot = np.sum((filt_data_sat - np.nanmean(filt_data_sat))**2)
+
+
+    print("considered cells after percentile filtering: ", len(filter_data_sat))
+    nse = 1 - nse1/nse2
+    r2 = 1 - ssres/sstot
+    print("NSE = ", nse)
+    print("R2 = ", r2)
+
+    #cnd = dtcount < minObsForValidation
+    #obsSum[cnd] = np.nan
+    #sqObsSum[cnd] = np.nan
+    #devSum[cnd] = np.nan
+    #sqDevSum[cnd] = np.nan
+    #mdlByObsSum[cnd] = np.nan
+    #dtcount[cnd] = np.nan
+    #obsMaxSum[cnd] = np.nan
+    #mdlMaxSum[cnd] = np.nan
+    #obsTotMax[cnd] = np.nan
+    #mdlTotMax[cnd] = np.nan
+
+
+    rmseTot = np.sqrt(np.nansum(deviation))
     totIndStr = """
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 TOTAL ERROR INDICATORS:
-nbi:   {nbiTot:2.5f}
-absbi: {absbiTot:2.5f}
-nrmse: {nrmseTot:2.5f}
-hh: {hhTot:2.5f}
-nbiYMax: {nbiYMaxTot:2.5f}
-nbiTotMax: {nbiTotMaxTot:2.5f}
+rmse: {rmseTot:2.5f}
+NSE: {nse:2.5f}
+R2: {r2:2.5f}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
     totIndStr = totIndStr.format(
-        nbiTot=nbiTot,
-        nrmseTot=nrmseTot,
-        hhTot=hhTot,
-        nbiYMaxTot=nbiYMaxTot,
-        nbiTotMaxTot=nbiTotMaxTot,
-        absbiTot=absBiasTot,
+        rmseTot=rmseTot,
+        nse=nse,
+        r2=r2,
     )
     print("")
     print(totIndStr)
@@ -274,13 +333,7 @@ nbiTotMax: {nbiTotMaxTot:2.5f}
         f.write(totIndStr)
         f.close()
 
-    bias = devSum / obsSum
-    absBias = devSum / dtcount
-    nrmse = np.sqrt(sqDevSum / sqObsSum)
-    hh = np.sqrt(sqDevSum / mdlByObsSum)
-
-    obsYearMax = obsMaxSum / len(years)
-    mdlYearMax = mdlMaxSum / len(years)
+    rmse = np.sqrt(deviation)
 
     # saving to files
     try:
@@ -289,52 +342,6 @@ nbiTotMax: {nbiTotMaxTot:2.5f}
         pass
     np.savetxt(os.path.join(outputDir, "lons.csv"), maplons)
     np.savetxt(os.path.join(outputDir, "lats.csv"), maplats)
-    np.savetxt(os.path.join(outputDir, "bias.csv"), bias)
-    np.savetxt(os.path.join(outputDir, "absbias.csv"), absBias)
-    np.savetxt(os.path.join(outputDir, "nrmse.csv"), nrmse)
-    np.savetxt(os.path.join(outputDir, "hh.csv"), hh)
-    np.savetxt(os.path.join(outputDir, "dtcount.csv"), dtcount)
-    np.savetxt(os.path.join(outputDir, "obsYearMaxMean.csv"), obsYearMax)
-    np.savetxt(os.path.join(outputDir, "modelYearMaxMean.csv"), mdlYearMax)
-    np.savetxt(os.path.join(outputDir, "obsTotMax.csv"), obsTotMax)
-    np.savetxt(os.path.join(outputDir, "modelTotMax.csv"), mdlTotMax)
+    np.savetxt(os.path.join(outputDir, "rmse.csv"), rmse)
 
     print("output dir: " + outputDir)
-
-
-if __name__ == "__main__":
-    startYear = 2000
-    endYear = 2009
-
-    # RED SEA 10 YEARS
-    lonlims = [30, 43.8]
-    latlims = [13.4, 32]
-    # lonlims = [36.5, 43.8]
-    # latlims = [13.4, 21]
-    hsSatAndModelDir = "/media/lmentaschi/TOSHIBA EXT/analysis/WW3_UNST_VALIDATION_10yrs/hindcast_red_sea_unst/hsModelAndSatObs/"
-    outputDir = "/media/lmentaschi/TOSHIBA EXT/analysis/WW3_UNST_VALIDATION_10yrs/hindcast_red_sea_unst/stats/"
-    hsSatAndModelDir = "/media/lmentaschi/TOSHIBA EXT/analysis/WW3_UNST_VALIDATION_10yrs/hindcast_red_sea_unst_noobst/hsModelAndSatObs/"
-    outputDir = "/media/lmentaschi/TOSHIBA EXT/analysis/WW3_UNST_VALIDATION_10yrs/hindcast_red_sea_unst_noobst/stats/"
-
-    # elaborateMeasures(startYear, endYear, hsSatAndModelDir, outputDir, lonlims=lonlims, latlims=latlims)
-
-    """
-  # PERSIC GULF 10 YEARS
-  lonlims = [47, 56.5]
-  latlims = [23.5, 31]
- #lonlims = [36.5, 43.8]
- #latlims = [13.4, 21]
-  hsSatAndModelDir = '/media/lmentaschi/TOSHIBA EXT/analysis/WW3_UNST_VALIDATION_10yrs/hindcast_persic_gulf_unst/hsModelAndSatObs/'
-  outputDir = '/media/lmentaschi/TOSHIBA EXT/analysis/WW3_UNST_VALIDATION_10yrs/hindcast_persic_gulf_unst/stats/'
-  hsSatAndModelDir = '/media/lmentaschi/TOSHIBA EXT/analysis/WW3_UNST_VALIDATION_10yrs/hindcast_persic_gulf_unst_noobst/hsModelAndSatObs/'
-  outputDir = '/media/lmentaschi/TOSHIBA EXT/analysis/WW3_UNST_VALIDATION_10yrs/hindcast_persic_gulf_unst_noobst/stats/'
-  """
-
-    elaborateMeasures(
-        startYear,
-        endYear,
-        hsSatAndModelDir,
-        outputDir,
-        lonlims=lonlims,
-        latlims=latlims,
-    )
