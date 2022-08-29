@@ -2,10 +2,14 @@ netCDF4
 numpy
 scipy 
 matplotlib
-basemap
 pandas==1.2.4
 xarray==0.20.1
 black
 flake8
 isort
 pytest
+motuclient
+python-dotenv
+h5py
+geopandas
+basemap

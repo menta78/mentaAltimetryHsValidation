@@ -2,7 +2,7 @@ import multiprocessing
 import os
 import re
 from datetime import datetime, timedelta
-from GeslaDataset.gesla import GeslaDataset
+#from GeslaDataset.gesla import GeslaDataset
 
 import netCDF4
 import numpy as np
@@ -89,13 +89,12 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
         return "case " + str(mdlF)
 
 
-    #outFlName = mdlF.replace(".nc", "_sshModelAndTidalObs_" + tmstrt.strftime("%Y%m%d"))
-    # outFlName = mdlF.replace(".nc", "_sshModelAndTidalObs_")
-    # outFlPath = os.path.join(_destDir, outFlName)
-    # if (not _overwriteExisting) and os.path.isfile(outFlPath + ".npy"):
-    #     print("      file " + outFlPath + " already exists. Skipping")
-    #     ds.close()
-    #     return outFlPath
+    outFlName = mdlF.replace(".nc", "_" + "tidalGauge")
+    outFlPath = os.path.join(_destDir, outFlName)
+    if (not _overwriteExisting) and os.path.isfile(outFlPath + ".npy"):
+        print("      file " + outFlPath + " already exists. Skipping")
+        ds.close()
+        return outFlPath
 
     if not _startDate is None and not _endDate is None:
         tmend = netCDF4.num2date(
@@ -194,6 +193,14 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
             )
             intp0[itm, :] = intpltr((latSat, lonSat))
 
+    resT  = []
+    intpT = []
+    lonT = []
+    latT = []
+    indxT = []
+
+    j = 0
+
     for i in range(nobs):
         print("    ... interpolating on time")
         
@@ -215,6 +222,15 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
 
         res = np.array(_resTidal[i][idxMin:idxMax])
 
+        lonn = np.array(_lonTidal[i])
+        latt = np.array(_latTidal[i])
+
+        aux_ = res*0 + 1
+
+        Lonn = lonn*aux_
+        Latt = latt*aux_
+        Indx = j*aux_
+
         # print("===")
         # print(intp)
         # print(intp.shape[:])
@@ -222,19 +238,47 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
         # print(res.shape[:])
         # print(i)
         # print("===")
-        intp_ = np.zeros([intp.shape[0], 1])
-        res_ = np.zeros([res.shape[0], 1])
+        # intp_ = np.zeros([intp.shape[0], 1])
+        # res_ = np.zeros([res.shape[0], 1])
 
-        intp_[:,0] = intp 
-        res_[:,0]  = res
+        # intp_[:,0] = intp 
+        # res_[:,0]  = res
 
-        dtSatAndMod = np.concatenate([res_, intp_], axis=1)
-        print("    ... saving output file in ", _destDir)
-        print(read_file(i))
-        outFlName = mdlF.replace(".nc", "_" + read_file(i) + "_tidalGauge_" + tmstrt.strftime("%Y%m%d") )
-        outFlPath = os.path.join(_destDir, outFlName)
-        print(outFlName)
-        np.save(outFlPath, dtSatAndMod)
+        resT.append(res.tolist())
+        intpT.append(intp.tolist())
+        lonT.append(Lonn.tolist())
+        latT.append(Latt.tolist())
+        indxT.append(Indx.tolist())
+
+        j += 1
+
+    resT = [item for sublist in resT for item in sublist]
+    intpT = [item for sublist in intpT for item in sublist]
+    lonT = [item for sublist in lonT for item in sublist]
+    latT = [item for sublist in latT for item in sublist]
+    indxT = [item for sublist in indxT for item in sublist]
+
+    resTT = np.zeros([len(resT), 1])
+    intpTT = np.zeros([len(intpT), 1])
+    lonTT = np.zeros([len(lonT), 1])
+    latTT = np.zeros([len(latT), 1])
+    indxTT = np.zeros([len(indxT), 1])
+
+
+    resTT[:,0] = np.array(resT)
+    intpTT[:,0] = np.array(intpT)
+    lonTT[:,0] = np.array(lonT)
+    latTT[:,0] = np.array(latT)
+    indxTT[:,0] = np.array(indxT)
+
+
+    dtSatAndMod = np.concatenate([resTT, intpTT, lonTT, latTT, indxTT], axis=1)
+    print("    ... saving output file in ", _destDir)
+    #outFlName = mdlF.replace(".nc", "_" + read_file(i) + "_tidalGauge_" + tmstrt.strftime("%Y%m%d") )
+    outFlName = mdlF.replace(".nc", "_" + "tidalGauge")
+    outFlPath = os.path.join(_destDir, outFlName)
+    print(outFlName)
+    np.save(outFlPath, dtSatAndMod)
     
     return outFlPath
 
@@ -261,7 +305,7 @@ def interpolateModelToTidalGauge_schismWWM(
     print("interpolating model data to tidal gauge")
     mdlfl0 = [f for f in os.listdir(modelNcFileDir) if re.match(flpattern, f)]
     dts = [
-        int(re.match("schout_([0-9]*)\_compressed.nc", fn).groups(0)[0])
+        int(re.match("ERA5_schismwwm_([0-9]*)\.nc", fn).groups(0)[0])
         for fn in mdlfl0
     ]
     iii = np.argsort(dts)

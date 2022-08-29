@@ -12,9 +12,9 @@ def getFiles(hsSatAndModelDir, startDate, endDate):
 
     while startDate <= endDate:
         strtime = startDate.strftime("%Y%m%d")
-        pthfile = hsSatAndModelDir + "*"+strtime+".npy"
-        print(pthfile)
-        fl.append(glob.glob(pthfile))
+        pthfile = hsSatAndModelDir + "/ERA5_schismwwm_"+strtime+"*.npy"
+        fileFound = glob.glob(pthfile)
+        fl.append(fileFound)
         startDate += timedelta(days=1)
 
     return list(itertools.chain(*fl))
@@ -23,6 +23,7 @@ def getFiles(hsSatAndModelDir, startDate, endDate):
 def elaborateMeasures(
     startDate,
     endDate,
+    hsSatAndModelDir,
     outputDir,
     filterLowHs=False,
     filterHsThreshold=0.0,
@@ -42,7 +43,7 @@ def elaborateMeasures(
             satdts = satdts[cnd, :]
         return satdts
 
-    fls = getFiles(outputDir, startDate, endDate)
+    fls = getFiles(hsSatAndModelDir, startDate, endDate)
 
     obs = np.array([])
     model = np.array([])
@@ -61,48 +62,45 @@ def elaborateMeasures(
     pmodel = np.nanpercentile(model, pth)
     pobs = np.nanpercentile(obs, pth)
 
-    nsc1 = 0
-    ssres = 0
-    nsc2 = 0
-    sstot = 0
-    meanObs = 0
-    nobs = 0
-    valuesObs = []
+    condition = obs>=0
 
-    for (obsi, modeli) in zip(obs, model):
-        if obsi >= 0:
-            valuesObs.append(obsi)
-            nobs += 1
-        else:
-            continue
+    meanObs = np.nanmean(obs, where= condition)
 
-        meanObs = sum(valuesObs)/nobs
+    condition1 = obs >= pobs 
+    condition2 = model >= pobs
+    condition = condition1 & condition2
 
-    print(meanObs)
+    nsc1 = np.nansum(np.abs(obs-model), where=condition)
+    nsc2 = np.nansum(np.abs(obs-np.nanmean(obs)), where=condition)
+    N = np.sum(condition)
 
-    # meanObs = np.nanmean(obs)
-    # print(meanObs)
+    ssres = np.nansum((obs-model)**2, where=condition)
+    sstot = np.nansum((obs-np.nanmean(obs))**2, where=condition)
 
-    for (obsi, modeli) in zip(obs, model):
-        if obsi >= pobs and modeli >= pobs:
-        #if obsi >= 0 and modeli >= 0 and modeli == modeli:
-            #print(obsi, modeli)
-            nsc1 += np.abs(obsi-modeli)
-            nsc2 += np.abs(obsi-meanObs)
-
-            ssres += (obsi-modeli)**2
-            sstot += (obsi-meanObs)**2
-
-
-    # nsc1 = np.nansum(np.abs(obs-model))
-    # nsc2 = np.nansum(np.abs(obs-np.nanmean(obs)))
-
-    # ssres = np.nansum((obs-model)**2)
-    # sstot = np.nansum((obs-np.nanmean(obs))**2)
+    absre = np.nansum(model-obs, where=condition)
+    nobs = np.nansum(obs, where=condition)
 
     nse  = 1 - nsc1/nsc2
     nnse = 1/(2-nse)
     r2   = 1 - ssres/sstot
     nr2 = 1/(2-r2)
+    re = absre/nobs
+    rmse = np.sqrt(ssres/N)
+
+
+    print("ssres", ssres)
+    print("sstot", sstot)
+    print("N", N)
 
     print("nse = ",nse, "nnse = ", nnse, "r2 = ", r2, "nr2 = ", nr2)
+    print("rmse = ", rmse)
+    print("abs bias = ", absre, "relative bias = ", re)
+
+    with open('data/stats/tidalGauge_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d")+".txt", 'w') as f:
+        f.write("nse = " + str(nse)+"\n")
+        f.write("nnse = " + str(nnse)+"\n")
+        f.write("r2 = " + str(r2)+"\n")
+        f.write("nr2 = " + str(nr2)+"\n")
+        f.write("rmse = " + str(rmse)+"\n")
+        f.write("abs bias = " + str(absre)+"\n")
+        f.write("rel bias = " + str(re)+"\n")
