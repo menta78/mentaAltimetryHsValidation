@@ -77,14 +77,15 @@ def elaborateMeasures(
     ssres = np.nansum((obs-model)**2, where=condition)
     sstot = np.nansum((obs-np.nanmean(obs))**2, where=condition)
 
-    absre = np.nansum(model-obs, where=condition)
+    absre_ = np.nansum(model-obs, where=condition)
     nobs = np.nansum(obs, where=condition)
 
+    absre = absre_/N
     nse  = 1 - nsc1/nsc2
     nnse = 1/(2-nse)
     r2   = 1 - ssres/sstot
     nr2 = 1/(2-r2)
-    re = absre/nobs
+    re = absre_/nobs
     rmse = np.sqrt(ssres/N)
 
 

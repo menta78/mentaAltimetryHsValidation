@@ -2,12 +2,16 @@ import os, re, glob
 import numpy as np
 from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
+from matplotlib.colorbar import Colorbar
+import matplotlib.gridspec as gridspec
 import itertools
 from mpl_toolkits.basemap import Basemap
 
 
 filterHighSsh = False
-options_savefig = {"dpi": 150, "bbox_inches": "tight", "transparent": False}
+options_savefig = {'dpi': 150, "bbox_inches": "tight", "transparent": False}
+title_font = {'size':'12', 'color':'black', 'weight':'normal',
+                      'verticalalignment':'bottom'}
 
 
 def computeSkills(obs, model, pth=99):
@@ -24,20 +28,22 @@ def computeSkills(obs, model, pth=99):
 
     nsc1 = np.nansum(np.abs(obs-model), where=condition)
     nsc2 = np.nansum(np.abs(obs-np.nanmean(obs)), where=condition)
+    N = np.sum(condition)
 
     ssres = np.nansum((obs-model)**2, where=condition)
     sstot = np.nansum((obs-np.nanmean(obs))**2, where=condition)
 
-    absre = np.nansum(model-obs, where=condition)
-    nobs = np.nansum(obs, where=condition)
-
+    absre_ = np.nansum(model-obs, where=condition)
+    obsTot = np.nansum(obs, where=condition)
+    
+    absre = absre_/N
     nse  = 1 - nsc1/nsc2
     nnse = 1/(2-nse)
     r2   = 1 - ssres/sstot
     nr2 = 1/(2-r2)
-    re = absre/nobs
+    rebias = absre_/obsTot * 100
 
-    return nse, r2, absre, re
+    return nnse, nr2, absre, rebias
 
 
 def getFiles(hsSatAndModelDir, startDate, endDate):
@@ -136,11 +142,11 @@ def elaborateMeasuresPlot(
         model_ = model[idx:idxNext]
         obs_ = obs[idx:idxNext]
 
-        nse, r2, absre, re = computeSkills(obs_, model_, pth)
-        nseT.append(nse)
-        r2T.append(r2)
+        nnse, nr2, absre, rebias = computeSkills(obs_, model_, pth)
+        nseT.append(nnse)
+        r2T.append(nr2)
         absreT.append(absre)
-        reT.append(re)
+        reT.append(rebias)
         # print("nse  = ", nse)
         # print("r2  = ", r2)
         # print("absre  = ", absre)
@@ -157,51 +163,83 @@ def elaborateMeasuresPlot(
     shpfile = "/eos/jeodpp/data/projects/CLIMEX/mentaAltimetryHsValidation/data/coastline/ne_10m_coastline.shp"
     m=Basemap()
 
-    fig, ax = plt.subplots()
-    #mask = geopandas.read_file(shpfile)
+
+    fig, ax = plt.subplots(figsize=(9,4))
+    grd = gridspec.GridSpec(1, 2, wspace=.025, width_ratios=[1, .05])
+
+    # Map and scatter plot
+    axMap = plt.subplot(grd[0, 0])
     m.drawcoastlines(linewidth=0.5)
-    plt.scatter(uniqueLon, uniqueLat, s=20, c=nseT, cmap="Blues")
-    plt.colorbar()
-    plt.clim(0, 1)
-    ax.set(xlim=[-180,180], ylim=[-90,90])
-    ax.set_aspect("equal", "box")
-    plt.title("Nash–Sutcliffe model efficiency coefficient")
+    plt1 = axMap.scatter(uniqueLon, uniqueLat, s=20, c=nseT, cmap="RdBu", edgecolors="black", linewidths=0.5,
+            vmin=0, vmax=1)
+    axMap.set(xlim=[-180,180], ylim=[-90,90])
+    axMap.set_aspect("equal", "box")
+    axMap.set_title("Normalized Nash–Sutcliffe model efficiency coefficient", **title_font)
+    
+    # Colorbar
+    axCb = plt.subplot(grd[0,1])
+    cb = Colorbar(ax = axCb, mappable = plt1, orientation = 'vertical') #, ticklocation = 'top')
+
     plt.savefig('data/stats/tidalGauge_nse_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d") + ".png", **options_savefig)
     plt.close(fig)
 
-    fig, ax = plt.subplots()
-    #mask = geopandas.read_file(shpfile)
+
+    fig, ax = plt.subplots(figsize=(9,4))
+    grd = gridspec.GridSpec(1, 2, wspace=.025, width_ratios=(1, .05))
+
+    # Map and scatter plot
+    axMap = plt.subplot(grd[0, 0])
     m.drawcoastlines(linewidth=0.5)
-    plt.scatter(uniqueLon, uniqueLat, s=20, c=r2T, cmap="Blues")
-    plt.colorbar()
-    plt.clim(0, 1)
-    ax.set(xlim=[-180,180], ylim=[-90,90])
-    ax.set_aspect("equal", "box")
-    plt.title("R2")
+    plt2 = plt.scatter(uniqueLon, uniqueLat, s=20, c=r2T, cmap="RdBu", edgecolors="black", linewidths=0.5,
+            vmin=0, vmax=1)
+    axMap.set(xlim=[-180,180], ylim=[-90,90])
+    axMap.set_aspect("equal", "box")
+    axMap.set_title("Normalized R2", **title_font)
+    
+    # Colorbar
+    axCb = plt.subplot(grd[0,1])
+    cb = Colorbar(ax = axCb, mappable = plt2, orientation = 'vertical') #, ticklocation = 'top')
+
     plt.savefig('data/stats/tidalGauge_r2_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d") + ".png", **options_savefig)
     plt.close(fig)
 
-    fig, ax = plt.subplots()
-    #mask = geopandas.read_file(shpfile)
+
+    fig, ax = plt.subplots(figsize=(9,4))
+    grd = gridspec.GridSpec(1, 2, wspace=.025, width_ratios=(1, .05))
+
+    # Map and scatter plot
+    axMap = plt.subplot(grd[0, 0])
     m.drawcoastlines(linewidth=0.5)
-    plt.scatter(uniqueLon, uniqueLat, s=20, c=absreT, cmap="Blues")
-    plt.colorbar()
-    plt.clim(-50, 50)
-    ax.set(xlim=[-180,180], ylim=[-90,90])
-    ax.set_aspect("equal", "box")
-    plt.title("Absolute Bias")
+    plt3 = plt.scatter(uniqueLon, uniqueLat, s=20, c=absreT, cmap="RdBu", edgecolors="black", linewidths=0.5,
+            vmin=-0.5, vmax=0.5)
+    axMap.set(xlim=[-180,180], ylim=[-90,90])
+    axMap.set_aspect("equal", "box")
+    axMap.set_title("Absolute Bias", **title_font)
+    
+    # Colorbar
+    axCb = plt.subplot(grd[0,1])
+    cb = Colorbar(ax = axCb, mappable = plt3, orientation = 'vertical') #, ticklocation = 'top')
+
     plt.savefig('data/stats/tidalGauge_absre_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d") + ".png", **options_savefig)
     plt.close(fig)
 
-    fig, ax = plt.subplots()
-    #mask = geopandas.read_file(shpfile)
+
+
+    fig, ax = plt.subplots(figsize=(9,4))
+    grd = gridspec.GridSpec(1, 2, wspace=.025, width_ratios=(1, .05))
+
+    # Map and scatter plot
+    axMap = plt.subplot(grd[0, 0])
     m.drawcoastlines(linewidth=0.5)
-    plt.scatter(uniqueLon, uniqueLat, s=20, c=reT, cmap="Blues")
-    plt.colorbar()
-    plt.clim(-1, 1)
-    ax.set(xlim=[-180,180], ylim=[-90,90])
-    ax.set_aspect("equal", "box")
-    plt.title("Relative Bias")
+    plt4 = plt.scatter(uniqueLon, uniqueLat, s=20, c=reT, cmap="RdBu", edgecolors="black", linewidths=0.5,
+            vmin=-100, vmax=100)
+    axMap.set(xlim=[-180,180], ylim=[-90,90])
+    axMap.set_aspect("equal", "box")
+    axMap.set_title("Relative Bias (%)", **title_font)
+    
+    # Colorbar
+    axCb = plt.subplot(grd[0,1])
+    cb = Colorbar(ax = axCb, mappable = plt4, orientation = 'vertical') #, ticklocation = 'top')
+
     plt.savefig('data/stats/tidalGauge_re_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d") + ".png", **options_savefig)
     plt.close(fig)
-
