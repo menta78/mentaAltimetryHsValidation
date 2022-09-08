@@ -252,20 +252,30 @@ def elaborateMeasures(
     modssh = modssh_  - modssh_mean
 
     # compute percentiles.
-    pth_satssh = np.nanpercentile(satssh, pth)
-    pth_modssh = np.nanpercentile(modssh, pth)
-    print("pth satssh = ", pth_satssh)
-    print("pth modssh = ", pth_modssh)
+    pobs = np.nanpercentile(satssh, pth)
+    pmod = np.nanpercentile(modssh, pth)
+    print("pth observations = ", pobs)
+    print("pth model = ", pmod)
 
+    condition = satssh>=0
+    meanObs = np.nanmean(satssh, where= condition)
+
+    condition1 = satssh >= pobs 
+    condition2 = modssh >= pmod
+    conditionPth = condition1 & condition2
+    print(condition1, condition2, conditionPth)
 
     cnd = dtcount < minObsForValidation
+    conditionNumberSamples = condition 
+
     sqDevSum[cnd] = np.nan
     dtcount[cnd] = np.nan
 
-    N = np.nansum(dtcount)
-    rmseTot = np.sqrt(np.nansum(sqDevSum) / N)
+    N = np.nansum(conditionNumberSamples)
+    rmseTot = np.sqrt(np.nansum(sqDevSum) / N, where = conditionPth)
 
     # computing skills
+    """
     filt_satssh = []
     filt_modssh = []
     for i in range(len(satssh)):
@@ -291,22 +301,46 @@ def elaborateMeasures(
         nse2 += (filt_data_sat[i] - mean_filt_data_sat)**2
         ssres += (filt_data_mod[i] - filt_data_sat[i])**2
         sstot += (filt_data_sat[i] - mean_filt_data_sat)**2
-        
-    rmseTot = np.sqrt(nse1/N) 
-    nse = 1 - nse1/nse2
-    r2  = 1 - ssres/sstot
+    """
+
+    nsc1 = np.nansum(np.abs(satssh-modssh), where=conditionPth)
+    nsc2 = np.nansum(np.abs(satssh-np.nanmean(satssh)), where=conditionPth)
+
+    ssres = np.nansum((satssh-modssh)**2, where=conditionPth)
+    sstot = np.nansum((satssh-np.nanmean(satssh))**2, where=conditionPth)
+
+    absre_ = np.nansum(modssh-satssh, where=conditionPth)
+    nobs = np.nansum(satssh, where=conditionPth)
+
+    print(absre_, nobs)
+
+    absre = absre_/N
+    nse  = 1 - nsc1/nsc2
+    nnse = 1/(2-nse)
+    r2   = 1 - ssres/sstot
+    nr2 = 1/(2-r2)
+    reb = absre_/nobs * 100
+    rmseTot = np.sqrt(ssres/N)
     totIndStr = """
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 TOTAL ERROR INDICATORS:
 rmse: {rmseTot:2.5f}
 NSE: {nse:2.5f}
 R2: {r2:2.5f}
+NNSE: {nnse:2.5f}
+NR2: {nr2:2.5f}
+Bias: {absre:2.5f}
+RelBias: {reb:2.5f}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
     totIndStr = totIndStr.format(
         rmseTot = rmseTot,
         nse     = nse,
         r2      = r2,
+        nnse     = nnse,
+        nr2      = nr2,
+        absre = absre,
+        reb = reb,
     )
     print("")
     print(totIndStr)
