@@ -132,6 +132,19 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
     else:
         raise Exception("unsupported grid type: " + _gridType)
 
+    # Substract the model's mean of each node
+    ds = netCDF4.Dataset(_meanModelFile)
+    try:
+        meanelev = ds.variables["elev"][0,:]
+    except:
+        print("something wrong in file " + meanModelFile)
+        outFlPath = "none"
+        return outFlPath
+
+    for i in range(hs.shape[-1]):
+        hs[:,i] = hs[:,i] - meanelev[i]
+
+
     lonSat = dtSatAll[:, 1]
     latSat = dtSatAll[:, 2]
 
@@ -193,6 +206,7 @@ def interpolateModelToCoarsenedSatData_WW3(
     _startDate, _endDate = startDate, endDate
     _gridType = gridType
     dtmngr = coarsenSatData.satDataManager(crsSatDataDir, boundaries)
+    print(dtmngr)
     if nParWorker > 1:
         p = multiprocessing.Pool(nParWorker)
         map_ = p.map
@@ -217,6 +231,7 @@ def interpolateModelTocoarsenCmemsSshSatData_schismWWM(
     crsSatDataDir,
     modelNcFileDir,
     destDir,
+    meanModelFile,
     boundaries=None,
     startDate=None,
     endDate=None,
@@ -227,9 +242,10 @@ def interpolateModelTocoarsenCmemsSshSatData_schismWWM(
     print("interpolating model data to sat")
     mdlfl0 = [f for f in os.listdir(modelNcFileDir) if re.match(flpattern, f)]
     dts = [
-        int(re.match("schout_([0-9]*)\_compressed.nc", fn).groups(0)[0])
+        int(re.match("ERA5_schismwwm_([0-9]*)\.nc", fn).groups(0)[0])
         for fn in mdlfl0
     ]
+    print(dts)
     iii = np.argsort(dts)
     mdlfl = np.array(mdlfl0)[iii]
     mdlflpre = mdlfl[:-1].tolist()
@@ -237,11 +253,12 @@ def interpolateModelTocoarsenCmemsSshSatData_schismWWM(
     mdlflnext = mdlfl[1:].tolist()
     mdlflnext.append(None)
 
-    global _overwriteExisting, _lock, _modelNcFileDir, _destDir, _startDate, _endDate, dtmngr, _gridType, _varnames
+    global _overwriteExisting, _lock, _modelNcFileDir, _destDir, _meanModelFile, _startDate, _endDate, dtmngr, _gridType, _varnames
     _overwriteExisting = overwriteExisting
     _lock = multiprocessing.Lock()
     _modelNcFileDir = modelNcFileDir
     _destDir = destDir
+    _meanModelFile = meanModelFile
     _startDate, _endDate = startDate, endDate
     _gridType = GRID_TYPE_UNSTRUCT
     _varnames = ["SCHISM_hgrid_node_x", "SCHISM_hgrid_node_y", "elev", "time"]
