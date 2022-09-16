@@ -48,7 +48,12 @@ def elaborateMeasures(
     obs = np.array([])
     model = np.array([])
 
-   r2lst = []
+    r2lst = []
+    nselst = []
+    ablst = []
+    rblst = []
+    rmselst = []
+
    #looping on tidal gauge files
     for f in fls:
         data_ = loadFile(f)
@@ -65,57 +70,45 @@ def elaborateMeasures(
         pobs_ = np.nanpercentile(obs_, pth)
 
         condition1_ = obs_ >= pobs_ 
-        condition2_ = model_ >= pobs_
+        condition2_ = model_ >= model_
         condition_ = condition1_ & condition2_
 
+        N = np.nansum(condition_)
+
         ssres_ = np.nansum((obs_-model_)**2, where=condition_)
-        sstot = np.nansum((obs_-np.nanmean(obs_))**2, where=condition_)
+        sstot_ = np.nansum((obs_-np.nanmean(obs_))**2, where=condition_)
+        nsc1   = np.nansum(np.abs(obs_-model_), where=condition_)
+        nsc2   = np.nansum(np.abs(obs_-np.nanmean(obs_)), where=condition_)
+
+        absre_ = np.nansum(model_ - obs_, where=condition_)
+        nobs = np.nansum(obs_, where=condition_)
+
+        print(ssres_, sstot_)
 
         r2_ = 1 - ssres_/sstot_
-        r2lst.append(r2)
+        nse_ = 1 - nsc1/nsc2
+        ab_ = absre_/N
+        rb_ = absre_/nobs
+        rmse_ = np.sqrt(ssres_/N)
 
-   r2 = np.mean(np.array(r2lst))
 
-   #meanModel = np.nanmean(model)
-   #model = model - meanModel
-   #    
-    pmodel = np.nanpercentile(model, pth)
-    pobs = np.nanpercentile(obs, pth)
+        r2lst.append(r2_)
+        nselst.append(nse_)
+        ablst.append(ab_)
+        rmselst.append(rmse_)
+        rblst.append(rb_)
 
-   #condition = obs>=0
+    r2 = np.mean(np.array(r2lst))
+    nse = np.mean(np.array(nselst))
+    ab = np.mean(np.array(ablst))
+    rmse = np.mean(np.array(rmselst))
 
-   #meanObs = np.nanmean(obs, where= condition)
-
-    condition1 = obs >= pobs 
-    condition2 = model >= pobs
-    condition = condition1 & condition2
-
-    nsc1 = np.nansum(np.abs(obs-model), where=condition)
-    nsc2 = np.nansum(np.abs(obs-np.nanmean(obs)), where=condition)
-    N = np.sum(condition)
-
-    ssres = np.nansum((obs-model)**2, where=condition)
-    sstot = np.nansum((obs-np.nanmean(obs))**2, where=condition)
-
-    absre_ = np.nansum(model-obs, where=condition)
-    nobs = np.nansum(obs, where=condition)
-
-    absre = absre_/N
-    nse  = 1 - nsc1/nsc2
     nnse = 1/(2-nse)
-    r2   = 1 - ssres/sstot
     nr2 = 1/(2-r2)
-    re = absre_/nobs
-    rmse = np.sqrt(ssres/N)
-
-
-    print("ssres", ssres)
-    print("sstot", sstot)
-    print("N", N)
 
     print("nse = ",nse, "nnse = ", nnse, "r2 = ", r2, "nr2 = ", nr2)
     print("rmse = ", rmse)
-    print("abs bias = ", absre, "relative bias = ", re)
+    print("abs bias = ", ab, "relative bias = ", rb)
 
     with open('data/stats/tidalGauge_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d")+".txt", 'w') as f:
         f.write("nse = " + str(nse)+"\n")
@@ -123,5 +116,5 @@ def elaborateMeasures(
         f.write("r2 = " + str(r2)+"\n")
         f.write("nr2 = " + str(nr2)+"\n")
         f.write("rmse = " + str(rmse)+"\n")
-        f.write("abs bias = " + str(absre)+"\n")
-        f.write("rel bias = " + str(re)+"\n")
+        f.write("abs bias = " + str(ab)+"\n")
+        f.write("rel bias = " + str(rb)+"\n")
