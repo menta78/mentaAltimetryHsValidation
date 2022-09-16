@@ -32,7 +32,7 @@ def elaborateMeasures(
 
     def loadFile(flpth):
         print("")
-        print("    loading file " + flpth)
+        #print("    loading file " + flpth)
         satdts = np.load(flpth)
         if filterHighSsh:
             sshsat = satdts[:, 0]
@@ -60,7 +60,7 @@ def elaborateMeasures(
         obs_ = data_[:,0]
         obs_ = obs_ - np.nanmean(obs_)
         model_ = data_[:,1]
-        model_ = model_ - np.nanmean(model_)
+        #model_ = model_ - np.nanmean(model_)
 
        #obs = np.concatenate([obs, obs_])
        #model = np.concatenate([model, model_])
@@ -68,6 +68,10 @@ def elaborateMeasures(
        # computing r2 (and other measures) gauge by gauge
         pmodel_ = np.nanpercentile(model_, pth)
         pobs_ = np.nanpercentile(obs_, pth)
+
+        if np.abs(pobs_ - pmodel_) > 0.1:
+            print(pobs_, pmodel_)
+            continue
 
         condition1_ = obs_ >= pobs_ 
         condition2_ = model_ >= model_
@@ -83,12 +87,10 @@ def elaborateMeasures(
         absre_ = np.nansum(model_ - obs_, where=condition_)
         nobs = np.nansum(obs_, where=condition_)
 
-        print(ssres_, sstot_)
-
         r2_ = 1 - ssres_/sstot_
         nse_ = 1 - nsc1/nsc2
         ab_ = absre_/N
-        rb_ = absre_/nobs
+        rb_ = absre_/nobs * 100
         rmse_ = np.sqrt(ssres_/N)
 
 
@@ -98,9 +100,11 @@ def elaborateMeasures(
         rmselst.append(rmse_)
         rblst.append(rb_)
 
+    print(len(r2lst))
     r2 = np.mean(np.array(r2lst))
     nse = np.mean(np.array(nselst))
     ab = np.mean(np.array(ablst))
+    rb = np.mean(np.array(rblst))
     rmse = np.mean(np.array(rmselst))
 
     nnse = 1/(2-nse)
