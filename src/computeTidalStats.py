@@ -25,6 +25,8 @@ def elaborateMeasures(
     endDate,
     hsSatAndModelDir,
     outputDir,
+    meanFileTidals,
+    meanFileModel,
     filterLowHs=False,
     filterHsThreshold=0.0,
     pth = 90,
@@ -33,7 +35,12 @@ def elaborateMeasures(
     def loadFile(flpth):
         print("")
         print("    loading file " + flpth)
-        satdts = np.load(flpth)
+
+        try:
+            satdts = np.load(flpth)
+        except Exception:
+            pass
+
         if filterHighSsh:
             sshsat = satdts[:, 0]
             sshmdl = satdts[:, 1]
@@ -48,6 +55,7 @@ def elaborateMeasures(
     obs = np.array([])
     model = np.array([])
 
+
     for f in fls:
         data_ = loadFile(f)
         obs_ = data_[:,0]
@@ -55,6 +63,8 @@ def elaborateMeasures(
 
         obs = np.concatenate([obs, obs_])
         model = np.concatenate([model, model_])
+
+
 
     meanModel = np.nanmean(model)
     model = model - meanModel
@@ -67,8 +77,9 @@ def elaborateMeasures(
     meanObs = np.nanmean(obs, where= condition)
 
     condition1 = obs >= pobs 
-    condition2 = model >= pobs
-    condition = condition1 & condition2
+    condition2 = model >= pmodel
+    #condition = condition1 & condition2
+    condition = condition1 | condition2
 
     nsc1 = np.nansum(np.abs(obs-model), where=condition)
     nsc2 = np.nansum(np.abs(obs-np.nanmean(obs)), where=condition)

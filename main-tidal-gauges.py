@@ -4,7 +4,8 @@ import numpy as np
 import h5py
 
 from src.interpolateModelToTidelGauge import interpolateModelToTidalGauge_schismWWM
-from src.computeTidalStats import elaborateMeasures
+# from src.computeTidalStats import elaborateMeasures
+from src.computeTidalStats_mentaPrototype import elaborateMeasures
 from src.plotStatsTidals import elaborateMeasuresPlot
 
 
@@ -30,6 +31,16 @@ def get_serie_gesla(fileName):
         time.append(np.array(f[ref][0]))
     return lon, lat, res, time
 
+def getMeanEachTidal(fileName):
+    _, lat, res, _ = get_serie_gesla(fileName)
+    meanEachTidal = np.zeros(len(lat))
+    i = 0
+    for resTidal in res:
+        meanEachTidal[i] = np.nanmean(resTidal)
+        i += 1
+
+    return meanEachTidal
+
 
 # Directory where the raw globwave files are located
 # rawSatDataDir = "/home/ggarcia/Projects/mentaAltimetryHsValidation/satData/rawData"
@@ -50,6 +61,13 @@ hsModelAndSatObsDir = os.path.join(rootDir, "data/TidalModelPairs/")
 statsDir = os.path.join(rootDir, "data/stats")
 #statsDir = "../../experiments/jrc/stats/"
 
+# Directory to Tidal Gauge
+pathname = os.path.join(tidalGaugeDataDir, "GESLAv1_withResiduals.mat")
+
+meanFileTidals = os.path.join(tidalGaugeDataDir, "meanResiduals.npy")
+meanModelFile = os.path.join(rootDir, "data/elev/elevmean.nc")
+
+
 # time interval
 startDate, endDate = datetime(2002, 3, 22), datetime(2009, 12, 30)
 overwriteExisting = False
@@ -58,7 +76,7 @@ overwriteExisting = False
 nParWorker = 32
 
 # Percentile
-pth = 99
+pth = 95
 
 # threshold above which hs should be considered
 filterSshMaximum = 100
@@ -68,9 +86,15 @@ filterHighSsh = True
 boundaries = None
 
 
-doInterpolateModelToSat = 0
+doGetMeanTidal = False
+if doGetMeanTidal:
+    meanEachTidal = getMeanEachTidal(pathname)
+    print(meanEachTidal.shape[:])
+    np.save(meanFileTidals, meanEachTidal)
+
+
+doInterpolateModelToSat = 1
 if doInterpolateModelToSat:
-    pathname = os.path.join(tidalGaugeDataDir, "GESLAv1_withResiduals.mat")
     lonTidal, latTidal, resTidal, timeTidal = get_serie_gesla(pathname)
 
     varsTidal = [lonTidal, latTidal, resTidal, timeTidal]
@@ -79,6 +103,7 @@ if doInterpolateModelToSat:
         varsTidal,
         modelNcFilesDir,
         hsModelAndSatObsDir,
+        meanModelFile,
         boundaries,
         startDate,
         endDate,
@@ -87,7 +112,7 @@ if doInterpolateModelToSat:
     )
 
 
-r2Compute = False
+r2Compute = True
 if r2Compute:
     elaborateMeasures(
         startDate,
@@ -97,7 +122,7 @@ if r2Compute:
         pth = pth,
     ) 
 
-r2ComputePlot = True
+r2ComputePlot = False
 
 if r2ComputePlot:
     elaborateMeasuresPlot(
@@ -105,5 +130,7 @@ if r2ComputePlot:
         endDate,
         hsModelAndSatObsDir,
         statsDir,
+        meanFileTidals,
+        meanFileModel,
         pth = pth,
 ) 

@@ -1,4 +1,3 @@
-import os, re
 from src.coarsenCmemsSshSatData import coarsenCmemsSshSatData
 from src.interpolateModelToCoarsenedSatData import (
     interpolateModelTocoarsenCmemsSshSatData_schismWWM,
@@ -11,7 +10,7 @@ from datetime import datetime
 # Directory where the raw globwave files are located
 #rawSatDataDir = "/home/ggarcia/Projects/mentaAltimetryHsValidation/satData/rawData"
 
-rootDir = "/eos/jeodpp/data/projects/CLIMEX/mentaAltimetryHsValidation/"
+rootDir = "/home/guille/Projects/mentaAltimetryHsValidation/"
 
 rawSatDataDir = rootDir + "data/rawData"
 
@@ -20,7 +19,7 @@ rawSatDataDir = rootDir + "data/rawData"
 crsSatDataDir = rootDir + "data/crsSatData"
 
 # Directory where the model nc files are located
-modelNcFilesDir = os.path.join(rootDir, "data/schismwwm")
+modelNcFilesDir = rootDir + "data/schismwwm"
 
 # Directory where the pairs observation/model are to be generated
 hsModelAndSatObsDir = (
@@ -30,14 +29,12 @@ hsModelAndSatObsDir = (
 # Directory where the stats are generated
 statsDir = rootDir + "data/stats/"
 
-meanModelFile = os.path.join(rootDir, "data/elev/elevmean.nc")
-
 # time interval
-startDate, endDate = datetime(2002, 3, 22), datetime(2009, 12, 30)
-overwriteExisting = True
+startDate, endDate = datetime(2000, 1, 1), datetime(2000, 3, 30)
+overwriteExisting = False
 
 # number of processes to be used for the interpolation
-nParWorker = 8
+nParWorker = 4
 
 # threshold above which hs should be considered
 filterSshMaximum = 100
@@ -57,15 +54,14 @@ if doCoarsenSatData:
         rawSatDataDir, crsSatDataDir, startDate, endDate, latdelta
     )
 
-
 doInterpolateModelToSat = False
 if doInterpolateModelToSat:
     # interpolating the model hs along the sat tracks
     interpolateModelTocoarsenCmemsSshSatData_schismWWM(
+#    interpolateModelToCoarsenedSatData_schismWWM(
         crsSatDataDir,
         modelNcFilesDir,
         hsModelAndSatObsDir,
-        meanModelFile,
         boundaries,
         startDate,
         endDate,
@@ -89,5 +85,5 @@ computeSshStats.elaborateMeasures(
     filterHighSsh=True,
     filterSshMaximum=filterSshMaximum,
     latlims=latlims,
-    pth = 99,
+    pth = 90,
 )

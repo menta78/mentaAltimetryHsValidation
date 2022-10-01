@@ -14,8 +14,15 @@ title_font = {'size':'12', 'color':'black', 'weight':'normal',
                       'verticalalignment':'bottom'}
 
 
+
+def find_nearest(array, value):
+    array = np.asarray(array)
+    idx = np.nanargmin(np.abs(array - value))
+    return array[idx]
+
 def find_by_index(array, value):
-    index = np.where(array = value)
+    value_ = find_nearest(array, value)
+    index = np.where(array == value_)
     return index
 
 
@@ -87,8 +94,8 @@ def timeSeriesPlot(
     
     uniqueIdx, jIdx = np.unique(Indx[np.isfinite(Indx)], return_index=True)
 
-    meanModel = np.nanmean(model)
-    model = model - meanModel
+    #meanModel = np.nanmean(model)
+    #model = model - meanModel
   
     pmodel = np.nanpercentile(model, pth)
     pobs = np.nanpercentile(obs, pth)
@@ -101,15 +108,19 @@ def timeSeriesPlot(
     uniqueLat = []    
 
 
-    index = find_by_index(Lonn, target[0])
-    index = find_by_index(Lonn, target[0])
+    lon, lat = target[0], target[1]
+    indexLon = find_by_index(Lonn, lon)
+    indexLat = find_by_index(Latt, lat)
+    index = np.intersect1d(indexLon, indexLat)
+    print(index)
     obsTarget   = obs[index]
     modelTarget = model[index]
 
 
     fig, ax = plt.subplots()
     # It's missing time array
-    plt.plot(obsTarget)
-    plt.plot(modelTarget)
-    plt.savefig('~/Desktop/tidalVSmodel_lon='+str(lon)+'_lat='+str(lat) + ".png", **options_savefig)
+    ax.plot(obsTarget, label='observation')
+    ax.plot(modelTarget, label='model', alpha=.5)
+    ax.legend()
+    plt.savefig('/home/vousdmi/Desktop/tidalVSmodel_lon='+str(lon)+'_lat='+str(lat) + ".png", **options_savefig)
     plt.close(fig)

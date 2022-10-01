@@ -69,7 +69,8 @@ meanModelFile = os.path.join(rootDir, "data/elev/elevmean.nc")
 
 
 # time interval
-startDate, endDate = datetime(2002, 3, 22), datetime(2002, 12, 30)
+startDate, endDate = datetime(2002, 3, 22), datetime(2009, 12, 30)
+startDate, endDate = datetime(2002, 3, 22), datetime(2009, 12, 30)
 overwriteExisting = False
 
 # number of processes to be used for the interpolation
@@ -93,8 +94,8 @@ if doGetMeanTidal:
     np.save(meanFileTidals, meanEachTidal)
 
 
-lonInterest = -4.01
-latInterest = 48.73
+lonInterest = -8.4006 #-3.9657
+latInterest = 43.3674 # 48.7184
 target = [lonInterest, latInterest]
 
 timeSeriesPlot(

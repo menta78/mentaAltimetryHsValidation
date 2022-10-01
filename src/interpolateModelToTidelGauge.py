@@ -113,7 +113,7 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
     try:
         lon = ds.variables[varNames[0]][:]
         lat = ds.variables[varNames[1]][:]
-        hs = ds.variables[varNames[2]][:,:,0,0]
+        hs = ds.variables[varNames[2]][:,:]
 
         usePrev = not mdlFPrev is None
         if usePrev:
@@ -127,7 +127,7 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
                     getNcCalendar(tmnc_),
                     only_use_cftime_datetimes=False,
                 ))
-                hs_ = ds_.variables[varNames[2]][-1, :, 0, 0]
+                hs_ = ds_.variables[varNames[2]][-1, :]
                 hs_ = hs_.reshape([1, len(hs_)])
                 hs = np.concatenate([hs_, hs], axis=0)
                 tmmdl = np.insert(tmmdl, 0, tmmdl_)
@@ -147,7 +147,7 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
                     getNcCalendar(tmnc_),
                     only_use_cftime_datetimes=False,
                 ))
-                hs_ = ds_.variables[varNames[2]][0, :, 0, 0]
+                hs_ = ds_.variables[varNames[2]][0, :]
                 hs_ = hs_.reshape([1, len(hs_)])
                 hs = np.concatenate([hs, hs_], axis=0)
                 tmmdl = np.append(tmmdl, tmmdl_)
@@ -158,6 +158,20 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
         ds.close()
     finally:
         _lock.release()
+
+
+    # Substract the model's mean of each node
+    ds = netCDF4.Dataset(_meanModelFile)
+    try:
+        meanelev = ds.variables["elev"][0,:]
+    except:
+        print("something wrong in file " + meanModelFile)
+        outFlPath = "none"
+        return outFlPath
+
+    for i in range(hs.shape[-1]):
+        hs[:,i] = hs[:,i] - meanelev[i]
+
 
     if _gridType == GRID_TYPE_UNSTRUCT:
         triObj = Triangulation(lat, lon)
@@ -295,6 +309,7 @@ def interpolateModelToTidalGauge_schismWWM(
     varsTidal,
     modelNcFileDir,
     destDir,
+    meanModelFile,
     boundaries=None,
     startDate=None,
     endDate=None,
@@ -315,14 +330,15 @@ def interpolateModelToTidalGauge_schismWWM(
     mdlflnext = mdlfl[1:].tolist()
     mdlflnext.append(None)
 
-    global _overwriteExisting, _lock, _modelNcFileDir, _destDir, _startDate, _endDate, dtmngr, _gridType, _varnames, _lonTidal, _latTidal, _resTidal, _timeTidal
+    global _overwriteExisting, _lock, _modelNcFileDir, _destDir, _meanModelFile, _startDate, _endDate, dtmngr, _gridType, _varnames, _lonTidal, _latTidal, _resTidal, _timeTidal
     _overwriteExisting = overwriteExisting
     _lock = multiprocessing.Lock()
     _modelNcFileDir = modelNcFileDir
+    _meanModelFile = meanModelFile
     _destDir = destDir
     _startDate, _endDate = startDate, endDate
     _gridType = GRID_TYPE_UNSTRUCT
-    _varnames = ["SCHISM_hgrid_node_x", "SCHISM_hgrid_node_y", "hvel", "time"]
+    _varnames = ["SCHISM_hgrid_node_x", "SCHISM_hgrid_node_y", "elev", "time"]
     _lonTidal = varsTidal[0]
     _latTidal = varsTidal[1]
     _resTidal = varsTidal[2]

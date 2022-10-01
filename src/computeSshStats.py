@@ -249,7 +249,7 @@ def elaborateMeasures(
     satssh_mean = np.nanmean(satssh_)
 
     satssh = satssh_  - satssh_mean
-    modssh = modssh_  - modssh_mean
+    modssh = modssh_  #- modssh_mean
 
     # compute percentiles.
     pobs = np.nanpercentile(satssh, pth)
@@ -262,7 +262,8 @@ def elaborateMeasures(
 
     condition1 = satssh >= pobs 
     condition2 = modssh >= pmod
-    conditionPth = condition1 & condition2
+    #conditionPth = condition1 & condition2
+    conditionPth = condition1 | condition2
     print(condition1, condition2, conditionPth)
 
     cnd = dtcount < minObsForValidation

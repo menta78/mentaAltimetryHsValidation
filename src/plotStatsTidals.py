@@ -14,7 +14,9 @@ title_font = {'size':'12', 'color':'black', 'weight':'normal',
                       'verticalalignment':'bottom'}
 
 
-def computeSkills(obs, model, pth=99):
+def computeSkills(obs, model, meanTidal, meanModel, pth=99):
+
+    obs = obs - meanModel
 
     pmodel = np.nanpercentile(model, pth)
     pobs = np.nanpercentile(obs, pth)
@@ -23,8 +25,9 @@ def computeSkills(obs, model, pth=99):
     meanObs = np.nanmean(obs, where= condition)
 
     condition1 = obs >= pobs 
-    condition2 = model >= pobs
-    condition = condition1 & condition2
+    condition2 = model >= pmodel
+    #condition = condition1 & condition2
+    condition = condition1 | condition2
 
     nsc1 = np.nansum(np.abs(obs-model), where=condition)
     nsc2 = np.nansum(np.abs(obs-np.nanmean(obs)), where=condition)
@@ -64,6 +67,8 @@ def elaborateMeasuresPlot(
     endDate,
     hsSatAndModelDir,
     outputDir,
+    meanFileTidals,
+    meanFileModel,
     filterLowHs=False,
     filterHsThreshold=0.0,
     pth = 90,
@@ -104,12 +109,17 @@ def elaborateMeasuresPlot(
         Latt = np.concatenate([Latt, repLat])
         Indx = np.concatenate([Indx, repIdx])
         
+    # load mean of each tidal
+    meanTidals = np.load(meanFileTidals)
+
+    # load mean of each node in the model
+    meanModels = 0
     
     uniqueIdx, jIdx = np.unique(Indx[np.isfinite(Indx)], return_index=True)
 
     meanModel = np.nanmean(model)
-    model = model - meanModel
-    obs = obs - np.nanmean(obs)
+    #model = model - meanModel
+#    obs = obs - np.nanmean(obs)
         
     pmodel = np.nanpercentile(model, pth)
     pobs = np.nanpercentile(obs, pth)
@@ -127,8 +137,8 @@ def elaborateMeasuresPlot(
             uniqueLon.append(Lonn[idx])
             uniqueLat.append(Latt[idx])
             model_ = model[idx:-1]
-            obs_ = obs[idx:-1]
-            nse, r2, absre, re = computeSkills(obs, model, pth)
+            obs_ = obs[idx:-1] - meanTidals[i]
+            nse, r2, absre, re = computeSkills(obs, model, meanTidals, meanModels, pth)
             nseT.append(nse)
             r2T.append(r2)
             absreT.append(absre)
@@ -140,9 +150,9 @@ def elaborateMeasuresPlot(
         uniqueLon.append(Lonn[idx])
         uniqueLat.append(Latt[idx])
         model_ = model[idx:idxNext]
-        obs_ = obs[idx:idxNext]
+        obs_ = obs[idx:idxNext] - meanTidals[i]
 
-        nnse, nr2, absre, rebias = computeSkills(obs_, model_, pth)
+        nnse, nr2, absre, rebias = computeSkills(obs_, model_, meanTidals, meanModels, pth)
         nseT.append(nnse)
         r2T.append(nr2)
         absreT.append(absre)
@@ -201,7 +211,9 @@ def elaborateMeasuresPlot(
     cb = Colorbar(ax = axCb, mappable = plt2, orientation = 'vertical') #, ticklocation = 'top')
 
     plt.savefig('data/stats/tidalGauge_r2_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d") + ".png", **options_savefig)
+    plt.show()
     plt.close(fig)
+
 
 
     fig, ax = plt.subplots(figsize=(9,4))
