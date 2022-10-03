@@ -8,8 +8,10 @@ import numpy as np
 import scipy.io
 from dotenv import load_dotenv
 from matplotlib import pyplot as plt
+from src.readModelFast import readNcSchism
 
 import src.utils as utils
+
 
 dotenv_path = os.path.join(os.path.dirname(__file__), ".env")
 load_dotenv(dotenv_path)
@@ -29,6 +31,8 @@ timSerieFl = os.path.join(
     rootDir, "data/GLOBAL_REANALISIS_timeSeries_Tomas/WL2012_2014.mat"
 )
 
+timeSeriefile = os.path.join(rootDir, "data/timeSeriesLorenzoModel.csv")
+
 
 assert os.path.exists(tidalGaugeDataDir) == True
 assert os.path.exists(hsModelAndSatObsDir) == True
@@ -36,7 +40,7 @@ assert os.path.exists(timSerieFl) == True
 
 # time interval
 startDate, endDate = datetime(2013, 1, 2), datetime(2014, 12, 30)
-startDate, endDate = datetime(2013, 1, 2), datetime(2013, 1, 10)
+startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 29)
 overwriteExisting = False
 
 # Get ssh from model NetCDFs and plot time serie
@@ -45,7 +49,6 @@ fltPattern = "ERA5_schismwwm_"
 flsPath = utils.getFiles(modelNcFilesDir, startDate, endDate, fltPattern, extension)
 
 timeModel, lonModel, latModel, elev = utils.getModelVariables(flsPath)
-
 
 # Get Tomas data
 f = scipy.io.loadmat(timSerieFl)
@@ -56,24 +59,30 @@ points = f["point2findGWL"]
 # target = points[npoint, :]
 # print("== Target Tomas' model ==", target)
 
+#sample
+node = utils.find_closest_node(lonModel, latModel, points[0, :])
+sample = elev[:, node]
 
-for i in range(points.shape[0]):
+npoints = points.shape[0]
+ntime = sample.shape[0] # all the time series will have the same time dimension but it doesnt
+# coincide with the time dimension of Tomas'. It will match only if we are running the same period
+npoints = 3
+allTimeSeries = np.zeros([npoints, ntime])
+
+
+for i in range(npoints):
     target = points[i, :]
     node = utils.find_closest_node(lonModel, latModel, target)
     elevTimeSerie = elev[:, node]
-    with open("data/timeSeriesLorenzoModel.csv", "a", encoding="UTF8") as f:
-        # create the csv writer
-        writer = csv.writer(f)
-        # write a row to the csv file
-        writer.writerow(elevTimeSerie)
-
-exit
+    allTimeSeries[i,:] = elevTimeSerie
+    print(i)
 
 
-# Elevation Time Serie
-elevTimeSerie = elev[:, node]
+np.savetxt(timeSeriefile, allTimeSeries, delimiter=",")
 
-plot = True
+print("===== Time series stored =====")
+
+plot = False
 if plot:
     options_savefig = {"dpi": 150, "bbox_inches": "tight", "transparent": False}
     title_font = {
