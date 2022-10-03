@@ -68,9 +68,7 @@ def getModelVariables(flsPath, varNames=None):
         tmnc = ds.variables[timeVarName]
         clndr = getNcCalendar(tmnc)
     except:
-        print("something wrong in file " + fpth)
-        outFlPath = "none"
-        return outFlPath
+        pass
 
     tmmdl = toJulian(netCDF4.num2date(
         tmnc[:], tmnc.units, clndr, only_use_cftime_datetimes=False
@@ -81,6 +79,7 @@ def getModelVariables(flsPath, varNames=None):
     var = ds.variables[varNames[2]][:,:]
 
     for i in range(1, nfiles):
+        print(flsPath[i])
         ds = netCDF4.Dataset(flsPath[i])
         timeVarName = varNames[3]
         try:
