@@ -8,8 +8,15 @@ import numpy as np
 import scipy.io
 from dotenv import load_dotenv
 from matplotlib import pyplot as plt
+<<<<<<< HEAD
+=======
+from src.readModelFast import readNcSchism
+from scipy.interpolate import interp1d
+>>>>>>> d15e7daae56a682931ccf688ffe618b4396fda9d
 
 import src.utils as utils
+
+from src.computeTidalStats_timeSeries import elaborateMeasures
 
 
 dotenv_path = os.path.join(os.path.dirname(__file__), ".env")
@@ -25,6 +32,8 @@ tidalGaugeDataDir = os.path.join(rootDir, "data/tidalGaugeData")
 modelNcFilesDir = os.path.join(rootDir, "data/schismwwm")
 
 hsModelAndSatObsDir = os.path.join(rootDir, "data/TidalModelPairs/")
+
+statsDir = os.path.join(rootDir, "data/stats")
 
 timSerieFl = os.path.join(
     rootDir, "data/GLOBAL_REANALISIS_timeSeries_Tomas/WL2012_2014.mat"
@@ -42,43 +51,110 @@ assert os.path.exists(timSerieFl) == True
 startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 29)
 overwriteExisting = False
 
-# Get ssh from model NetCDFs and plot time serie
-extension = ".nc"
-fltPattern = "ERA5_schismwwm_"
-flsPath = utils.getFiles(modelNcFilesDir, startDate, endDate, fltPattern, extension)
+storeData=False
+if storeData:
+    # Get ssh from model NetCDFs and plot time serie
+    extension = ".nc"
+    fltPattern = "ERA5_schismwwm_"
+    flsPath = utils.getFiles(modelNcFilesDir, startDate, endDate, fltPattern, extension)
 
-timeModel, lonModel, latModel, elev = utils.getModelVariables(flsPath)
+    timeModel, lonModel, latModel, elev = utils.getModelVariables(flsPath)
 
-# Get Tomas data
-f = scipy.io.loadmat(timSerieFl)
-wl = f["WL"]
-time = f["time"]
-points = f["point2findGWL"]
-# npoint = 1
-# target = points[npoint, :]
-# print("== Target Tomas' model ==", target)
+    # Get Tomas data
+    f = scipy.io.loadmat(timSerieFl)
+    wl = f["WL"]
+    time = f["time"]
+    points = f["point2findGWL"]
+    # npoint = 1
+    # target = points[npoint, :]
+    # print("== Target Tomas' model ==", target)
 
-#sample
-node = utils.find_closest_node(lonModel, latModel, points[0, :])
-sample = elev[:, node]
+    #sample
+    node = utils.find_closest_node(lonModel, latModel, points[0, :])
+    sample = elev[:, node]
 
+<<<<<<< HEAD
 npoints = points.shape[0]
 ntime = sample.shape[0] # all the time series will have the same time dimension but it doesnt
 # coincide with the time dimension of Tomas'. It will match only if we are running the same period
 allTimeSeries = np.zeros([npoints, ntime])
+=======
+    npoints = points.shape[0]
+    ntime = sample.shape[0] # all the time series will have the same time dimension but it doesnt
+    # coincide with the time dimension of Tomas'. It will match only if we are running the same period
+    npoints = 3
+    allTimeSeries = np.zeros([npoints, ntime])
+>>>>>>> d15e7daae56a682931ccf688ffe618b4396fda9d
 
 
-for i in range(npoints):
-    target = points[i, :]
-    node = utils.find_closest_node(lonModel, latModel, target)
-    elevTimeSerie = elev[:, node]
-    allTimeSeries[i,:] = elevTimeSerie
-    print(i)
+    for i in range(npoints):
+        target = points[i, :]
+        node = utils.find_closest_node(lonModel, latModel, target)
+        elevTimeSerie = elev[:, node]
+        allTimeSeries[i,:] = elevTimeSerie
+        print(i)
 
 
-np.savetxt(timeSeriefile, allTimeSeries, delimiter=",")
+    np.savetxt(timeSeriefile, allTimeSeries, delimiter=",")
 
-print("===== Time series stored =====")
+    print("===== Time series stored =====")
+
+
+interpolate = True
+
+if interpolate:
+    pathname = os.path.join(tidalGaugeDataDir, "GESLAv1_withResiduals.mat")
+    filePoints = os.path.join(rootDir, "data/point2findGWL.csv")
+    fileTimeSeries = os.path.join(rootDir, "data/timeSeriesLorenzoModel.csv")
+
+    point2analyse = 59
+
+    extension = ".nc"
+    fltPattern = "ERA5_schismwwm_"
+    flsPath = utils.getFiles(modelNcFilesDir, startDate, endDate, fltPattern, extension)
+
+    timeModel, lonModel, latModel, elev = utils.getModelVariables(flsPath)
+
+    points = np.genfromtxt(filePoints, delimiter=',')
+    timeSeriesModel = np.genfromtxt(fileTimeSeries, delimiter=',')
+    
+    #target = points[point2analyse, :]
+    lonTidal, latTidal, resTidal, timeTidal = utils.get_serie_gesla(pathname)
+
+    for i in range(points.shape[0]):
+        target = points[i, :]
+        node = utils.find_closest_node(lonTidal, latTidal, target)
+        tmstmpTidal_ = timeTidal[node][:]
+        # Get timestamps recorded in the stations that belongs to the array of timestamps of the schism model
+        tmstmpTidal_, isSubset, idxMin, idxMax = utils.get_subsest_list(tmstmpTidal_, min(timeModel), max(timeModel))
+        if isSubset and (len(tmstmpTidal_) > 100):
+            print("target = ", target)
+            print(idxMin, idxMax)
+            tmstmpTidal = np.asarray(tmstmpTidal_)
+            break
+
+    nodeModel = utils.find_closest_node(lonModel, latModel, target)
+    timeSerieModel = elev[:, nodeModel]
+
+    intpltr = interp1d(timeModel, timeSerieModel, bounds_error=False)
+
+    # Model elevation interpolated at tidal time
+    intp = intpltr(tmstmpTidal)
+
+    res = np.array(resTidal[node][idxMin:idxMax])
+    timeSerieTidal = np.asarray(resTidal[node][idxMin:idxMax])
+
+    print(tmstmpTidal.shape[:], timeSerieTidal.shape[:], intp.shape[:])
+
+    finalCSV = np.zeros((intp.shape[0],3,))
+    finalCSV[:, 0] = tmstmpTidal
+    finalCSV[:, 1] = timeSerieTidal
+    finalCSV[:, 2] = intp
+
+    #np.savetxt(rf"data/timeSerieInterpolated_point_{target}.csv", finalCSV, delimiter=",")
+
+    elaborateMeasures(target, intp, timeSerieTidal, startDate, endDate, statsDir, pth = 90)
+
 
 plot = False
 if plot:
