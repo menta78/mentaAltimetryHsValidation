@@ -174,12 +174,12 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
         hs[:,i] = hs[:,i] - meanelev[i]
 
 
-#    if _gridType == GRID_TYPE_UNSTRUCT:
-#        triObj = Triangulation(lat, lon)
-#    elif _gridType == GRID_TYPE_REGULAR:
-#        grdPoints = (lat.filled(), lon.filled())
-#    else:
-#        raise Exception("unsupported grid type: " + _gridType)
+    if _gridType == GRID_TYPE_UNSTRUCT:
+        triObj = Triangulation(lat, lon)
+    elif _gridType == GRID_TYPE_REGULAR:
+        grdPoints = (lat.filled(), lon.filled())
+    else:
+        raise Exception("unsupported grid type: " + _gridType)
 
 
     #TODO:
@@ -190,23 +190,23 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
     # Generate an interpolant for each time step of the schism model
     nobs = len(_lonTidal)
     ntmmdl = len(tmmdl)
-    #intp0 = np.zeros([ntmmdl, nobs]) * np.nan
+    intp0 = np.zeros([ntmmdl, nobs]) * np.nan
 
-#    for itm in range(ntmmdl):
-#        print("      processing time " + str(itm))
-#        hsii = hs[itm, :]
-#        try:
-#            hsii = hsii.filled(np.nan)
-#        except:
-#            pass
-#        if _gridType == GRID_TYPE_UNSTRUCT:
-#            intpltr = LinearTriInterpolator(triObj, hsii)
-#            intp0[itm, :] = intpltr(_latTidal, _lonTidal)
-#        elif _gridType == GRID_TYPE_REGULAR:
-#            intpltr = RegularGridInterpolator(
-#                grdPoints, hsii, bounds_error=False, fill_value=np.nan
-#            )
-#            intp0[itm, :] = intpltr((latSat, lonSat))
+    for itm in range(ntmmdl):
+        print("      processing time " + str(itm))
+        hsii = hs[itm, :]
+        try:
+            hsii = hsii.filled(np.nan)
+        except:
+            pass
+        if _gridType == GRID_TYPE_UNSTRUCT:
+            intpltr = LinearTriInterpolator(triObj, hsii)
+            intp0[itm, :] = intpltr(_latTidal, _lonTidal)
+        elif _gridType == GRID_TYPE_REGULAR:
+            intpltr = RegularGridInterpolator(
+                grdPoints, hsii, bounds_error=False, fill_value=np.nan
+            )
+            intp0[itm, :] = intpltr((latSat, lonSat))
 
     resT  = []
     intpT = []
@@ -231,11 +231,7 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
         ntTidal = len(tmstmpTidal)
         intp = np.zeros([ntTidal, 1]) * np.nan
 
-        node = utils.find_closest_node(lon, lat, [_lonTidal[i], _latTidal[i]])
-        print("------ node = ", node)
-        intp0 = hs[:, node]
-
-        intpltr = interp1d(tmmdl, intp0, bounds_error=False)
+        intpltr = interp1d(tmmdl, intp0[:, i], bounds_error=False)
 
         intp = intpltr(tmstmpTidal)
 

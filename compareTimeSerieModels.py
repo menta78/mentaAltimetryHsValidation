@@ -8,7 +8,6 @@ import numpy as np
 import scipy.io
 from dotenv import load_dotenv
 from matplotlib import pyplot as plt
-from src.readModelFast import readNcSchism
 
 import src.utils as utils
 
@@ -39,7 +38,7 @@ assert os.path.exists(hsModelAndSatObsDir) == True
 assert os.path.exists(timSerieFl) == True
 
 # time interval
-startDate, endDate = datetime(2013, 1, 2), datetime(2014, 12, 30)
+#startDate, endDate = datetime(2013, 1, 2), datetime(2014, 12, 30)
 startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 29)
 overwriteExisting = False
 
@@ -66,7 +65,6 @@ sample = elev[:, node]
 npoints = points.shape[0]
 ntime = sample.shape[0] # all the time series will have the same time dimension but it doesnt
 # coincide with the time dimension of Tomas'. It will match only if we are running the same period
-npoints = 3
 allTimeSeries = np.zeros([npoints, ntime])
 
 
