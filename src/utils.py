@@ -3,6 +3,35 @@ from datetime import datetime, timedelta
 
 import netCDF4
 import numpy as np
+import h5py
+
+def get_serie_gesla(fileName):
+    f = h5py.File(fileName,'r')
+    data = f.get("GESELD")
+
+    npoints = data["residual"].shape[0] # number of stations
+
+    res   = []
+    time  = []
+    lon   = []
+    lat   = []
+
+    for i in range(npoints):
+        ref = f["GESELD"]["longitude"][i][0]
+        lon.append(f[ref][0][0])
+        ref = f["GESELD"]["latitude"][i][0]
+        lat.append(f[ref][0][0])
+        ref = f["GESELD"]["residual"][i][0]
+        res.append(np.array(f[ref][0]))
+        ref = f["GESELD"]["time"][i][0]
+        time.append(np.array(f[ref][0]))
+    return lon, lat, res, time
+
+
+def find_nearest(array, value):
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return idx, array[idx]
 
 
 def find_closest_node(lonM, latM, target):
@@ -20,6 +49,19 @@ def find_closest_node(lonM, latM, target):
     node = nodes[idX]
     return node
 
+
+def get_subsest_list(array, a, b):
+    if a >= b:
+        print("first value must be smaller than second")
+        return [], False, 0, 0
+
+    if a < min(array) or b > max(array):
+        return [], False, 0, 0
+
+    i = np.argmin(np.abs(np.array(array)-a))
+    j = np.argmin(np.abs(np.array(array)-b))
+
+    return array[i:j], True, i, j
 
 def datetime2matlabdn(dt):
    ord = dt.toordinal()
