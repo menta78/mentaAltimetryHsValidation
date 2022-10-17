@@ -53,6 +53,7 @@ def elaborateMeasures(
     ablst = []
     rblst = []
     rmselst = []
+    pearsonlst = []
 
    #looping on tidal gauge files
     for f in fls:
@@ -84,6 +85,10 @@ def elaborateMeasures(
         nsc1   = np.nansum(np.abs(obs_-model_), where=condition_)
         nsc2   = np.nansum(np.abs(obs_-np.nanmean(obs_)), where=condition_)
 
+        sigmaObs = np.sqrt(np.nansum((obs_-np.nanmean(obs_))**2,  initial=0, where=condition_))
+        sigmaModel = np.sqrt(np.nansum((model_-np.nanmean(model_))**2,  initial=0, where=condition_))
+        cov_ = np.nansum((obs_-np.nanmean(obs_))*(model_-np.nanmean(model_)), initial=0, where=condition_)
+
         absre_ = np.nansum(model_ - obs_, where=condition_)
         nobs = np.nansum(obs_, where=condition_)
 
@@ -92,6 +97,7 @@ def elaborateMeasures(
         ab_ = absre_/N
         rb_ = absre_/nobs * 100
         rmse_ = np.sqrt(ssres_/N)
+        pearson_ = cov_/(sigmaModel*sigmaObs)
 
 
         r2lst.append(r2_)
@@ -99,6 +105,7 @@ def elaborateMeasures(
         ablst.append(ab_)
         rmselst.append(rmse_)
         rblst.append(rb_)
+        pearsonlst.append(pearson_)
 
     print(len(r2lst))
     r2 = np.mean(np.array(r2lst))
@@ -106,13 +113,23 @@ def elaborateMeasures(
     ab = np.mean(np.array(ablst))
     rb = np.mean(np.array(rblst))
     rmse = np.mean(np.array(rmselst))
+    pearson = np.mean(np.array(pearsonlst))
 
     nnse = 1/(2-nse)
     nr2 = 1/(2-r2)
 
-    print("nse = ",nse, "nnse = ", nnse, "r2 = ", r2, "nr2 = ", nr2)
+    print("=========================================")
+    print("N = ", N)
+    print("nse = ",nse)
+    print("nnse = ", nnse)
+    print("r2 = ", r2)
+    print("nr2 = ", nr2)
     print("rmse = ", rmse)
-    print("abs bias = ", ab, "relative bias = ", rb)
+    print("abs bias = ", ab)
+    print("relative bias = ", rb)
+    print("Pearson  Correlation =", pearson)
+    print("=========================================")
+
 
     with open('data/stats/tidalGauge_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d")+".txt", 'w') as f:
         f.write("nse = " + str(nse)+"\n")
@@ -122,3 +139,4 @@ def elaborateMeasures(
         f.write("rmse = " + str(rmse)+"\n")
         f.write("abs bias = " + str(ab)+"\n")
         f.write("rel bias = " + str(rb)+"\n")
+        f.write("pearson = " + str(pearson)+"\n")
