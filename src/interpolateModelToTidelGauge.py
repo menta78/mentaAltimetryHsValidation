@@ -216,6 +216,12 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
 
     j = 0
 
+
+    # Compute all the closest nodes to the tidal gauge
+    nodeModel = np.zeros((nobs,))
+    for i in range(nobs):
+        nodeModel[i] = utils.find_closest_node(lon, lat, [_lonTidal[i], _latTidal[i]])
+
     for i in range(nobs):
         print("    ... interpolating on time")
         
@@ -231,7 +237,8 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
         ntTidal = len(tmstmpTidal)
         intp = np.zeros([ntTidal, 1]) * np.nan
 
-        node = utils.find_closest_node(lon, lat, [_lonTidal[i], _latTidal[i]])
+        #node = utils.find_closest_node(lon, lat, [_lonTidal[i], _latTidal[i]])
+        node = nodeModel[i]
         print("------ node = ", node)
         intp0 = hs[:, node]
 

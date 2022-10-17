@@ -93,7 +93,7 @@ if doGetMeanTidal:
     np.save(meanFileTidals, meanEachTidal)
 
 
-doInterpolateModelToSat = 1
+doInterpolateModelToSat = 0
 if doInterpolateModelToSat:
     lonTidal, latTidal, resTidal, timeTidal = get_serie_gesla(pathname)
 

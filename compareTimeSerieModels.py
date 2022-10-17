@@ -8,11 +8,7 @@ import numpy as np
 import scipy.io
 from dotenv import load_dotenv
 from matplotlib import pyplot as plt
-<<<<<<< HEAD
-=======
-from src.readModelFast import readNcSchism
 from scipy.interpolate import interp1d
->>>>>>> d15e7daae56a682931ccf688ffe618b4396fda9d
 
 import src.utils as utils
 
@@ -47,11 +43,11 @@ assert os.path.exists(hsModelAndSatObsDir) == True
 assert os.path.exists(timSerieFl) == True
 
 # time interval
-#startDate, endDate = datetime(2013, 1, 2), datetime(2014, 12, 30)
-startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 29)
+startDate, endDate = datetime(2013, 1, 2), datetime(2014, 12, 30)
+# startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 29)
 overwriteExisting = False
 
-storeData=False
+storeData = False
 if storeData:
     # Get ssh from model NetCDFs and plot time serie
     extension = ".nc"
@@ -69,31 +65,23 @@ if storeData:
     # target = points[npoint, :]
     # print("== Target Tomas' model ==", target)
 
-    #sample
+    # sample
     node = utils.find_closest_node(lonModel, latModel, points[0, :])
     sample = elev[:, node]
 
-<<<<<<< HEAD
-npoints = points.shape[0]
-ntime = sample.shape[0] # all the time series will have the same time dimension but it doesnt
-# coincide with the time dimension of Tomas'. It will match only if we are running the same period
-allTimeSeries = np.zeros([npoints, ntime])
-=======
     npoints = points.shape[0]
-    ntime = sample.shape[0] # all the time series will have the same time dimension but it doesnt
+    ntime = sample.shape[
+        0
+    ]  # all the time series will have the same time dimension but it doesnt
     # coincide with the time dimension of Tomas'. It will match only if we are running the same period
-    npoints = 3
     allTimeSeries = np.zeros([npoints, ntime])
->>>>>>> d15e7daae56a682931ccf688ffe618b4396fda9d
-
 
     for i in range(npoints):
         target = points[i, :]
         node = utils.find_closest_node(lonModel, latModel, target)
         elevTimeSerie = elev[:, node]
-        allTimeSeries[i,:] = elevTimeSerie
+        allTimeSeries[i, :] = elevTimeSerie
         print(i)
-
 
     np.savetxt(timeSeriefile, allTimeSeries, delimiter=",")
 
@@ -115,10 +103,10 @@ if interpolate:
 
     timeModel, lonModel, latModel, elev = utils.getModelVariables(flsPath)
 
-    points = np.genfromtxt(filePoints, delimiter=',')
-    timeSeriesModel = np.genfromtxt(fileTimeSeries, delimiter=',')
-    
-    #target = points[point2analyse, :]
+    points = np.genfromtxt(filePoints, delimiter=",")
+    timeSeriesModel = np.genfromtxt(fileTimeSeries, delimiter=",")
+
+    # target = points[point2analyse, :]
     lonTidal, latTidal, resTidal, timeTidal = utils.get_serie_gesla(pathname)
 
     for i in range(points.shape[0]):
@@ -126,8 +114,10 @@ if interpolate:
         node = utils.find_closest_node(lonTidal, latTidal, target)
         tmstmpTidal_ = timeTidal[node][:]
         # Get timestamps recorded in the stations that belongs to the array of timestamps of the schism model
-        tmstmpTidal_, isSubset, idxMin, idxMax = utils.get_subsest_list(tmstmpTidal_, min(timeModel), max(timeModel))
-        if isSubset and (len(tmstmpTidal_) > 100):
+        tmstmpTidal_, isSubset, idxMin, idxMax = utils.get_subsest_list(
+            tmstmpTidal_, min(timeModel), max(timeModel)
+        )
+        if isSubset and (len(tmstmpTidal_) > 600):
             print("target = ", target)
             print(idxMin, idxMax)
             tmstmpTidal = np.asarray(tmstmpTidal_)
@@ -146,14 +136,30 @@ if interpolate:
 
     print(tmstmpTidal.shape[:], timeSerieTidal.shape[:], intp.shape[:])
 
-    finalCSV = np.zeros((intp.shape[0],3,))
+    finalCSV = np.zeros(
+        (
+            intp.shape[0],
+            3,
+        )
+    )
     finalCSV[:, 0] = tmstmpTidal
     finalCSV[:, 1] = timeSerieTidal
     finalCSV[:, 2] = intp
 
-    #np.savetxt(rf"data/timeSerieInterpolated_point_{target}.csv", finalCSV, delimiter=",")
+    np.savetxt(rf"data/timeSerieInterpolated_point_{target}.csv", finalCSV, delimiter=",")
 
-    elaborateMeasures(target, intp, timeSerieTidal, startDate, endDate, statsDir, pth = 90)
+    elaborateMeasures(
+        target, intp, timeSerieTidal, startDate, endDate, statsDir, pth=95
+    )
+    elaborateMeasures(
+        target, intp, timeSerieTidal, startDate, endDate, statsDir, pth=80
+    )
+    elaborateMeasures(
+        target, intp, timeSerieTidal, startDate, endDate, statsDir, pth=50
+    )
+    elaborateMeasures(
+        target, intp, timeSerieTidal, startDate, endDate, statsDir, pth=0
+    )
 
 
 plot = False

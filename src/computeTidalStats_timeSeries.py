@@ -86,13 +86,14 @@ def elaborateMeasures(
     print("Pearson  Correlation =", pearson)
     print("=========================================")
 
-    fileStats = os.path.join(outputDir,'tidalGauge_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d")+".txt")
+    fileStats = os.path.join(outputDir,'tidalGauge_pth_'+str(pth)+"_"+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d")+".txt")
 
-    # with open(fileStats, 'w') as f:
-    #     f.write("nse = " + str(nse)+"\n")
-    #     f.write("nnse = " + str(nnse)+"\n")
-    #     f.write("r2 = " + str(r2)+"\n")
-    #     f.write("nr2 = " + str(nr2)+"\n")
-    #     f.write("rmse = " + str(rmse)+"\n")
-    #     f.write("abs bias = " + str(ab)+"\n")
-    #     f.write("rel bias = " + str(rb)+"\n")
+    with open(fileStats, 'w') as f:
+        f.write("nse = " + str(nse)+"\n")
+        f.write("nnse = " + str(nnse)+"\n")
+        f.write("r2 = " + str(r2)+"\n")
+        f.write("nr2 = " + str(nr2)+"\n")
+        f.write("rmse = " + str(rmse)+"\n")
+        f.write("abs bias = " + str(ab)+"\n")
+        f.write("rel bias = " + str(rb)+"\n")
+        f.write("rel bias = " + str(pearson)+"\n")
