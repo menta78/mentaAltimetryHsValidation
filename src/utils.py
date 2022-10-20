@@ -143,3 +143,50 @@ def getModelVariables(flsPath, varNames=None):
     return tmmdl, lon, lat, var
 
 
+
+
+def computeStats(obs, model, pth):
+
+    # computing r2 (and other measures) gauge by gauge
+    pmodel = np.nanpercentile(model, pth)
+    pobs = np.nanpercentile(obs, pth)
+
+    condition1_ = obs >= pobs 
+    condition2_ = model >= model
+    condition_ = condition1_ & condition2_
+
+    N = np.nansum(condition_)
+
+    ssres_ = np.nansum((obs-model)**2, initial=0, where=condition_)
+    sstot_ = np.nansum((obs-np.nanmean(obs))**2,  initial=0, where=condition_)
+    nsc1   = np.nansum(np.abs(obs-model), initial = 0, where=condition_)
+    nsc2   = np.nansum(np.abs(obs-np.nanmean(obs)), initial=0, where=condition_)
+
+    absre_ = np.nansum(model - obs, initial=0, where=condition_)
+    nobs = np.nansum(obs, initial=0, where=condition_)
+
+    sigmaObs = np.sqrt(np.nansum((obs-np.nanmean(obs))**2,  initial=0, where=condition_))
+    sigmaModel = np.sqrt(np.nansum((model-np.nanmean(model))**2,  initial=0, where=condition_))
+    cov_ = np.nansum((obs-np.nanmean(obs))*(model-np.nanmean(model)), initial=0, where=condition_)
+
+    r2 = 1 - ssres_/sstot_
+    nse = 1 - nsc1/nsc2
+    ab = absre_/N
+    rb = absre_/nobs * 100
+    rmse = np.sqrt(ssres_/N)
+    pearson = cov_/(sigmaModel*sigmaObs)
+
+    print(r2, nse)
+    stats = {}
+    stats["r2"] = r2
+    stats["NSE"] = nse
+    # stats["Normalized_NSE"] = nnse
+    # stats["Normalized_r2"] = nr2
+    stats["Absolute_Bias"] = ab
+    stats["Relative_Bias"] = rb
+    stats["RMSE"] = rmse
+    stats["Pearson"] = pearson
+    stats["N"] = N
+
+    return stats
+

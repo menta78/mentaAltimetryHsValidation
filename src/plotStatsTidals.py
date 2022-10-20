@@ -7,6 +7,8 @@ import matplotlib.gridspec as gridspec
 import itertools
 from mpl_toolkits.basemap import Basemap
 
+import src.utils as utils
+
 
 filterHighSsh = False
 options_savefig = {'dpi': 150, "bbox_inches": "tight", "transparent": False}
@@ -14,44 +16,44 @@ title_font = {'size':'12', 'color':'black', 'weight':'normal',
                       'verticalalignment':'bottom'}
 
 
-def computeSkills(obs, model, meanTidal, meanModel, pth=99):
+# def computeSkills(obs, model, meanTidal, meanModel, pth=99):
 
-    obs = obs - meanModel
+#     obs = obs - meanModel
 
-    pmodel = np.nanpercentile(model, pth)
-    pobs = np.nanpercentile(obs, pth)
+#     pmodel = np.nanpercentile(model, pth)
+#     pobs = np.nanpercentile(obs, pth)
 
-    condition = obs>=0
-    meanObs = np.nanmean(obs, where= condition)
+#     condition = obs>=0
+#     meanObs = np.nanmean(obs, where= condition)
 
-    condition1 = obs >= pobs 
-    condition2 = model >= pmodel
-    condition = condition1 & condition2
-    #condition = condition1 | condition2
+#     condition1 = obs >= pobs 
+#     condition2 = model >= pmodel
+#     condition = condition1 & condition2
+#     #condition = condition1 | condition2
 
-    nsc1 = np.nansum(np.abs(obs-model), where=condition)
-    nsc2 = np.nansum(np.abs(obs-np.nanmean(obs)), where=condition)
-    N = np.sum(condition)
+#     nsc1 = np.nansum(np.abs(obs-model), where=condition)
+#     nsc2 = np.nansum(np.abs(obs-np.nanmean(obs)), where=condition)
+#     N = np.sum(condition)
 
-    ssres = np.nansum((obs-model)**2, where=condition)
-    sstot = np.nansum((obs-np.nanmean(obs))**2, where=condition)
+#     ssres = np.nansum((obs-model)**2, where=condition)
+#     sstot = np.nansum((obs-np.nanmean(obs))**2, where=condition)
 
-    absre_ = np.nansum(model-obs, where=condition)
-    obsTot = np.nansum(obs, where=condition)
+#     absre_ = np.nansum(model-obs, where=condition)
+#     obsTot = np.nansum(obs, where=condition)
 
-    sigmaObs = np.sqrt(np.nansum((obs-np.nanmean(obs))**2,  initial=0, where=condition_))
-    sigmaModel = np.sqrt(np.nansum((model-np.nanmean(model))**2,  initial=0, where=condition_))
-    cov_ = np.nansum((obs_-np.nanmean(obs))*(model-np.nanmean(model)), initial=0, where=condition_)
+#     sigmaObs = np.sqrt(np.nansum((obs-np.nanmean(obs))**2,  initial=0, where=condition_))
+#     sigmaModel = np.sqrt(np.nansum((model-np.nanmean(model))**2,  initial=0, where=condition_))
+#     cov_ = np.nansum((obs_-np.nanmean(obs))*(model-np.nanmean(model)), initial=0, where=condition_)
     
-    absre = absre_/N
-    nse  = 1 - nsc1/nsc2
-    nnse = 1/(2-nse)
-    r2   = 1 - ssres/sstot
-    nr2 = 1/(2-r2)
-    rebias = absre_/obsTot * 100
-    pearson = cov_/(sigmaModel*sigmaObs)
+#     absre = absre_/N
+#     nse  = 1 - nsc1/nsc2
+#     nnse = 1/(2-nse)
+#     r2   = 1 - ssres/sstot
+#     nr2 = 1/(2-r2)
+#     rebias = absre_/obsTot * 100
+#     pearson = cov_/(sigmaModel*sigmaObs)
 
-    return nnse, nr2, absre, rebias, pearson
+#     return nnse, nr2, absre, rebias, pearson
 
 
 def getFiles(hsSatAndModelDir, startDate, endDate):
@@ -118,10 +120,12 @@ def elaborateMeasuresPlot(
     pmodel = np.nanpercentile(model, pth)
     pobs = np.nanpercentile(obs, pth)
 
-    nseT = []
-    r2T = []
-    absreT = []
-    reT = []
+    r2lst = []
+    nselst = []
+    ablst = []
+    rblst = []
+    rmselst = []
+    pearsonlst = []
     uniqueLon = []
     uniqueLat = []    
 
@@ -131,12 +135,17 @@ def elaborateMeasuresPlot(
             uniqueLon.append(Lonn[idx])
             uniqueLat.append(Latt[idx])
             model_ = model[idx:-1]
-            obs_ = obs[idx:-1] - meanTidals[i]
-            nse, r2, absre, re = computeSkills(obs, model, meanTidals, meanModels, pth)
-            nseT.append(nse)
-            r2T.append(r2)
-            absreT.append(absre)
-            reT.append(re)
+            obs_ = obs[idx:-1] #- meanTidals[i]
+            #nse, r2, absre, re = computeSkills(obs, model, meanTidals, meanModels, pth)
+            
+            stats = utils.computeStats(obs_, model_, pth)
+
+            r2lst.append(stats["r2"])
+            nselst.append(stats["NSE"])
+            ablst.append(stats["Absolute_Bias"])
+            rmselst.append(stats["RMSE"])
+            rblst.append(stats["Relative_Bias"])
+            pearsonlst.append(stats["Pearson"])
             continue
 
         idx = jIdx[i]
@@ -144,29 +153,33 @@ def elaborateMeasuresPlot(
         uniqueLon.append(Lonn[idx])
         uniqueLat.append(Latt[idx])
         model_ = model[idx:idxNext]
-        obs_ = obs[idx:idxNext] - meanTidals[i]
+        obs_ = obs[idx:idxNext] #- meanTidals[i]
 
-        nnse, nr2, absre, rebias = computeSkills(obs_, model_, meanTidals, meanModels, pth)
-        nseT.append(nnse)
-        r2T.append(nr2)
-        absreT.append(absre)
-        reT.append(rebias)
-        # print("nse  = ", nse)
-        # print("r2  = ", r2)
-        # print("absre  = ", absre)
-        # print("re  = ", re)
+        stats = utils.computeStats(obs_, model_, pth)
+
+        r2lst.append(stats["r2"])
+        nselst.append(stats["NSE"])
+        ablst.append(stats["Absolute_Bias"])
+        rmselst.append(stats["RMSE"])
+        rblst.append(stats["Relative_Bias"])
+        pearsonlst.append(stats["Pearson"])
         print("Running Tidal Gauge", i)
 
-    nseT = np.array(nseT)
-    r2T = np.array(r2T)
-    absreT = np.array(absreT)
-    reT = np.array(reT)
+    nseT = np.array(nselst)
+    r2T = np.array(r2lst)
+    absreT = np.array(ablst)
+    reT = np.array(rblst)
+    pearsonT = np.array(pearsonlst)
+
     uniqueLon = np.array(uniqueLon)
     uniqueLat = np.array(uniqueLat)    
 
-    shpfile = "/eos/jeodpp/data/projects/CLIMEX/mentaAltimetryHsValidation/data/coastline/ne_10m_coastline.shp"
+    #shpfile = "/eos/jeodpp/data/projects/CLIMEX/mentaAltimetryHsValidation/data/coastline/ne_10m_coastline.shp"
     m=Basemap()
 
+    #==========================================================================================
+    # NSE
+    #==========================================================================================
 
     fig, ax = plt.subplots(figsize=(9,4))
     grd = gridspec.GridSpec(1, 2, wspace=.025, width_ratios=[1, .05])
@@ -187,6 +200,9 @@ def elaborateMeasuresPlot(
     plt.savefig('data/stats/tidalGauge_nse_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d") + ".png", **options_savefig)
     plt.close(fig)
 
+    #==========================================================================================
+    # R2
+    #==========================================================================================
 
     fig, ax = plt.subplots(figsize=(9,4))
     grd = gridspec.GridSpec(1, 2, wspace=.025, width_ratios=(1, .05))
@@ -208,7 +224,9 @@ def elaborateMeasuresPlot(
     plt.show()
     plt.close(fig)
 
-
+    #==========================================================================================
+    # Absolute Bias
+    #==========================================================================================
 
     fig, ax = plt.subplots(figsize=(9,4))
     grd = gridspec.GridSpec(1, 2, wspace=.025, width_ratios=(1, .05))
@@ -229,7 +247,9 @@ def elaborateMeasuresPlot(
     plt.savefig('data/stats/tidalGauge_absre_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d") + ".png", **options_savefig)
     plt.close(fig)
 
-
+    #==========================================================================================
+    # Relative Bias
+    #==========================================================================================
 
     fig, ax = plt.subplots(figsize=(9,4))
     grd = gridspec.GridSpec(1, 2, wspace=.025, width_ratios=(1, .05))
@@ -248,4 +268,26 @@ def elaborateMeasuresPlot(
     cb = Colorbar(ax = axCb, mappable = plt4, orientation = 'vertical') #, ticklocation = 'top')
 
     plt.savefig('data/stats/tidalGauge_re_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d") + ".png", **options_savefig)
+    plt.close(fig)
+
+    #==========================================================================================
+    # Pearson
+    #==========================================================================================
+    fig, ax = plt.subplots(figsize=(9,4))
+    grd = gridspec.GridSpec(1, 2, wspace=.025, width_ratios=(1, .05))
+
+    # Map and scatter plot
+    axMap = plt.subplot(grd[0, 0])
+    m.drawcoastlines(linewidth=0.5)
+    plt5 = plt.scatter(uniqueLon, uniqueLat, s=20, c=pearsonT, cmap="RdBu", edgecolors="black", linewidths=0.5,
+            vmin=0, vmax=1)
+    axMap.set(xlim=[-180,180], ylim=[-90,90])
+    axMap.set_aspect("equal", "box")
+    axMap.set_title("Pearson Correlation Coefficient", **title_font)
+    
+    # Colorbar
+    axCb = plt.subplot(grd[0,1])
+    cb = Colorbar(ax = axCb, mappable = plt5, orientation = 'vertical') #, ticklocation = 'top')
+
+    plt.savefig('data/stats/tidalGauge_pearson_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d") + ".png", **options_savefig)
     plt.close(fig)
