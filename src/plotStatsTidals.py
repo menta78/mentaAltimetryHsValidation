@@ -300,7 +300,7 @@ def elaborateMeasuresPlot(
     # Map and scatter plot
     axMap = plt.subplot(grd[0, 0])
     m.drawcoastlines(linewidth=0.5)
-    plt6 = plt.scatter(uniqueLon, uniqueLat, s=20, c=rmselst, cmap="RdBu", edgecolors="black", linewidths=0.5,
+    plt6 = plt.scatter(uniqueLon, uniqueLat, s=20, c=rmselst, cmap="Reds", edgecolors="black", linewidths=0.5,
             vmin=0, vmax=1)
     axMap.set(xlim=[-180,180], ylim=[-90,90])
     axMap.set_aspect("equal", "box")

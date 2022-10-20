@@ -116,7 +116,7 @@ if doInterpolateModelToSat:
     )
 
 
-r2Compute = True
+r2Compute = False
 if r2Compute:
     elaborateMeasures(
         startDate,
