@@ -166,6 +166,7 @@ def elaborateMeasuresPlot(
     r2T = np.array(r2lst)
     absreT = np.array(ablst)
     reT = np.array(rblst)
+    rmseT = np.array(rmselst)
     pearsonT = np.array(pearsonlst)
 
     uniqueLon = np.array(uniqueLon)
@@ -287,4 +288,27 @@ def elaborateMeasuresPlot(
     cb = Colorbar(ax = axCb, mappable = plt5, orientation = 'vertical') #, ticklocation = 'top')
 
     plt.savefig('data/stats/tidalGauge_pearson_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d") + ".png", **options_savefig)
+    plt.close(fig)
+
+
+    #==========================================================================================
+    # NRMSE
+    #==========================================================================================
+    fig, ax = plt.subplots(figsize=(9,4))
+    grd = gridspec.GridSpec(1, 2, wspace=.025, width_ratios=(1, .05))
+
+    # Map and scatter plot
+    axMap = plt.subplot(grd[0, 0])
+    m.drawcoastlines(linewidth=0.5)
+    plt6 = plt.scatter(uniqueLon, uniqueLat, s=20, c=rmselst, cmap="RdBu", edgecolors="black", linewidths=0.5,
+            vmin=0, vmax=1)
+    axMap.set(xlim=[-180,180], ylim=[-90,90])
+    axMap.set_aspect("equal", "box")
+    axMap.set_title("NRMSE", **title_font)
+    
+    # Colorbar
+    axCb = plt.subplot(grd[0,1])
+    cb = Colorbar(ax = axCb, mappable = plt6, orientation = 'vertical') #, ticklocation = 'top')
+
+    plt.savefig('data/stats/tidalGauge_nrmse_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d") + ".png", **options_savefig)
     plt.close(fig)
