@@ -26,8 +26,8 @@ def computeSkills(obs, model, meanTidal, meanModel, pth=99):
 
     condition1 = obs >= pobs 
     condition2 = model >= pmodel
-    #condition = condition1 & condition2
-    condition = condition1 | condition2
+    condition = condition1 & condition2
+    #condition = condition1 | condition2
 
     nsc1 = np.nansum(np.abs(obs-model), where=condition)
     nsc2 = np.nansum(np.abs(obs-np.nanmean(obs)), where=condition)
@@ -38,6 +38,10 @@ def computeSkills(obs, model, meanTidal, meanModel, pth=99):
 
     absre_ = np.nansum(model-obs, where=condition)
     obsTot = np.nansum(obs, where=condition)
+
+    sigmaObs = np.sqrt(np.nansum((obs-np.nanmean(obs))**2,  initial=0, where=condition_))
+    sigmaModel = np.sqrt(np.nansum((model-np.nanmean(model))**2,  initial=0, where=condition_))
+    cov_ = np.nansum((obs_-np.nanmean(obs))*(model-np.nanmean(model)), initial=0, where=condition_)
     
     absre = absre_/N
     nse  = 1 - nsc1/nsc2
@@ -45,8 +49,9 @@ def computeSkills(obs, model, meanTidal, meanModel, pth=99):
     r2   = 1 - ssres/sstot
     nr2 = 1/(2-r2)
     rebias = absre_/obsTot * 100
+    pearson = cov_/(sigmaModel*sigmaObs)
 
-    return nnse, nr2, absre, rebias
+    return nnse, nr2, absre, rebias, pearson
 
 
 def getFiles(hsSatAndModelDir, startDate, endDate):
@@ -67,8 +72,6 @@ def elaborateMeasuresPlot(
     endDate,
     hsSatAndModelDir,
     outputDir,
-    meanFileTidals,
-    meanFileModel,
     filterLowHs=False,
     filterHsThreshold=0.0,
     pth = 90,
@@ -109,18 +112,9 @@ def elaborateMeasuresPlot(
         Latt = np.concatenate([Latt, repLat])
         Indx = np.concatenate([Indx, repIdx])
         
-    # load mean of each tidal
-    meanTidals = np.load(meanFileTidals)
 
-    # load mean of each node in the model
-    meanModels = 0
-    
     uniqueIdx, jIdx = np.unique(Indx[np.isfinite(Indx)], return_index=True)
 
-    meanModel = np.nanmean(model)
-    #model = model - meanModel
-#    obs = obs - np.nanmean(obs)
-        
     pmodel = np.nanpercentile(model, pth)
     pobs = np.nanpercentile(obs, pth)
 

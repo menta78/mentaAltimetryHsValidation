@@ -31,7 +31,6 @@ def elaborateMeasures(
 ):
 
     def loadFile(flpth):
-        print("")
         #print("    loading file " + flpth)
         satdts = np.load(flpth)
         if filterHighSsh:
@@ -70,12 +69,9 @@ def elaborateMeasures(
         pmodel_ = np.nanpercentile(model_, pth)
         pobs_ = np.nanpercentile(obs_, pth)
 
-        if np.abs(pobs_ - pmodel_) > 0.1:
-            print(pobs_, pmodel_)
-            continue
-
         condition1_ = obs_ >= pobs_ 
         condition2_ = model_ >= model_
+        #condition_ = condition1_ | condition2_
         condition_ = condition1_ & condition2_
 
         N = np.nansum(condition_)
@@ -107,7 +103,6 @@ def elaborateMeasures(
         rblst.append(rb_)
         pearsonlst.append(pearson_)
 
-    print(len(r2lst))
     r2 = np.mean(np.array(r2lst))
     nse = np.mean(np.array(nselst))
     ab = np.mean(np.array(ablst))
@@ -119,6 +114,8 @@ def elaborateMeasures(
     nr2 = 1/(2-r2)
 
     print("=========================================")
+    print("Start date ", startDate, "   :::::::   End date", endDate)
+    print("Percentile ", pth)
     print("N = ", N)
     print("nse = ",nse)
     print("nnse = ", nnse)

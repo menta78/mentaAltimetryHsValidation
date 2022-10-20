@@ -73,7 +73,7 @@ meanModelFile = os.path.join(rootDir, "data/elev/elevmean.nc")
 # time interval
 startDate, endDate = datetime(2002, 3, 22), datetime(2009, 12, 30)
 startDate, endDate = datetime(2006, 12, 20), datetime(2007, 12, 29)
-startDate, endDate = datetime(1995, 1, 1), datetime(1999, 12, 31)
+startDate, endDate = datetime(1995, 1, 1), datetime(1999, 12, 30)
 overwriteExisting = False
 
 # number of processes to be used for the interpolation
@@ -97,7 +97,7 @@ if doGetMeanTidal:
     np.save(meanFileTidals, meanEachTidal)
 
 
-doInterpolateModelToSat = 1
+doInterpolateModelToSat = 0
 if doInterpolateModelToSat:
     lonTidal, latTidal, resTidal, timeTidal = get_serie_gesla(pathname)
 
@@ -126,6 +126,8 @@ if r2Compute:
         pth = pth,
     ) 
 
+
+
 r2ComputePlot = False
 
 if r2ComputePlot:
@@ -134,7 +136,5 @@ if r2ComputePlot:
         endDate,
         hsModelAndSatObsDir,
         statsDir,
-        meanFileTidals,
-        meanFileModel,
         pth = pth,
 ) 
