@@ -128,7 +128,7 @@ if r2Compute:
 
 
 
-r2ComputePlot = False
+r2ComputePlot = True
 
 if r2ComputePlot:
     elaborateMeasuresPlot(

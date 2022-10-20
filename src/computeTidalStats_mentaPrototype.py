@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
 import itertools
 
+import src.utils as utils
+
 
 filterHighSsh = False
 
@@ -58,8 +60,9 @@ def elaborateMeasures(
     for f in fls:
         data_ = loadFile(f)
         obs_ = data_[:,0]
-        #obs_ = obs_ - np.nanmean(obs_)
+        obs_ = obs_ - np.nanmean(obs_)
         model_ = data_[:,1]
+        model_ = model_ - np.nanmean(model_)
         
         stats = utils.computeStats(obs_, model_, pth)
 
@@ -83,7 +86,7 @@ def elaborateMeasures(
     print("=========================================")
     print("Start date ", startDate, "   :::::::   End date", endDate)
     print("Percentile ", pth)
-    print("N = ", N)
+    print("N = ", stats["N"])
     print("nse = ",nse)
     print("nnse = ", nnse)
     print("r2 = ", r2)

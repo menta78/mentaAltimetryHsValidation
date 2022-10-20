@@ -117,9 +117,6 @@ def elaborateMeasuresPlot(
 
     uniqueIdx, jIdx = np.unique(Indx[np.isfinite(Indx)], return_index=True)
 
-    pmodel = np.nanpercentile(model, pth)
-    pobs = np.nanpercentile(obs, pth)
-
     r2lst = []
     nselst = []
     ablst = []
@@ -134,8 +131,8 @@ def elaborateMeasuresPlot(
             idx = jIdx[i]
             uniqueLon.append(Lonn[idx])
             uniqueLat.append(Latt[idx])
-            model_ = model[idx:-1]
-            obs_ = obs[idx:-1] #- meanTidals[i]
+            model_ = model[idx:-1] - np.nanmean(model[idx:-1])
+            obs_ = obs[idx:-1] - np.nanmean(obs[idx:-1])
             #nse, r2, absre, re = computeSkills(obs, model, meanTidals, meanModels, pth)
             
             stats = utils.computeStats(obs_, model_, pth)
@@ -152,8 +149,8 @@ def elaborateMeasuresPlot(
         idxNext = jIdx[i+1]
         uniqueLon.append(Lonn[idx])
         uniqueLat.append(Latt[idx])
-        model_ = model[idx:idxNext]
-        obs_ = obs[idx:idxNext] #- meanTidals[i]
+        model_ = model[idx:idxNext] - np.nanmean(model[idx:idxNext])
+        obs_ = obs[idx:idxNext] - np.nanmean(obs[idx:-1])
 
         stats = utils.computeStats(obs_, model_, pth)
 

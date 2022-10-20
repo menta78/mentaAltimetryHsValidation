@@ -176,7 +176,6 @@ def computeStats(obs, model, pth):
     rmse = np.sqrt(ssres_/N)
     pearson = cov_/(sigmaModel*sigmaObs)
 
-    print(r2, nse)
     stats = {}
     stats["r2"] = r2
     stats["NSE"] = nse
