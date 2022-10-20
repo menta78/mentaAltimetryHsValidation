@@ -58,50 +58,17 @@ def elaborateMeasures(
     for f in fls:
         data_ = loadFile(f)
         obs_ = data_[:,0]
-        obs_ = obs_ - np.nanmean(obs_)
+        #obs_ = obs_ - np.nanmean(obs_)
         model_ = data_[:,1]
-        #model_ = model_ - np.nanmean(model_)
+        
+        stats = utils.computeStats(obs_, model_, pth)
 
-       #obs = np.concatenate([obs, obs_])
-       #model = np.concatenate([model, model_])
-
-       # computing r2 (and other measures) gauge by gauge
-        pmodel_ = np.nanpercentile(model_, pth)
-        pobs_ = np.nanpercentile(obs_, pth)
-
-        condition1_ = obs_ >= pobs_ 
-        condition2_ = model_ >= model_
-        #condition_ = condition1_ | condition2_
-        condition_ = condition1_ & condition2_
-
-        N = np.nansum(condition_)
-
-        ssres_ = np.nansum((obs_-model_)**2, where=condition_)
-        sstot_ = np.nansum((obs_-np.nanmean(obs_))**2, where=condition_)
-        nsc1   = np.nansum(np.abs(obs_-model_), where=condition_)
-        nsc2   = np.nansum(np.abs(obs_-np.nanmean(obs_)), where=condition_)
-
-        sigmaObs = np.sqrt(np.nansum((obs_-np.nanmean(obs_))**2,  initial=0, where=condition_))
-        sigmaModel = np.sqrt(np.nansum((model_-np.nanmean(model_))**2,  initial=0, where=condition_))
-        cov_ = np.nansum((obs_-np.nanmean(obs_))*(model_-np.nanmean(model_)), initial=0, where=condition_)
-
-        absre_ = np.nansum(model_ - obs_, where=condition_)
-        nobs = np.nansum(obs_, where=condition_)
-
-        r2_ = 1 - ssres_/sstot_
-        nse_ = 1 - nsc1/nsc2
-        ab_ = absre_/N
-        rb_ = absre_/nobs * 100
-        rmse_ = np.sqrt(ssres_/N)
-        pearson_ = cov_/(sigmaModel*sigmaObs)
-
-
-        r2lst.append(r2_)
-        nselst.append(nse_)
-        ablst.append(ab_)
-        rmselst.append(rmse_)
-        rblst.append(rb_)
-        pearsonlst.append(pearson_)
+    r2lst.append(stats["r2"])
+    nselst.append(stats["NSE"])
+    ablst.append(stats["Absolute_Bias"])
+    rmselst.append(stats["RMSE"])
+    rblst.append(stats["Relative_Bias"])
+    pearsonlst.append(stats["Pearson"])
 
     r2 = np.mean(np.array(r2lst))
     nse = np.mean(np.array(nselst))
