@@ -262,9 +262,8 @@ def elaborateMeasures(
 
     condition1 = satssh >= pobs 
     condition2 = modssh >= pmod
-    #conditionPth = condition1 & condition2
-    conditionPth = condition1 | condition2
-    print(condition1, condition2, conditionPth)
+    conditionPth = condition1 & condition2
+    #conditionPth = condition1 | condition2
 
     cnd = dtcount < minObsForValidation
     conditionNumberSamples = condition 
@@ -313,7 +312,10 @@ def elaborateMeasures(
     absre_ = np.nansum(modssh-satssh, where=conditionPth)
     nobs = np.nansum(satssh, where=conditionPth)
 
-    print(absre_, nobs)
+    sigmaObs = np.sqrt(np.nansum((satssh-np.nanmean(satssh))**2,  initial=0, where=conditionPth))
+    sigmaModel = np.sqrt(np.nansum((modssh-np.nanmean(modssh))**2,  initial=0, where=conditionPth))
+    cov_ = np.nansum((satssh-np.nanmean(satssh))*(modssh-np.nanmean(modssh)), initial=0, where=conditionPth)
+
 
     absre = absre_/N
     nse  = 1 - nsc1/nsc2
@@ -322,6 +324,8 @@ def elaborateMeasures(
     nr2 = 1/(2-r2)
     reb = absre_/nobs * 100
     rmseTot = np.sqrt(ssres/N)
+    pearson = cov_/(sigmaModel*sigmaObs)
+
     totIndStr = """
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 TOTAL ERROR INDICATORS:
@@ -332,6 +336,7 @@ NNSE: {nnse:2.5f}
 NR2: {nr2:2.5f}
 Bias: {absre:2.5f}
 RelBias: {reb:2.5f}
+Pearson: {pearson:2.5f}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
     totIndStr = totIndStr.format(
@@ -342,6 +347,7 @@ RelBias: {reb:2.5f}
         nr2      = nr2,
         absre = absre,
         reb = reb,
+        pearson = pearson,
     )
     print("")
     print(totIndStr)

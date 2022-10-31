@@ -80,7 +80,7 @@ overwriteExisting = False
 nParWorker = 32
 
 # Percentile
-pth = 95
+pth = 0
 
 # threshold above which hs should be considered
 filterSshMaximum = 100
@@ -116,7 +116,7 @@ if doInterpolateModelToSat:
     )
 
 
-r2Compute = False
+r2Compute = True
 if r2Compute:
     elaborateMeasures(
         startDate,

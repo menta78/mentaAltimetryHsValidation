@@ -17,7 +17,8 @@ rawSatDataDir = rootDir + "data/rawData"
 
 # Directory where the coarsened satellite data are located
 # the coarsening is performed by the coarsenSatData function. If you already performed this operation you don't need to repeat it
-crsSatDataDir = rootDir + "data/crsSatData"
+crsSatDataDir = os.path.join(rootDir, "data/crsSatData/")
+assert os.path.exists(crsSatDataDir) == True
 
 # Directory where the model nc files are located
 modelNcFilesDir = os.path.join(rootDir, "data/schismwwm")
@@ -34,6 +35,8 @@ meanModelFile = os.path.join(rootDir, "data/elev/elevmean.nc")
 
 # time interval
 startDate, endDate = datetime(2002, 3, 22), datetime(2009, 12, 30)
+startDate, endDate = datetime(1995, 1, 1), datetime(1999, 12, 30)
+startDate, endDate = datetime(2012, 1, 1), datetime(2019, 12, 31)
 overwriteExisting = True
 
 # number of processes to be used for the interpolation
@@ -58,7 +61,7 @@ if doCoarsenSatData:
     )
 
 
-doInterpolateModelToSat = False
+doInterpolateModelToSat = True
 if doInterpolateModelToSat:
     # interpolating the model hs along the sat tracks
     interpolateModelTocoarsenCmemsSshSatData_schismWWM(
@@ -89,5 +92,5 @@ computeSshStats.elaborateMeasures(
     filterHighSsh=True,
     filterSshMaximum=filterSshMaximum,
     latlims=latlims,
-    pth = 99,
+    pth = 95,
 )

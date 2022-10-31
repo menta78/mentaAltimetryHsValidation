@@ -17,7 +17,7 @@ rawSatDataDir = rootDir + "data/rawData"
 
 # Directory where the coarsened satellite data are located
 # the coarsening is performed by the coarsenSatData function. If you already performed this operation you don't need to repeat it
-crsSatDataDir = os.path.join(rootDir, "data/crsSatDataWaves/")
+crsSatDataDir = os.path.join(rootDir, "data/crsSatData/")
 assert os.path.exists(crsSatDataDir) == True
 
 # Directory where the model nc files are located
@@ -25,13 +25,13 @@ modelNcFilesDir = os.path.join(rootDir, "data/schismwwm")
 
 # Directory where the pairs observation/model are to be generated
 hsModelAndSatObsDir = (
-    rootDir + "data/satWaveModelPairs/"
+    rootDir + "data/satModelPairs/"
 )
-assert os.path.exists(hsModelAndSatObsDir) == True
 
 # Directory where the stats are generated
 statsDir = rootDir + "data/stats/"
 
+meanModelFile = os.path.join(rootDir, "data/elev/elevmean.nc")
 
 # time interval
 startDate, endDate = datetime(1995, 1, 1), datetime(1999, 12, 30)
@@ -61,13 +61,14 @@ if doCoarsenSatData:
     )
 
 
-doInterpolateModelToSat = True
+doInterpolateModelToSat = False
 if doInterpolateModelToSat:
     # interpolating the model hs along the sat tracks
-    interpolateModelToCoarsenedSatData_schismWWM(
+    interpolateModelTocoarsenCmemsSshSatData_schismWWM(
         crsSatDataDir,
         modelNcFilesDir,
         hsModelAndSatObsDir,
+        meanModelFile,
         boundaries,
         startDate,
         endDate,

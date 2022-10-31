@@ -288,7 +288,7 @@ def interpolateModelToCoarsenedSatData_schismWWM(
     print("interpolating model data to sat")
     mdlfl0 = [f for f in os.listdir(modelNcFileDir) if re.match(flpattern, f)]
     dts = [
-        int(re.match("schout_([0-9]*)\_compressed.nc", fn).groups(0)[0])
+        int(re.match("ERA5_schismwwm_([0-9]*)\.nc", fn).groups(0)[0])
         for fn in mdlfl0
     ]
     iii = np.argsort(dts)
