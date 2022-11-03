@@ -183,6 +183,174 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
     return outFlPath
 
 
+def __elabFileHs(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
+    varNames = (
+        varNames if not varNames is None else ["longitude", "latitude", "hs", "time"]
+    )
+    print("  elaborating file " + mdlF)
+
+    print("    ... loading model nc")
+    fpth = os.path.join(_modelNcFileDir, mdlF)
+    ds = netCDF4.Dataset(fpth)
+    timeVarName = varNames[3]
+    try:
+        tmnc = ds.variables[timeVarName]
+    except:
+        print("something wrong in file " + fpth)
+        outFlPath = "none"
+        return outFlPath
+
+    def getNcCalendar(tmnc):
+        try:
+            return tmnc.calendar
+        except:
+            return "standard"
+
+    clndr = getNcCalendar(tmnc)
+    try:
+        tmstrt = netCDF4.num2date(
+            tmnc[0], tmnc.units, clndr, only_use_cftime_datetimes=False
+        )
+    except:
+        print("something wrong in file " + fpth)
+        outFlPath = "none"
+        return outFlPath
+
+    outFlName = mdlF.replace(".nc", "_hsModelAndSatObs_" + tmstrt.strftime("%Y%m%d"))
+    outFlPath = os.path.join(_destDir, outFlName)
+    if (not _overwriteExisting) and os.path.isfile(outFlPath + ".npy"):
+        print("      file " + outFlPath + " already exists. Skipping")
+        ds.close()
+        return outFlPath
+
+    if not _startDate is None and not _endDate is None:
+        tmend = netCDF4.num2date(
+            tmnc[-1], tmnc.units, clndr, only_use_cftime_datetimes=False
+        )
+        if (_endDate < tmstrt) or (_startDate > tmend):
+            print("  file out of date range. Skipping")
+            ds.close()
+            return outFlPath
+
+    tmmdl = netCDF4.num2date(
+        tmnc[:], tmnc.units, clndr, only_use_cftime_datetimes=False
+    )
+
+    dtSatAll = dtmngr.getAllSatDataBtwDt(tmmdl[0], tmmdl[-1])
+    dtSatAll = dtmngr.stackData(dtSatAll)
+    if (dtSatAll is None) or (dtSatAll.shape[0] == 0):
+        print("      no sat data found for " + mdlF)
+        ds.close()
+        return outFlPath
+
+    _lock.acquire()
+    try:
+        lon = ds.variables[varNames[0]][:]
+        lat = ds.variables[varNames[1]][:]
+        hs = ds.variables[varNames[2]][:]
+
+        usePrev = not mdlFPrev is None
+        if usePrev:
+            fpth_ = os.path.join(_modelNcFileDir, mdlFPrev)
+            try:
+                ds_ = netCDF4.Dataset(fpth_)
+                tmnc_ = ds_.variables[timeVarName]
+                tmmdl_ = netCDF4.num2date(
+                    tmnc_[-1],
+                    tmnc_.units,
+                    getNcCalendar(tmnc_),
+                    only_use_cftime_datetimes=False,
+                )
+                hs_ = ds_.variables[varNames[2]][-1, :]
+                hs_ = hs_.reshape([1, len(hs_)])
+                hs = np.concatenate([hs_, hs], axis=0)
+                tmmdl = np.insert(tmmdl, 0, tmmdl_)
+                ds_.close()
+            except:
+                pass
+
+        useNext = not mdlFNext is None
+        if useNext:
+            fpth_ = os.path.join(_modelNcFileDir, mdlFNext)
+            try:
+                ds_ = netCDF4.Dataset(fpth_)
+                tmnc_ = ds_.variables[timeVarName]
+                tmmdl_ = netCDF4.num2date(
+                    tmnc_[0],
+                    tmnc_.units,
+                    getNcCalendar(tmnc_),
+                    only_use_cftime_datetimes=False,
+                )
+                hs_ = ds_.variables[varNames[2]][0, :]
+                hs_ = hs_.reshape([1, len(hs_)])
+                hs = np.concatenate([hs, hs_], axis=0)
+                tmmdl = np.append(tmmdl, tmmdl_)
+                ds_.close()
+            except:
+                pass
+
+        ds.close()
+    finally:
+        _lock.release()
+
+    if _gridType == GRID_TYPE_UNSTRUCT:
+        triObj = Triangulation(lat, lon)
+    elif _gridType == GRID_TYPE_REGULAR:
+        grdPoints = (lat.filled(), lon.filled())
+    else:
+        raise Exception("unsupported grid type: " + _gridType)
+
+    # # Substract the model's mean of each node
+    # ds = netCDF4.Dataset(_meanModelFile)
+    # try:
+    #     meanelev = ds.variables["elev"][0,:]
+    # except:
+    #     print("something wrong in file " + meanModelFile)
+    #     outFlPath = "none"
+    #     return outFlPath
+
+    # for i in range(hs.shape[-1]):
+    #     hs[:,i] = hs[:,i] - meanelev[i]
+
+
+    lonSat = dtSatAll[:, 1]
+    latSat = dtSatAll[:, 2]
+
+    print("    ... interpolating to sat point for each time step")
+    ntmmdl = len(tmmdl)
+    nobs = dtSatAll.shape[0]
+    intp0 = np.zeros([ntmmdl, nobs]) * np.nan
+    for tm, itm in zip(tmmdl, range(ntmmdl)):
+        print("      processing time " + str(tm))
+        hsii = hs[itm, :]
+        try:
+            hsii = hsii.filled(np.nan)
+        except:
+            pass
+        if _gridType == GRID_TYPE_UNSTRUCT:
+            intpltr = LinearTriInterpolator(triObj, hsii)
+            intp0[itm, :] = intpltr(latSat, lonSat)
+        elif _gridType == GRID_TYPE_REGULAR:
+            intpltr = RegularGridInterpolator(
+                grdPoints, hsii, bounds_error=False, fill_value=np.nan
+            )
+            intp0[itm, :] = intpltr((latSat, lonSat))
+
+    print("    ... interpolating on time")
+    tmstmpmdl = [datetime.timestamp(t) for t in tmmdl]
+    tmstmpsat = dtSatAll[:, 0]
+    intp = np.zeros([nobs, 1]) * np.nan
+    for iobs in range(nobs):
+        intpltr = interp1d(tmstmpmdl, intp0[:, iobs])
+        intp[iobs] = intpltr(tmstmpsat[iobs])
+
+    dtSatAndMod = np.concatenate([dtSatAll, intp], 1)
+
+    print("    ... saving output file")
+    np.save(outFlPath, dtSatAndMod)
+    return outFlPath
+
+
 def interpolateModelToCoarsenedSatData_WW3(
     crsSatDataDir,
     modelNcFileDir,
@@ -225,6 +393,13 @@ def __elabFile_schismWWM(args):
     mdlF = args[1]
     mdlFNext = args[2]
     return __elabFile(mdlF, mdlFPrev=mdlFPrev, mdlFNext=mdlFNext, varNames=_varnames)
+
+
+def __elabFile_schismWWM_Hs(args):
+    mdlFPrev = args[0]
+    mdlF = args[1]
+    mdlFNext = args[2]
+    return __elabFileHs(mdlF, mdlFPrev=mdlFPrev, mdlFNext=mdlFNext, varNames=_varnames)
 
 
 def interpolateModelTocoarsenCmemsSshSatData_schismWWM(
@@ -313,7 +488,7 @@ def interpolateModelToCoarsenedSatData_schismWWM(
     else:
         map_ = map
     fls = zip(mdlflpre, mdlfl, mdlflnext)
-    flItr = map_(__elabFile_schismWWM, fls)
+    flItr = map_(__elabFile_schismWWM_Hs, fls)
     for mdlF in flItr:
         print("  file successfully saved: " + mdlF)
 

@@ -86,7 +86,6 @@ def elaborateMeasures(
     print("=========================================")
     print("Start date ", startDate, "   :::::::   End date", endDate)
     print("Percentile ", pth)
-    print("N = ", stats["N"])
     print("nse = ",nse)
     print("nnse = ", nnse)
     print("r2 = ", r2)

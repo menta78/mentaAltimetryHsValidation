@@ -28,7 +28,7 @@ def elaborateMeasures(
     filterSshMaximum=0.0,
     dx=0.2,
     dy=0.2,
-    pth = 90,
+    pth=90,
 ):
 
     years = []
@@ -236,11 +236,10 @@ def elaborateMeasures(
         obsTotMax[cnd] = np.nan
         mdlTotMax[cnd] = np.nan
 
-
     # flatting array
     for i in range(len(satssh)):
-      satssh.extend(satssh[i])
-      modssh.extend(modssh[i])
+        satssh.extend(satssh[i])
+        modssh.extend(modssh[i])
 
     satssh_ = np.array(satssh)[0]
     modssh_ = np.array(modssh)[0]
@@ -248,8 +247,8 @@ def elaborateMeasures(
     modssh_mean = np.nanmean(modssh_)
     satssh_mean = np.nanmean(satssh_)
 
-    satssh = satssh_  - satssh_mean
-    modssh = modssh_  #- modssh_mean
+    satssh = satssh_ - satssh_mean
+    modssh = modssh_  # - modssh_mean
 
     # compute percentiles.
     pobs = np.nanpercentile(satssh, pth)
@@ -257,22 +256,22 @@ def elaborateMeasures(
     print("pth observations = ", pobs)
     print("pth model = ", pmod)
 
-    condition = satssh>=0
-    meanObs = np.nanmean(satssh, where= condition)
+    condition = satssh >= 0
+    meanObs = np.nanmean(satssh, where=condition)
 
-    condition1 = satssh >= pobs 
+    condition1 = satssh >= pobs
     condition2 = modssh >= pmod
     conditionPth = condition1 & condition2
-    #conditionPth = condition1 | condition2
+    # conditionPth = condition1 | condition2
 
     cnd = dtcount < minObsForValidation
-    conditionNumberSamples = condition 
+    conditionNumberSamples = condition
 
     sqDevSum[cnd] = np.nan
     dtcount[cnd] = np.nan
 
     N = np.nansum(conditionNumberSamples)
-    rmseTot = np.sqrt(np.nansum(sqDevSum) / N, where = conditionPth)
+    rmseTot = np.sqrt(np.nansum(sqDevSum) / N, where=conditionPth)
 
     # computing skills
     """
@@ -303,32 +302,42 @@ def elaborateMeasures(
         sstot += (filt_data_sat[i] - mean_filt_data_sat)**2
     """
 
-    nsc1 = np.nansum(np.abs(satssh-modssh), where=conditionPth)
-    nsc2 = np.nansum(np.abs(satssh-np.nanmean(satssh)), where=conditionPth)
+    nsc1 = np.nansum(np.abs(satssh - modssh), where=conditionPth)
+    nsc2 = np.nansum(np.abs(satssh - np.nanmean(satssh)), where=conditionPth)
 
-    ssres = np.nansum((satssh-modssh)**2, where=conditionPth)
-    sstot = np.nansum((satssh-np.nanmean(satssh))**2, where=conditionPth)
+    ssres = np.nansum((satssh - modssh) ** 2, where=conditionPth)
+    sstot = np.nansum((satssh - np.nanmean(satssh)) ** 2, where=conditionPth)
 
-    absre_ = np.nansum(modssh-satssh, where=conditionPth)
+    absre_ = np.nansum(modssh - satssh, where=conditionPth)
     nobs = np.nansum(satssh, where=conditionPth)
 
-    sigmaObs = np.sqrt(np.nansum((satssh-np.nanmean(satssh))**2,  initial=0, where=conditionPth))
-    sigmaModel = np.sqrt(np.nansum((modssh-np.nanmean(modssh))**2,  initial=0, where=conditionPth))
-    cov_ = np.nansum((satssh-np.nanmean(satssh))*(modssh-np.nanmean(modssh)), initial=0, where=conditionPth)
+    sigmaObs = np.sqrt(
+        np.nansum((satssh - np.nanmean(satssh)) ** 2, initial=0, where=conditionPth)
+    )
+    sigmaModel = np.sqrt(
+        np.nansum((modssh - np.nanmean(modssh)) ** 2, initial=0, where=conditionPth)
+    )
+    cov_ = np.nansum(
+        (satssh - np.nanmean(satssh)) * (modssh - np.nanmean(modssh)),
+        initial=0,
+        where=conditionPth,
+    )
 
-
-    absre = absre_/N
-    nse  = 1 - nsc1/nsc2
-    nnse = 1/(2-nse)
-    r2   = 1 - ssres/sstot
-    nr2 = 1/(2-r2)
-    reb = absre_/nobs * 100
-    rmseTot = np.sqrt(ssres/N)
-    pearson = cov_/(sigmaModel*sigmaObs)
+    absre = absre_ / N
+    nse = 1 - nsc1 / nsc2
+    nnse = 1 / (2 - nse)
+    r2 = 1 - ssres / sstot
+    nr2 = 1 / (2 - r2)
+    reb = absre_ / nobs * 100
+    rmseTot = np.sqrt(ssres / N)
+    pearson = cov_ / (sigmaModel * sigmaObs)
 
     totIndStr = """
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 TOTAL ERROR INDICATORS:
+startDate: {startDate}
+endDate: {endDate}
+pth: {pth:2.5f}
 rmse: {rmseTot:2.5f}
 NSE: {nse:2.5f}
 R2: {r2:2.5f}
@@ -340,19 +349,29 @@ Pearson: {pearson:2.5f}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
     totIndStr = totIndStr.format(
-        rmseTot = rmseTot,
-        nse     = nse,
-        r2      = r2,
-        nnse     = nnse,
-        nr2      = nr2,
-        absre = absre,
-        reb = reb,
-        pearson = pearson,
+        rmseTot=rmseTot,
+        nse=nse,
+        r2=r2,
+        nnse=nnse,
+        nr2=nr2,
+        absre=absre,
+        reb=reb,
+        pearson=pearson,
+        startDate = startDate,
+        endDate = endDate,
+        pth = pth,
     )
     print("")
     print(totIndStr)
     print("")
-    totIndsFilePath = os.path.join(outputDir, "totalIndicators.txt")
+    totIndsFilePath = os.path.join(
+        outputDir,
+        "Hs_totalIndicators"
+        + startDate.strftime("%Y%m%d")
+        + "_"
+        + endDate.strftime("%Y%m%d")
+        + ".txt",
+    )
     with open(totIndsFilePath, "w") as f:
         f.write(totIndStr)
         f.close()
@@ -364,10 +383,10 @@ Pearson: {pearson:2.5f}
         os.makedirs(outputDir)
     except:
         pass
-    np.savetxt(os.path.join(outputDir, "lons.csv"), maplons)
-    np.savetxt(os.path.join(outputDir, "lats.csv"), maplats)
-    np.savetxt(os.path.join(outputDir, "rmse.csv"), rmse)
-    np.savetxt(os.path.join(outputDir, "dtcount.csv"), dtcount)
+    np.savetxt(os.path.join(outputDir, f"lons_HS_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), maplons)
+    np.savetxt(os.path.join(outputDir, f"lats_HS_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), maplats)
+    np.savetxt(os.path.join(outputDir, f"rmse_HS_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), rmse)
+    np.savetxt(os.path.join(outputDir, f"dtcount_HS_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), dtcount)
 
     print("output dir: " + outputDir)
 
