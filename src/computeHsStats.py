@@ -135,13 +135,14 @@ def elaborateMeasures(
         obsSum,
         sqObsSum,
         devSum,
+        sqModSum,
         sqDevSum,
         dtcount,
         obsMaxSum,
         mdlMaxSum,
         obsTotMax,
         mdlTotMax,
-    ) = (None, None, None, None, None, None, None, None, None)
+    ) = (None, None, None, None, None, None, None, None, None, None)
     for blob in iterateByYear():
         (
             maplons,
