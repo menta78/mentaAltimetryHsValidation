@@ -71,6 +71,7 @@ def elaborateMeasures(
             (
                 obsSum,
                 sqObsSum,
+                sqModSum,
                 devSum,
                 sqDevSum,
                 mdlByObsSum,
@@ -268,69 +269,30 @@ def elaborateMeasures(
     conditionNumberSamples = condition
 
     sqDevSum[cnd] = np.nan
+    sqObsSum[cnd] = np.nan
+    sqModSum[cnd] = np.nan
+    mdlByObsSum[cnd] = np.nan
     dtcount[cnd] = np.nan
 
     N = np.nansum(conditionNumberSamples)
-    rmseTot = np.sqrt(np.nansum(sqDevSum) / N, where=conditionPth)
 
-    # computing skills
-    """
-    filt_satssh = []
-    filt_modssh = []
-    for i in range(len(satssh)):
-        if satssh[i] >= pth_satssh and modssh[i] >= pth_modssh:
-            print(satssh[i],  modssh[i])
-            filt_satssh.append(satssh[i])
-            filt_modssh.append(modssh[i])
+    ssres = np.nansum(sqDevSum, where=conditionPth)
+    sstot = np.nansum(sqObsSum, where=conditionPth)
 
-    filt_data_sat = np.array(filt_satssh)
-    filt_data_mod = np.array(filt_modssh)
+    absre_ = np.nansum(devSum, where=conditionPth)
+    nobs = np.nansum(obsSum, where=conditionPth)
 
-#    mean_filt_data_sat = np.nanmean(filt_data_sat)
-#    print(mean_filt_data_sat)
-    mean_filt_data_sat = 0
-    N = len(filt_data_sat)
-    nse1 = 0
-    nse2 = 0
-    ssres = 0
-    sstot = 0
+    sigmaObs = np.sqrt(sqObsSum, initial=0, where=conditionPth)
+    sigmaModel = np.sqrt(sqModSum, initial=0, where=conditionPth)
+    cov_ = np.nansum(mdlByObsSum, initial=0, where=conditionPth)
 
-    for i in range(N):
-        nse1 += (filt_data_mod[i] - filt_data_sat[i])**2
-        nse2 += (filt_data_sat[i] - mean_filt_data_sat)**2
-        ssres += (filt_data_mod[i] - filt_data_sat[i])**2
-        sstot += (filt_data_sat[i] - mean_filt_data_sat)**2
-    """
-
-    nsc1 = np.nansum(np.abs(satssh - modssh), where=conditionPth)
-    nsc2 = np.nansum(np.abs(satssh - np.nanmean(satssh)), where=conditionPth)
-
-    ssres = np.nansum((satssh - modssh) ** 2, where=conditionPth)
-    sstot = np.nansum((satssh - np.nanmean(satssh)) ** 2, where=conditionPth)
-
-    absre_ = np.nansum(modssh - satssh, where=conditionPth)
-    nobs = np.nansum(satssh, where=conditionPth)
-
-    sigmaObs = np.sqrt(
-        np.nansum((satssh - np.nanmean(satssh)) ** 2, initial=0, where=conditionPth)
-    )
-    sigmaModel = np.sqrt(
-        np.nansum((modssh - np.nanmean(modssh)) ** 2, initial=0, where=conditionPth)
-    )
-    cov_ = np.nansum(
-        (satssh - np.nanmean(satssh)) * (modssh - np.nanmean(modssh)),
-        initial=0,
-        where=conditionPth,
-    )
-
-    absre = absre_ / N
-    nse = 1 - nsc1 / nsc2
-    nnse = 1 / (2 - nse)
-    r2 = 1 - ssres / sstot
-    nr2 = 1 / (2 - r2)
-    reb = absre_ / nobs * 100
-    rmseTot = np.sqrt(ssres / N)
-    pearson = cov_ / (sigmaModel * sigmaObs)
+    absreTot = absre_ / N
+    r2Tot = 1 - ssres / sstot
+    nr2Tot = 1 / (2 - r2Tot)
+    rebTot = absre_ / nobs * 100
+    rmseTot = np.sqrt(np.nansum(sqDevSum, where=conditionPth) / N)
+    nrmseTot = np.sqrt(ssres / N)
+    pearsonTot = cov_ / (sigmaModel * sigmaObs)
 
     totIndStr = """
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -339,9 +301,8 @@ startDate: {startDate}
 endDate: {endDate}
 pth: {pth:2.5f}
 rmse: {rmseTot:2.5f}
-NSE: {nse:2.5f}
+nrmse: {nrmseTot:2.5f}
 R2: {r2:2.5f}
-NNSE: {nnse:2.5f}
 NR2: {nr2:2.5f}
 Bias: {absre:2.5f}
 RelBias: {reb:2.5f}
@@ -350,16 +311,15 @@ Pearson: {pearson:2.5f}
 """
     totIndStr = totIndStr.format(
         rmseTot=rmseTot,
-        nse=nse,
-        r2=r2,
-        nnse=nnse,
-        nr2=nr2,
-        absre=absre,
-        reb=reb,
-        pearson=pearson,
-        startDate = startDate,
-        endDate = endDate,
-        pth = pth,
+        nrmseTot=nrmseTot,
+        r2=r2Tot,
+        nr2=nr2Tot,
+        absre=absreTot,
+        reb=rebTot,
+        pearson=pearsonTot,
+        startDate=startDate,
+        endDate=endDate,
+        pth=pth,
     )
     print("")
     print(totIndStr)
@@ -376,21 +336,85 @@ Pearson: {pearson:2.5f}
         f.write(totIndStr)
         f.close()
 
+    ssres = sqDevSum
+    sstot = sqObsSum
+
+    absre_ = devSum
+    nobs = obsSum
+
+    sigmaObs = sqObsSum
+    sigmaModel = sqModSum
+    cov_ = mdlByObsSum
+
+    absre = absre_ / N
+    r2 = 1 - ssres / sstot
+    nr2 = 1 / (2 - r2)
+    reb = absre_ / nobs * 100
     rmse = np.sqrt(sqDevSum / N)
+    nrmse = np.sqrt(ssres / N)
+    pearson = cov_ / (sigmaModel * sigmaObs)
 
     # saving to files
     try:
         os.makedirs(outputDir)
     except:
         pass
-    np.savetxt(os.path.join(outputDir, f"lons_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), maplons)
-    np.savetxt(os.path.join(outputDir, f"lats_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), maplats)
-    np.savetxt(os.path.join(outputDir, f"rmse_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), rmse)
-    np.savetxt(os.path.join(outputDir, f"r2_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), r2)
-    np.savetxt(os.path.join(outputDir, f"nse_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), nse)
-    np.savetxt(os.path.join(outputDir, f"absolute_bias_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), absre)
-    np.savetxt(os.path.join(outputDir, f"pearson_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), pearson)
-    np.savetxt(os.path.join(outputDir, f"dtcount_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), dtcount)
+    np.savetxt(
+        os.path.join(
+            outputDir,
+            f"lons_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv",
+        ),
+        maplons,
+    )
+    np.savetxt(
+        os.path.join(
+            outputDir,
+            f"lats_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv",
+        ),
+        maplats,
+    )
+    np.savetxt(
+        os.path.join(
+            outputDir,
+            f"rmse_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv",
+        ),
+        rmse,
+    )
+    np.savetxt(
+        os.path.join(
+            outputDir,
+            f"r2_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv",
+        ),
+        r2,
+    )
+    np.savetxt(
+        os.path.join(
+            outputDir,
+            f"nse_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv",
+        ),
+        nse,
+    )
+    np.savetxt(
+        os.path.join(
+            outputDir,
+            f"absolute_bias_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv",
+        ),
+        absre,
+    )
+    np.savetxt(
+        os.path.join(
+            outputDir,
+            f"pearson_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv",
+        ),
+        pearson,
+    )
+    np.savetxt(
+        os.path.join(
+            outputDir,
+            f"dtcount_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv",
+        ),
+        dtcount,
+    )
 
     print("output dir: " + outputDir)
 

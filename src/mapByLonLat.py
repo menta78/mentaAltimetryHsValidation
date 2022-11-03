@@ -102,6 +102,7 @@ def computeBiasNrmse(lons, lats, mapdata):
 def computeCumDeviations(lons, lats, mapdata):
     obsSum = np.ones((len(lats), len(lons))) * np.nan
     sqObsSum = np.ones((len(lats), len(lons))) * np.nan
+    sqModSum = np.ones((len(lats), len(lons))) * np.nan
     devSum = np.ones((len(lats), len(lons))) * np.nan
     sqDevSum = np.ones((len(lats), len(lons))) * np.nan
     mdlByObsSum = np.ones((len(lats), len(lons))) * np.nan
@@ -118,11 +119,13 @@ def computeCumDeviations(lons, lats, mapdata):
                 continue
             _obsSum = np.sum(msrs)
             _sqObsSum = np.sum(msrs**2.0)
+            _sqModSum = np.sum(mods**2.0)
             _devSum = np.sum(mods - msrs)
             _sqDevSum = np.sum((mods - msrs) ** 2.0)
             _mdlByObsSum = np.sum(msrs * mods)
             obsSum[iy, ix] = _obsSum
             sqObsSum[iy, ix] = _sqObsSum
+            sqModSum[iy, ix] = _sqModSum
             devSum[iy, ix] = _devSum
             sqDevSum[iy, ix] = _sqDevSum
             mdlByObsSum[iy, ix] = _mdlByObsSum
@@ -130,7 +133,7 @@ def computeCumDeviations(lons, lats, mapdata):
 #            print(iy, ix)
             _consideredCells += 1
     print("        considered cells: " + str(_consideredCells))
-    return obsSum, sqObsSum, devSum, sqDevSum, mdlByObsSum, dtcount
+    return obsSum, sqObsSum, sqModSum, devSum, sqDevSum, mdlByObsSum, dtcount
     
 
 def computeMean(lons, lats, mapdata):
