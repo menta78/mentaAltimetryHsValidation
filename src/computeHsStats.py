@@ -4,8 +4,7 @@ from datetime import datetime
 from matplotlib import pyplot as plt
 
 import src.coarsenSatData
-
-
+import src.utils as utils
 import src.mapByLonLat as mll
 
 
@@ -284,25 +283,7 @@ def elaborateMeasures(
     mdlByObsSum[cnd] = np.nan
     dtcount[cnd] = np.nan
 
-    N = np.nansum(conditionNumberSamples)
-
-    ssres = np.nansum(sqDevSum, where=conditionPth)
-    sstot = np.nansum(sqObsSum, where=conditionPth)
-
-    absre_ = np.nansum(devSum, where=conditionPth)
-    nobs = np.nansum(obsSum, where=conditionPth)
-
-    sigmaObs = np.sqrt(sqObsSum, initial=0, where=conditionPth)
-    sigmaModel = np.sqrt(sqModSum, initial=0, where=conditionPth)
-    cov_ = np.nansum(mdlByObsSum, initial=0, where=conditionPth)
-
-    absreTot = absre_ / N
-    r2Tot = 1 - ssres / sstot
-    nr2Tot = 1 / (2 - r2Tot)
-    rebTot = absre_ / nobs * 100
-    rmseTot = np.sqrt(np.nansum(sqDevSum, where=conditionPth) / N)
-    nrmseTot = np.sqrt(ssres / N)
-    pearsonTot = cov_ / (sigmaModel * sigmaObs)
+    stats = utils.computeStats(obs, model, pth)
 
     totIndStr = """
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -311,22 +292,18 @@ startDate: {startDate}
 endDate: {endDate}
 pth: {pth:2.5f}
 rmse: {rmseTot:2.5f}
-nrmse: {nrmseTot:2.5f}
 R2: {r2:2.5f}
-NR2: {nr2:2.5f}
 Bias: {absre:2.5f}
 RelBias: {reb:2.5f}
 Pearson: {pearson:2.5f}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
     totIndStr = totIndStr.format(
-        rmseTot=rmseTot,
-        nrmseTot=nrmseTot,
-        r2=r2Tot,
-        nr2=nr2Tot,
-        absre=absreTot,
-        reb=rebTot,
-        pearson=pearsonTot,
+        rmseTot=stats["RMSE"],
+        r2=stats["r2"],
+        absre=stats["Absolute_Bias"],
+        reb=stats["Relative_Bias"],
+        pearson=stats["Pearson"],
         startDate=startDate,
         endDate=endDate,
         pth=pth,
