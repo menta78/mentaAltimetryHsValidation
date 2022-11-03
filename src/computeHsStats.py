@@ -21,7 +21,8 @@ def elaborateMeasures(
     endDate,
     hsSatAndModelDir,
     outputDir,
-    latlims=[-63, 63],
+#    latlims=[-63, 63],
+    latlims=[-90, 90],
     lonlims=[-180, 180],
     filterHighSsh=False,
     filterSshMaximum=0.0,
@@ -258,7 +259,7 @@ def elaborateMeasures(
     satssh_mean = np.nanmean(satssh_)
 
     satssh = satssh_ - satssh_mean
-    modssh = modssh_  # - modssh_mean
+    modssh = modssh_ - modssh_mean
 
     # compute percentiles.
     pobs = np.nanpercentile(satssh, pth)
@@ -266,16 +267,15 @@ def elaborateMeasures(
     print("pth observations = ", pobs)
     print("pth model = ", pmod)
 
-    condition = satssh >= 0
-    meanObs = np.nanmean(satssh, where=condition)
+    # condition = satssh >= 0
+    # meanObs = np.nanmean(satssh, where=condition)
 
-    condition1 = satssh >= pobs
-    condition2 = modssh >= pmod
-    conditionPth = condition1 & condition2
+    # condition1 = satssh >= pobs
+    # condition2 = modssh >= pmod
+    # conditionPth = condition1 & condition2
     # conditionPth = condition1 | condition2
 
     cnd = dtcount < minObsForValidation
-    conditionNumberSamples = condition
 
     sqDevSum[cnd] = np.nan
     sqObsSum[cnd] = np.nan
@@ -283,7 +283,7 @@ def elaborateMeasures(
     mdlByObsSum[cnd] = np.nan
     dtcount[cnd] = np.nan
 
-    stats = utils.computeStats(obs, model, pth)
+    stats = utils.computeStats(satssh, modssh, pth)
 
     totIndStr = """
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -296,6 +296,7 @@ R2: {r2:2.5f}
 Bias: {absre:2.5f}
 RelBias: {reb:2.5f}
 Pearson: {pearson:2.5f}
+N: {N:2.5f}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
     totIndStr = totIndStr.format(
@@ -304,6 +305,7 @@ Pearson: {pearson:2.5f}
         absre=stats["Absolute_Bias"],
         reb=stats["Relative_Bias"],
         pearson=stats["Pearson"],
+        N = stats["N"],
         startDate=startDate,
         endDate=endDate,
         pth=pth,
@@ -313,7 +315,7 @@ Pearson: {pearson:2.5f}
     print("")
     totIndsFilePath = os.path.join(
         outputDir,
-        "Hs_totalIndicators"
+        "HS_totalIndicators"
         + startDate.strftime("%Y%m%d")
         + "_"
         + endDate.strftime("%Y%m%d")
@@ -333,12 +335,12 @@ Pearson: {pearson:2.5f}
     sigmaModel = sqModSum
     cov_ = mdlByObsSum
 
-    absre = absre_ / N
+    absre = absre_ / stats["N"]
     r2 = 1 - ssres / sstot
     nr2 = 1 / (2 - r2)
     reb = absre_ / nobs * 100
-    rmse = np.sqrt(sqDevSum / N)
-    nrmse = np.sqrt(ssres / N)
+    rmse = np.sqrt(sqDevSum / stats["N"])
+    nrmse = np.sqrt(ssres / stats["N"])
     pearson = cov_ / (sigmaModel * sigmaObs)
 
     # saving to files
@@ -373,13 +375,6 @@ Pearson: {pearson:2.5f}
             f"r2_HS_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv",
         ),
         r2,
-    )
-    np.savetxt(
-        os.path.join(
-            outputDir,
-            f"nse_HS_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv",
-        ),
-        nse,
     )
     np.savetxt(
         os.path.join(
