@@ -37,7 +37,7 @@ statsDir = rootDir + "data/stats/"
 startDate, endDate = datetime(1995, 1, 1), datetime(1999, 12, 30)
 startDate, endDate = datetime(2012, 1, 1), datetime(2019, 12, 31)
 startDate, endDate = datetime(2002, 3, 22), datetime(2009, 12, 30)
-startDate, endDate = datetime(2002, 3, 22), datetime(2006, 12, 30)
+startDate, endDate = datetime(2002, 3, 22), datetime(2002, 12, 30)
 overwriteExisting = True
 
 # number of processes to be used for the interpolation
@@ -79,7 +79,7 @@ if doInterpolateModelToSat:
 
 # computing the statistics
 dx, dy = 1.0, 1.0
-computeSshStats.maskPointsCloseToTheCoast = False
+computeHsStats.maskPointsCloseToTheCoast = False
 
 latlims = [-90, 90]
 computeHsStats.elaborateMeasures(
