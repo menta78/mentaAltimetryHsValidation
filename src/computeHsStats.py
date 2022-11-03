@@ -383,14 +383,14 @@ Pearson: {pearson:2.5f}
         os.makedirs(outputDir)
     except:
         pass
-    np.savetxt(os.path.join(outputDir, f"lons_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), maplons)
-    np.savetxt(os.path.join(outputDir, f"lats_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), maplats)
-    np.savetxt(os.path.join(outputDir, f"rmse_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), rmse)
-    np.savetxt(os.path.join(outputDir, f"r2_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), r2)
-    np.savetxt(os.path.join(outputDir, f"nse_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), nse)
-    np.savetxt(os.path.join(outputDir, f"absolute_bias_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), absre)
-    np.savetxt(os.path.join(outputDir, f"pearson_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), pearson)
-    np.savetxt(os.path.join(outputDir, f"dtcount_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), dtcount)
+    np.savetxt(os.path.join(outputDir, f"lons_HS_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), maplons)
+    np.savetxt(os.path.join(outputDir, f"lats_HS_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), maplats)
+    np.savetxt(os.path.join(outputDir, f"rmse_HS_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), rmse)
+    np.savetxt(os.path.join(outputDir, f"r2_HS_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), r2)
+    np.savetxt(os.path.join(outputDir, f"nse_HS_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), nse)
+    np.savetxt(os.path.join(outputDir, f"absolute_bias_HS_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), absre)
+    np.savetxt(os.path.join(outputDir, f"pearson_HS_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), pearson)
+    np.savetxt(os.path.join(outputDir, f"dtcount_HS_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv"), dtcount)
 
     print("output dir: " + outputDir)
 

@@ -4,7 +4,7 @@ from src.interpolateModelToCoarsenedSatData import (
     interpolateModelTocoarsenCmemsSshSatData_schismWWM,
     interpolateModelToCoarsenedSatData_schismWWM,
 )
-import src.computeSshStats as computeSshStats
+import src.computeHsStats as computeHsStats
 import src.computeStats as computeStats
 from datetime import datetime
 
@@ -82,7 +82,7 @@ dx, dy = 1.0, 1.0
 computeSshStats.maskPointsCloseToTheCoast = False
 
 latlims = [-90, 90]
-computeSshStats.elaborateMeasures(
+computeHsStats.elaborateMeasures(
     startDate,
     endDate,
     hsModelAndSatObsDir,
