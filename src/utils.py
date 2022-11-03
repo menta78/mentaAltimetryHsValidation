@@ -150,6 +150,8 @@ def computeStats(obs, model, pth):
     # computing r2 (and other measures) gauge by gauge
     pmodel = np.nanpercentile(model, pth)
     pobs = np.nanpercentile(obs, pth)
+    print("pth obs = ", pobs)
+    print("pth model = ", pmodel)
 
     condition1_ = obs >= pobs 
     condition2_ = model >= model

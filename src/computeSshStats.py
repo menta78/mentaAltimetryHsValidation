@@ -251,6 +251,7 @@ def elaborateMeasures(
         satssh.extend(satssh[i])
         modssh.extend(modssh[i])
 
+    print(len(satssh))
     satssh_ = np.array(satssh)[0]
     modssh_ = np.array(modssh)[0]
 
@@ -259,20 +260,6 @@ def elaborateMeasures(
 
     satssh = satssh_ - satssh_mean
     modssh = modssh_ #- modssh_mean
-
-    # compute percentiles.
-    pobs = np.nanpercentile(satssh, pth)
-    pmod = np.nanpercentile(modssh, pth)
-    print("pth observations = ", pobs)
-    print("pth model = ", pmod)
-
-    # condition = satssh >= 0
-    # meanObs = np.nanmean(satssh, where=condition)
-
-    # condition1 = satssh >= pobs
-    # condition2 = modssh >= pmod
-    # conditionPth = condition1 & condition2
-    # conditionPth = condition1 | condition2
 
     cnd = dtcount < minObsForValidation
 
