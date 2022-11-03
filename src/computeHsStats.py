@@ -148,6 +148,7 @@ def elaborateMeasures(
             maplats,
             _obsSum,
             _sqObsSum,
+            _sqModSum,
             _devSum,
             _sqDevSum,
             _mdlByObsSum,
@@ -161,6 +162,7 @@ def elaborateMeasures(
             (
                 obsSum,
                 sqObsSum,
+                sqModSum,
                 devSum,
                 sqDevSum,
                 mdlByObsSum,
@@ -172,6 +174,7 @@ def elaborateMeasures(
             ) = (
                 _obsSum,
                 _sqObsSum,
+                _sqModSum,
                 _devSum,
                 _sqDevSum,
                 _mdlByObsSum,
@@ -184,6 +187,7 @@ def elaborateMeasures(
         else:
             obsSum = np.nansum([obsSum, _obsSum], 0)
             sqObsSum = np.nansum([sqObsSum, _sqObsSum], 0)
+            sqModSum = np.nansum([sqModSum, _sqModSum], 0)
             devSum = np.nansum([devSum, _devSum], 0)
             sqDevSum = np.nansum([sqDevSum, _sqDevSum], 0)
             mdlByObsSum = np.nansum([mdlByObsSum, _mdlByObsSum], 0)
@@ -198,6 +202,7 @@ def elaborateMeasures(
         maplats = maplats[cnd]
         obsSum = obsSum[cnd, :]
         sqObsSum = sqObsSum[cnd, :]
+        sqModSum = sqModSum[cnd, :]
         devSum = devSum[cnd, :]
         sqDevSum = sqDevSum[cnd, :]
         mdlByObsSum = mdlByObsSum[cnd, :]
@@ -214,6 +219,7 @@ def elaborateMeasures(
         cnd = msk == 0
         obsSum[cnd] = np.nan
         sqObsSum[cnd] = np.nan
+        sqModSum[cnd] = np.nan
         devSum[cnd] = np.nan
         sqDevSum[cnd] = np.nan
         mdlByObsSum[cnd] = np.nan
@@ -228,6 +234,7 @@ def elaborateMeasures(
         cnd = msk == 0
         obsSum[cnd] = np.nan
         sqObsSum[cnd] = np.nan
+        sqModSum[cnd] = np.nan
         devSum[cnd] = np.nan
         sqDevSum[cnd] = np.nan
         mdlByObsSum[cnd] = np.nan
