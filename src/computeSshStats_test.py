@@ -254,26 +254,25 @@ def elaborateMeasures(
     modssh = modssh_  #- modssh_mean
 
     # compute percentiles.
-    pobs = np.nanpercentile(satssh, pth)
-    pmod = np.nanpercentile(modssh, pth)
-    print("pth observations = ", pobs)
-    print("pth model = ", pmod)
+    # pobs = np.nanpercentile(satssh, pth)
+    # pmod = np.nanpercentile(modssh, pth)
+    # print("pth observations = ", pobs)
+    # print("pth model = ", pmod)
 
-    condition = satssh>=0
-    meanObs = np.nanmean(satssh, where= condition)
+    # condition = satssh>=0
+    # meanObs = np.nanmean(satssh, where= condition)
 
-    condition1 = satssh >= pobs 
-    condition2 = modssh >= pmod
-    conditionPth = condition1 & condition2
+    # condition1 = satssh >= pobs 
+    # condition2 = modssh >= pmod
+    # conditionPth = condition1 & condition2
     #conditionPth = condition1 | condition2
 
     cnd = dtcount < minObsForValidation
-    conditionNumberSamples = condition 
 
     sqDevSum[cnd] = np.nan
     dtcount[cnd] = np.nan
 
-    r2, nse, ab, rb, rmse, nrmse, pearson = utils.computeStats(obs_, model_, pth)
+    r2, nse, ab, rb, rmse, nrmse, pearson = utils.computeStats(satssh, modssh, pth)
     nnse = 1/(2-nse)
     nr2 = 1/(2-r2)
 
@@ -291,7 +290,7 @@ Pearson: {pearson:2.5f}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
     totIndStr = totIndStr.format(
-        rmseTot = rmseTot,
+        rmseTot = rmse,
         nse     = nse,
         r2      = r2,
         nnse     = nnse,
@@ -308,7 +307,12 @@ Pearson: {pearson:2.5f}
         f.write(totIndStr)
         f.close()
 
-    rmse = np.sqrt(sqDevSum / N)
+    rmse = np.sqrt(sqDevSum)
+
+    bias = devSum / obsSum
+    absBias = devSum / dtcount
+    nrmse = np.sqrt(sqDevSum / sqObsSum)
+    hh = np.sqrt(sqDevSum / mdlByObsSum)
 
     # saving to files
     try:
@@ -318,6 +322,7 @@ Pearson: {pearson:2.5f}
     np.savetxt(os.path.join(outputDir, "lons.csv"), maplons)
     np.savetxt(os.path.join(outputDir, "lats.csv"), maplats)
     np.savetxt(os.path.join(outputDir, "rmse.csv"), rmse)
+    np.savetxt(os.path.join(outputDir, "bias.csv"), bias)
     np.savetxt(os.path.join(outputDir, "dtcount.csv"), dtcount)
 
     print("output dir: " + outputDir)
