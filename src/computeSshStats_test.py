@@ -4,7 +4,8 @@ from datetime import datetime
 from matplotlib import pyplot as plt
 
 import src.coarsenSatData
-import src.utils as utils
+
+
 import src.mapByLonLat as mll
 
 import src.utils_test as utils
@@ -29,7 +30,7 @@ def elaborateMeasures(
     filterSshMaximum=0.0,
     dx=0.2,
     dy=0.2,
-    pth=90,
+    pth = 90,
 ):
 
     years = []
@@ -72,7 +73,6 @@ def elaborateMeasures(
             (
                 obsSum,
                 sqObsSum,
-                sqModSum,
                 devSum,
                 sqDevSum,
                 mdlByObsSum,
@@ -84,7 +84,6 @@ def elaborateMeasures(
                 maplats,
                 obsSum,
                 sqObsSum,
-                sqModSum,
                 devSum,
                 sqDevSum,
                 mdlByObsSum,
@@ -136,23 +135,20 @@ def elaborateMeasures(
     (
         obsSum,
         sqObsSum,
-        sqModSum,
         devSum,
-        sqModSum,
         sqDevSum,
         dtcount,
         obsMaxSum,
         mdlMaxSum,
         obsTotMax,
         mdlTotMax,
-    ) = (None, None, None, None, None, None, None, None, None, None, None)
+    ) = (None, None, None, None, None, None, None, None, None)
     for blob in iterateByYear():
         (
             maplons,
             maplats,
             _obsSum,
             _sqObsSum,
-            _sqModSum,
             _devSum,
             _sqDevSum,
             _mdlByObsSum,
@@ -166,7 +162,6 @@ def elaborateMeasures(
             (
                 obsSum,
                 sqObsSum,
-                sqModSum,
                 devSum,
                 sqDevSum,
                 mdlByObsSum,
@@ -178,7 +173,6 @@ def elaborateMeasures(
             ) = (
                 _obsSum,
                 _sqObsSum,
-                _sqModSum,
                 _devSum,
                 _sqDevSum,
                 _mdlByObsSum,
@@ -191,7 +185,6 @@ def elaborateMeasures(
         else:
             obsSum = np.nansum([obsSum, _obsSum], 0)
             sqObsSum = np.nansum([sqObsSum, _sqObsSum], 0)
-            sqModSum = np.nansum([sqModSum, _sqModSum], 0)
             devSum = np.nansum([devSum, _devSum], 0)
             sqDevSum = np.nansum([sqDevSum, _sqDevSum], 0)
             mdlByObsSum = np.nansum([mdlByObsSum, _mdlByObsSum], 0)
@@ -206,7 +199,6 @@ def elaborateMeasures(
         maplats = maplats[cnd]
         obsSum = obsSum[cnd, :]
         sqObsSum = sqObsSum[cnd, :]
-        sqModSum = sqModSum[cnd, :]
         devSum = devSum[cnd, :]
         sqDevSum = sqDevSum[cnd, :]
         mdlByObsSum = mdlByObsSum[cnd, :]
@@ -223,7 +215,6 @@ def elaborateMeasures(
         cnd = msk == 0
         obsSum[cnd] = np.nan
         sqObsSum[cnd] = np.nan
-        sqModSum[cnd] = np.nan
         devSum[cnd] = np.nan
         sqDevSum[cnd] = np.nan
         mdlByObsSum[cnd] = np.nan
@@ -238,7 +229,6 @@ def elaborateMeasures(
         cnd = msk == 0
         obsSum[cnd] = np.nan
         sqObsSum[cnd] = np.nan
-        sqModSum[cnd] = np.nan
         devSum[cnd] = np.nan
         sqDevSum[cnd] = np.nan
         mdlByObsSum[cnd] = np.nan
@@ -248,64 +238,59 @@ def elaborateMeasures(
         obsTotMax[cnd] = np.nan
         mdlTotMax[cnd] = np.nan
 
+
     # flatting array
     for i in range(len(satssh)):
-        satssh.extend(satssh[i])
-        modssh.extend(modssh[i])
+      satssh.extend(satssh[i])
+      modssh.extend(modssh[i])
 
-    print(len(satssh))
     satssh_ = np.array(satssh)[0]
     modssh_ = np.array(modssh)[0]
 
     modssh_mean = np.nanmean(modssh_)
     satssh_mean = np.nanmean(satssh_)
 
-    satssh = satssh_ - satssh_mean
-    modssh = modssh_ #- modssh_mean
+    satssh = satssh_  - satssh_mean
+    modssh = modssh_  #- modssh_mean
+
+    # compute percentiles.
+    # pobs = np.nanpercentile(satssh, pth)
+    # pmod = np.nanpercentile(modssh, pth)
+    # print("pth observations = ", pobs)
+    # print("pth model = ", pmod)
+
+    # condition = satssh>=0
+    # meanObs = np.nanmean(satssh, where= condition)
+
+    # condition1 = satssh >= pobs 
+    # condition2 = modssh >= pmod
+    # conditionPth = condition1 & condition2
+    #conditionPth = condition1 | condition2
 
     cnd = dtcount < minObsForValidation
 
     sqDevSum[cnd] = np.nan
-    sqObsSum[cnd] = np.nan
-    sqModSum[cnd] = np.nan
-    mdlByObsSum[cnd] = np.nan
     dtcount[cnd] = np.nan
 
-<<<<<<< HEAD
-    stats = utils.computeStats(satssh, modssh, pth)
-=======
-    r2, nse, ab, rb, rmse, nrmse, pearson = utils.computeStats(obs_, model_, pth)
+    r2, nse, ab, rb, rmse, nrmse, pearson = utils.computeStats(satssh, modssh, pth)
     nnse = 1/(2-nse)
     nr2 = 1/(2-r2)
->>>>>>> temp-branch
 
     totIndStr = """
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 TOTAL ERROR INDICATORS:
-startDate: {startDate}
-endDate: {endDate}
-pth: {pth:2.5f}
 rmse: {rmseTot:2.5f}
+NSE: {nse:2.5f}
 R2: {r2:2.5f}
+NNSE: {nnse:2.5f}
+NR2: {nr2:2.5f}
 Bias: {absre:2.5f}
 RelBias: {reb:2.5f}
 Pearson: {pearson:2.5f}
-N: {N:2.5f}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
     totIndStr = totIndStr.format(
-<<<<<<< HEAD
-        rmseTot=stats["RMSE"],
-        r2=stats["r2"],
-        absre=stats["Absolute_Bias"],
-        reb=stats["Relative_Bias"],
-        pearson=stats["Pearson"],
-        N = stats["N"],
-        startDate=startDate,
-        endDate=endDate,
-        pth=pth,
-=======
-        rmseTot = rmseTot,
+        rmseTot = rmse,
         nse     = nse,
         r2      = r2,
         nnse     = nnse,
@@ -313,95 +298,32 @@ N: {N:2.5f}
         absre = ab,
         reb = rb,
         pearson = pearson,
->>>>>>> temp-branch
     )
     print("")
     print(totIndStr)
     print("")
-    totIndsFilePath = os.path.join(
-        outputDir,
-        "SSH_totalIndicators"
-        + startDate.strftime("%Y%m%d")
-        + "_"
-        + endDate.strftime("%Y%m%d")
-        + ".txt",
-    )
+    totIndsFilePath = os.path.join(outputDir, "totalIndicators.txt")
     with open(totIndsFilePath, "w") as f:
         f.write(totIndStr)
         f.close()
 
-    ssres = sqDevSum
-    sstot = sqObsSum
+    rmse = np.sqrt(sqDevSum)
 
-    absre_ = devSum
-    nobs = obsSum
-
-    sigmaObs = sqObsSum
-    sigmaModel = sqModSum
-    cov_ = mdlByObsSum
-
-    absre = absre_ / stats["N"]
-    r2 = 1 - ssres / sstot
-    nr2 = 1 / (2 - r2)
-    reb = absre_ / nobs * 100
-    rmse = np.sqrt(sqDevSum / stats["N"])
-    nrmse = np.sqrt(ssres / stats["N"])
-    pearson = cov_ / (sigmaModel * sigmaObs)
+    bias = devSum / obsSum
+    absBias = devSum / dtcount
+    nrmse = np.sqrt(sqDevSum / sqObsSum)
+    hh = np.sqrt(sqDevSum / mdlByObsSum)
 
     # saving to files
     try:
         os.makedirs(outputDir)
     except:
         pass
-    np.savetxt(
-        os.path.join(
-            outputDir,
-            f"lons_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv",
-        ),
-        maplons,
-    )
-    np.savetxt(
-        os.path.join(
-            outputDir,
-            f"lats_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv",
-        ),
-        maplats,
-    )
-    np.savetxt(
-        os.path.join(
-            outputDir,
-            f"rmse_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv",
-        ),
-        rmse,
-    )
-    np.savetxt(
-        os.path.join(
-            outputDir,
-            f"r2_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv",
-        ),
-        r2,
-    )
-    np.savetxt(
-        os.path.join(
-            outputDir,
-            f"absolute_bias_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv",
-        ),
-        absre,
-    )
-    np.savetxt(
-        os.path.join(
-            outputDir,
-            f"pearson_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv",
-        ),
-        pearson,
-    )
-    np.savetxt(
-        os.path.join(
-            outputDir,
-            f"dtcount_SSH_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.csv",
-        ),
-        dtcount,
-    )
+    np.savetxt(os.path.join(outputDir, "lons.csv"), maplons)
+    np.savetxt(os.path.join(outputDir, "lats.csv"), maplats)
+    np.savetxt(os.path.join(outputDir, "rmse.csv"), rmse)
+    np.savetxt(os.path.join(outputDir, "bias.csv"), bias)
+    np.savetxt(os.path.join(outputDir, "dtcount.csv"), dtcount)
 
     print("output dir: " + outputDir)
 
