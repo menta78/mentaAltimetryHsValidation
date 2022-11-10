@@ -159,12 +159,6 @@ def getModelVariables(flsPath, varNames=None):
 def computeStats(obs_, model_, pth):
 
     # computing r2 (and other measures) gauge by gauge
-<<<<<<< HEAD
-    pmodel = np.nanpercentile(model, pth)
-    pobs = np.nanpercentile(obs, pth)
-    print("pth obs = ", pobs)
-    print("pth model = ", pmodel)
-=======
     pmodel = np.nanpercentile(model_, pth)
     pobs = np.nanpercentile(obs_, pth)
 
@@ -175,7 +169,6 @@ def computeStats(obs_, model_, pth):
     )
     model = model_[cnd]
     obs = obs_[cnd]
->>>>>>> temp-branch
 
     N = len(obs)
 

@@ -174,41 +174,12 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
         for i in range(hs.shape[-1]):
             hs[:,i] = hs[:,i] - meanelev[i]
 
-
-#    if _gridType == GRID_TYPE_UNSTRUCT:
-#        triObj = Triangulation(lat, lon)
-#    elif _gridType == GRID_TYPE_REGULAR:
-#        grdPoints = (lat.filled(), lon.filled())
-#    else:
-#        raise Exception("unsupported grid type: " + _gridType)
-
-
-    #TODO:
-    # Hay que restarle la media a hs
-
     print("    ... Interpolant schism model for each time step")
 
     # Generate an interpolant for each time step of the schism model
     nobs = len(_lonTidal)
     ntmmdl = len(tmmdl)
-    #intp0 = np.zeros([ntmmdl, nobs]) * np.nan
-
-#    for itm in range(ntmmdl):
-#        print("      processing time " + str(itm))
-#        hsii = hs[itm, :]
-#        try:
-#            hsii = hsii.filled(np.nan)
-#        except:
-#            pass
-#        if _gridType == GRID_TYPE_UNSTRUCT:
-#            intpltr = LinearTriInterpolator(triObj, hsii)
-#            intp0[itm, :] = intpltr(_latTidal, _lonTidal)
-#        elif _gridType == GRID_TYPE_REGULAR:
-#            intpltr = RegularGridInterpolator(
-#                grdPoints, hsii, bounds_error=False, fill_value=np.nan
-#            )
-#            intp0[itm, :] = intpltr((latSat, lonSat))
-
+  
     resT  = []
     intpT = []
     lonT = []
@@ -216,13 +187,6 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
     indxT = []
 
     j = 0
-
-
-    # Compute all the closest nodes to the tidal gauge
-    #nodeModel = np.zeros((nobs,))
-    #for i in range(nobs):
-    #    nodeModel[i] = utils.find_closest_node(lon, lat, [_lonTidal[i], _latTidal[i]])
-    #print("done ...")
 
     for i in range(nobs):
         print("    ... interpolating on time", flush=True)
@@ -240,14 +204,14 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
         intp = np.zeros([ntTidal, 1]) * np.nan
 
         node = utils.find_closest_node(lon, lat, [_lonTidal[i], _latTidal[i]])
-        #node = nodeModel[i]
         print("------ node = ", node, flush=True)
         intp0 = hs[:, node]
 
         intpltr = interp1d(tmmdl, intp0, bounds_error=False)
 
         intp = intpltr(tmstmpTidal)
-
+        print(intp0, intp)
+        jfrijfri
         res = np.array(_resTidal[i][idxMin:idxMax])
 
         lonn = np.array(_lonTidal[i])
@@ -258,19 +222,6 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
         Lonn = lonn*aux_
         Latt = latt*aux_
         Indx = j*aux_
-
-        # print("===")
-        # print(intp)
-        # print(intp.shape[:])
-        # print(res)
-        # print(res.shape[:])
-        # print(i)
-        # print("===")
-        # intp_ = np.zeros([intp.shape[0], 1])
-        # res_ = np.zeros([res.shape[0], 1])
-
-        # intp_[:,0] = intp 
-        # res_[:,0]  = res
 
         resT.append(res.tolist())
         intpT.append(intp.tolist())

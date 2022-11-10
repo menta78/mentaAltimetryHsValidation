@@ -133,16 +133,17 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
         raise Exception("unsupported grid type: " + _gridType)
 
     # Substract the model's mean of each node
-    ds = netCDF4.Dataset(_meanModelFile)
-    try:
-        meanelev = ds.variables["elev"][0,:]
-    except:
-        print("something wrong in file " + meanModelFile)
-        outFlPath = "none"
-        return outFlPath
+    if _meanModelFile:
+        ds = netCDF4.Dataset(_meanModelFile)
+        try:
+            meanelev = ds.variables["elev"][0,:]
+        except:
+            print("something wrong in file " + meanModelFile)
+            outFlPath = "none"
+            return outFlPath
 
-    for i in range(hs.shape[-1]):
-        hs[:,i] = hs[:,i] - meanelev[i]
+        for i in range(hs.shape[-1]):
+            hs[:,i] = hs[:,i] - meanelev[i]
 
 
     lonSat = dtSatAll[:, 1]
