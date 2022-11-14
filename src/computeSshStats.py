@@ -248,22 +248,23 @@ def elaborateMeasures(
         obsTotMax[cnd] = np.nan
         mdlTotMax[cnd] = np.nan
 
-    # flatting array
-    for i in range(len(satssh)):
-        satssh.extend(satssh[i])
-        modssh.extend(modssh[i])
+    # # flatting array
+    # for i in range(len(satssh)):
+    #     satssh.extend(satssh[i])
+    #     modssh.extend(modssh[i])
 
-    print(len(satssh))
-    satssh_ = np.array(satssh)[0]
-    modssh_ = np.array(modssh)[0]
+    # print(len(satssh))
+    # satssh_ = np.array(satssh)[0]
+    # modssh_ = np.array(modssh)[0]
 
-    modssh_mean = np.nanmean(modssh_)
-    satssh_mean = np.nanmean(satssh_)
+    # modssh_mean = np.nanmean(modssh_)
+    # satssh_mean = np.nanmean(satssh_)
 
-    satssh = satssh_ - satssh_mean
-    modssh = modssh_ #- modssh_mean
+    # satssh = satssh_ - satssh_mean
+    # modssh = modssh_ #- modssh_mean
 
     cnd = dtcount < minObsForValidation
+
 
     sqDevSum[cnd] = np.nan
     sqObsSum[cnd] = np.nan
@@ -271,13 +272,14 @@ def elaborateMeasures(
     mdlByObsSum[cnd] = np.nan
     dtcount[cnd] = np.nan
 
-<<<<<<< HEAD
-    stats = utils.computeStats(satssh, modssh, pth)
-=======
-    r2, nse, ab, rb, rmse, nrmse, pearson = utils.computeStats(obs_, model_, pth)
-    nnse = 1/(2-nse)
-    nr2 = 1/(2-r2)
->>>>>>> temp-branch
+    # pearson = np.nanmean(mdlByObsSum)/(np.nanmean(sqObsSum)*np.nanmean(sqModSum))
+    # print(pearson)
+    # jifuir
+
+    # r2, nse, ab, rb, rmse, nrmse, pearson = utils.computeStats(obs_, model_, pth)
+    # nnse = 1/(2-nse)
+    # nr2 = 1/(2-r2)
+
 
     totIndStr = """
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -294,17 +296,6 @@ N: {N:2.5f}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
     totIndStr = totIndStr.format(
-<<<<<<< HEAD
-        rmseTot=stats["RMSE"],
-        r2=stats["r2"],
-        absre=stats["Absolute_Bias"],
-        reb=stats["Relative_Bias"],
-        pearson=stats["Pearson"],
-        N = stats["N"],
-        startDate=startDate,
-        endDate=endDate,
-        pth=pth,
-=======
         rmseTot = rmseTot,
         nse     = nse,
         r2      = r2,
@@ -313,8 +304,8 @@ N: {N:2.5f}
         absre = ab,
         reb = rb,
         pearson = pearson,
->>>>>>> temp-branch
     )
+
     print("")
     print(totIndStr)
     print("")

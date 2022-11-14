@@ -159,12 +159,6 @@ def getModelVariables(flsPath, varNames=None):
 def computeStats(obs_, model_, pth):
 
     # computing r2 (and other measures) gauge by gauge
-<<<<<<< HEAD
-    pmodel = np.nanpercentile(model, pth)
-    pobs = np.nanpercentile(obs, pth)
-    print("pth obs = ", pobs)
-    print("pth model = ", pmodel)
-=======
     pmodel = np.nanpercentile(model_, pth)
     pobs = np.nanpercentile(obs_, pth)
 
@@ -175,17 +169,24 @@ def computeStats(obs_, model_, pth):
     )
     model = model_[cnd]
     obs = obs_[cnd]
->>>>>>> temp-branch
 
     N = len(obs)
+
+    # for i in range(N):
+    #     print("===")
+    #     print(model[i], obs[i])
+    #     print(np.nanmean(model_), np.nanmean(obs_))
+    #     print("===")
 
     # for i in range(N):
     #     print(obs[i], model[i])
 
     ssres_ = np.nansum((obs - model) ** 2)
+    #sstot_ = np.nansum((obs) ** 2)
     sstot_ = np.nansum((obs - np.nanmean(obs_)) ** 2)
     nsc1 = np.nansum(np.abs(obs - model))
     nsc2 = np.nansum(np.abs(obs - np.nanmean(obs_)))
+    #nsc2 = np.nansum(np.abs(obs))
 
     absre_ = np.nansum(model - obs)
     nobs = np.nansum(obs)
@@ -193,12 +194,25 @@ def computeStats(obs_, model_, pth):
     sigmaObs = np.sqrt(
         np.nansum((obs - np.nanmean(obs_)) ** 2)
     )
+    # sigmaObs = np.sqrt(
+    #     np.nansum((obs) ** 2)
+    # )
+
     sigmaModel = np.sqrt(
         np.nansum((model - np.nanmean(model_)) ** 2)
     )
+
+    # sigmaModel = np.sqrt(
+    #     np.nansum((model) ** 2)
+    # )
+
     cov_ = np.nansum(
         (obs - np.nanmean(obs_)) * (model - np.nanmean(model_))
     )
+
+    # cov_ = np.nansum(
+    #     (obs) * (model)
+    # )
 
     r2 = 1 - ssres_ / sstot_
     nse = 1 - nsc1 / nsc2

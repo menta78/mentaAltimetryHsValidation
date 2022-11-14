@@ -3,6 +3,42 @@ import xarray as xa
 import src.geodiccaCoastLine
 
 
+def mapByLonLatCumm(
+    mp, times, lons, lats, msrs, mods, mapdx, mapdy, lonlims=[-180, 180], latlims=[-90, 90]
+):
+    # import pdb; pdb.set_trace()
+    maplons = np.arange(lonlims[0], lonlims[1], mapdx)
+    maplats = np.arange(latlims[0], latlims[1], mapdy)
+
+    #mp = {}
+
+    for tm, lon, lat, msr, mod in zip(times, lons, lats, msrs, mods):
+        if (mod > 20) or (msr > 20):
+            continue
+        if (not (lonlims[0] <= lon) and (lon <= lonlims[1])) or (
+            not (latlims[0] <= lat) and (lat <= latlims[1])
+        ):
+            continue
+        ix = int((lon - lonlims[0]) // mapdx)
+        iy = int((lat - latlims[0]) // mapdy)
+
+        lst = mp.get((ix, iy), [[], [], [], [], []]) # return empty if value doesn't exists
+        mp[(ix, iy)] = lst
+
+        _tms = lst[0]
+        _lons = lst[1]
+        _lats = lst[2]
+        _msrs = lst[3]
+        _mods = lst[4]
+
+        _tms.append(tm)
+        _lons.append(lon)
+        _lats.append(lat)
+        _msrs.append(msr)
+        _mods.append(mod)
+
+    return maplons, maplats, mp
+
 def mapByLonLat(
     times, lons, lats, msrs, mods, mapdx, mapdy, lonlims=[-180, 180], latlims=[-90, 90]
 ):
@@ -13,7 +49,7 @@ def mapByLonLat(
     mp = {}
 
     for tm, lon, lat, msr, mod in zip(times, lons, lats, msrs, mods):
-        if mod > 20:
+        if (mod > 20) or (msr > 20):
             continue
         if (not (lonlims[0] <= lon) and (lon <= lonlims[1])) or (
             not (latlims[0] <= lat) and (lat <= latlims[1])
@@ -21,7 +57,8 @@ def mapByLonLat(
             continue
         ix = int((lon - lonlims[0]) // mapdx)
         iy = int((lat - latlims[0]) // mapdy)
-        lst = mp.get((ix, iy), [[], [], [], [], []])
+
+        lst = mp.get((ix, iy), [[], [], [], [], []]) # return empty if value doesn't exists
         mp[(ix, iy)] = lst
 
         _tms = lst[0]
@@ -136,9 +173,47 @@ def computeCumDeviations(lons, lats, mapdata):
     return obsSum, sqObsSum, sqModSum, devSum, sqDevSum, mdlByObsSum, dtcount
     
 
+def computeMean_cell(lons, lats, mapdata, mapDataAll):
+
+    for ix in range(len(lons)):
+        for iy in range(len(lats)):
+            data = mapdata.get((ix, iy))
+            if not data:
+                continue
+            tm = np.array(data[0])
+            lon = np.array(data[1])
+            lat = np.array(data[2])
+            msrs = np.array(data[3])
+            mods = np.array(data[4])
+
+            if len(mods) < nminobs:
+                continue
+            
+            # tm_mean_ =  np.nanmean(tm)
+            # lon_mean_ = np.nanmean(lon)
+            # lat_mean_ = np.nanmean(lat)
+            # sat_mean_ = np.nanmean(msrs)
+            # mod_mean_ = np.nanmean(mods)
+            tm_mean_ =  tm
+            lon_mean_ = np.nanmean(lon)
+            lat_mean_ = np.nanmean(lat)
+            sat_mean_ = msrs
+            mod_mean_ = mods
+
+            lst = mapDataAll.get((ix, iy), [[], [], [], [], []]) # return empty if value doesn't exists
+            lst[0].append(tm_mean_)
+            lst[1].append(lon_mean_)
+            lst[2].append(lat_mean_)
+            lst[3].append(sat_mean_)
+            lst[4].append(mod_mean_)
+
+            mapDataAll[(ix, iy)] = lst
+
+    return mapDataAll
+
 def computeMean(lons, lats, mapdata):
-    mod_mean = 0
-    sat_mean = 0
+    _mod_mean = 0
+    _sat_mean = 0
     _consideredCells = 0
     for ix in range(len(lons)):
         for iy in range(len(lats)):
