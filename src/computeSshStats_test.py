@@ -328,7 +328,6 @@ def elaborateMeasures(
     ax.plot(model, label='model', alpha=.5)
     ax.legend()
     plt.savefig("testtt.png")
-    frfir
 
     r2lst = []
     nselst = []
@@ -348,12 +347,6 @@ def elaborateMeasures(
 
             r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(obs, model, pth)
 
-
-            if r2_>0.5 and pearson_>0.5:
-                print(ix, iy, "   pearson =", pearson_)
-                print(ix, iy, "   r2 =", r2_)
-                print(ix, iy, "   bias =", ab_)
-                print("=================================")
             r2lst.append(r2_)
             nselst.append(nse_)
             ablst.append(ab_)

@@ -53,7 +53,7 @@ latlims = [-90, 90]
 computeSshStats.elaborateMeasures(
     startDate,
     endDate,
-    hsModelAndSatObsSshDir,
+    hsModelAndSatObsHsDir,
     statsDir,
     dx=dx,
     dy=dy,
