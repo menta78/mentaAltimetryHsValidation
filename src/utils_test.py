@@ -155,7 +155,48 @@ def getModelVariables(flsPath, varNames=None):
 
     return tmmdl, lon, lat, var
 
+def computeStatsHs(obs_, model_, pth):
 
+    # computing r2 (and other measures) gauge by gauge
+    pmodel = np.nanpercentile(model_, pth)
+    pobs = np.nanpercentile(obs_, pth)
+
+    #print(pmodel, pobs)
+    # considering the data above the 95th percentile of the observation
+    cnd = np.logical_and(
+        obs_ >= pobs, model_ >= model_
+    )
+    model = model_[cnd]
+    obs = obs_[cnd]
+
+
+
+    N = len(obs)
+
+    # for i in range(N):
+    #     print(obs[i], model[i])
+
+
+    devSum = np.nansum(model - obs)
+    obsSum = np.nansum(obs)
+    #print(obsSum)
+
+
+    cov = np.nansum( obs * model )
+
+    nbi = devSum / obsSum
+    absBias = devSum / N
+    nrmse = np.sqrt(devSum / np.nansum(obs**2))
+    hh = np.sqrt(devSum / cov)
+    # nbiYMaxTot = np.nansum(mdlMaxSum - obsMaxSum) / np.nansum(obsMaxSum)
+    # nbiTotMaxTot = np.nansum(mdlTotMax - obsTotMax) / np.nansum(obsTotMax)
+
+    if (obsSum == 0)  or (cov == 0):
+        return 0, absBias, 0, 0
+
+    return nbi, absBias, nrmse, hh
+
+    
 def computeStats(obs_, model_, pth):
 
     # computing r2 (and other measures) gauge by gauge
@@ -173,12 +214,20 @@ def computeStats(obs_, model_, pth):
     N = len(obs)
 
     # for i in range(N):
+    #     print("===")
+    #     print(model[i], obs[i])
+    #     print(np.nanmean(model_), np.nanmean(obs_))
+    #     print("===")
+
+    # for i in range(N):
     #     print(obs[i], model[i])
 
     ssres_ = np.nansum((obs - model) ** 2)
+    #sstot_ = np.nansum((obs) ** 2)
     sstot_ = np.nansum((obs - np.nanmean(obs_)) ** 2)
     nsc1 = np.nansum(np.abs(obs - model))
     nsc2 = np.nansum(np.abs(obs - np.nanmean(obs_)))
+    #nsc2 = np.nansum(np.abs(obs))
 
     absre_ = np.nansum(model - obs)
     nobs = np.nansum(obs)
@@ -186,12 +235,25 @@ def computeStats(obs_, model_, pth):
     sigmaObs = np.sqrt(
         np.nansum((obs - np.nanmean(obs_)) ** 2)
     )
+    # sigmaObs = np.sqrt(
+    #     np.nansum((obs) ** 2)
+    # )
+
     sigmaModel = np.sqrt(
         np.nansum((model - np.nanmean(model_)) ** 2)
     )
+
+    # sigmaModel = np.sqrt(
+    #     np.nansum((model) ** 2)
+    # )
+
     cov_ = np.nansum(
         (obs - np.nanmean(obs_)) * (model - np.nanmean(model_))
     )
+
+    # cov_ = np.nansum(
+    #     (obs) * (model)
+    # )
 
     r2 = 1 - ssres_ / sstot_
     nse = 1 - nsc1 / nsc2

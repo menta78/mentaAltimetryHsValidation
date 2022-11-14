@@ -337,6 +337,8 @@ def elaborateMeasures(
     nrmselst = []
     pearsonlst = []
 
+    nminobs = 0
+    
     for ix in range(len(lons)):
         for iy in range(len(lats)):
             data = mapdata.get((ix, iy))
@@ -344,6 +346,9 @@ def elaborateMeasures(
                 continue
             obs = np.array(data[3])
             model = np.array(data[4])
+
+            if len(model) <= nminobs:
+                continue
 
             r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(obs, model, pth)
 
