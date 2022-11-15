@@ -258,7 +258,7 @@ def elaborateMeasures(
 
         while startDate <= endDate:
             strtime = startDate.strftime("%Y%m%d")
-            pthfile = hsSatAndModelDir + "/ERA5_schismwwm_"+strtime+"*.npy"
+            pthfile = hsSatAndModelDir + "/ERA5_schismwwm_" + strtime + "*.npy"
             fileFound = glob.glob(pthfile)
             fl.append(fileFound)
             startDate += timedelta(days=1)
@@ -280,7 +280,7 @@ def elaborateMeasures(
     hhlst = []
     nbilst = []
 
-   #looping on tidal gauge files
+    # looping on tidal gauge files
     obs = np.array([])
     model = np.array([])
     dts = np.array([])
@@ -291,16 +291,26 @@ def elaborateMeasures(
         dts_ = data_[:, 0]
         lons = data_[:, 1]
         lats = data_[:, 2]
-        obs_ = data_[:,3]
-        model_ = data_[:,4]
+        obs_ = data_[:, 3]
+        model_ = data_[:, 4]
 
-        maplons, maplats, mapdata = mll.mapByLonLatCumm(mapdata, dts_, lons, lats, obs_, model_, dx, dy, lonlims=lonlims, latlims=latlims)
-        #mapdata = mll.computeMean_cell(lons, lats, mapdata, mapdata)
-        
+        maplons, maplats, mapdata = mll.mapByLonLatCumm(
+            mapdata,
+            dts_,
+            lons,
+            lats,
+            obs_,
+            model_,
+            dx,
+            dy,
+            lonlims=lonlims,
+            latlims=latlims,
+        )
+        # mapdata = mll.computeMean_cell(lons, lats, mapdata, mapdata)
+
         # model = np.concatenate((model, model_), axis=0)
         # obs = np.concatenate((obs, obs_), axis=0)
         # dts = np.concatenate((dts, dts_), axis=0)
-
 
     # fig, ax = plt.subplots()
     # # It's missing time array
@@ -346,7 +356,7 @@ def elaborateMeasures(
                 continue
 
             _nbi, _absBias, _nrmse, _hh = utils.computeStatsHs(obs, model, pth)
-            
+
             bias[iy, ix] = _absBias
             nbi[iy, ix] = _nbi
             hh[iy, ix] = _hh
@@ -357,7 +367,6 @@ def elaborateMeasures(
     nrmse = np.ma.masked_array(nrmse, mask)
     nbi = np.ma.masked_array(nbi, mask)
     hh = np.ma.masked_array(hh, mask)
-
 
     # abArray = np.array(ablst)
     # nrmseArray = np.array(nrmselst)
@@ -398,18 +407,16 @@ def elaborateMeasures(
     )
     totIndsFilePath = os.path.join(outputDir, statFile)
     with open(totIndsFilePath, "w") as f:
-        f.write("nrmse = " + str(nrmseTot)+"\n")
-        f.write("abs bias = " + str(abTot)+"\n")
-        f.write("nbi = " + str(nbiTot)+"\n")
-        f.write("hh = " + str(hhTot)+"\n")
-
+        f.write("nrmse = " + str(nrmseTot) + "\n")
+        f.write("abs bias = " + str(abTot) + "\n")
+        f.write("nbi = " + str(nbiTot) + "\n")
+        f.write("hh = " + str(hhTot) + "\n")
 
     # saving to files
     try:
         os.makedirs(outputDir)
     except:
         pass
-
 
     np.savetxt(os.path.join(outputDir, "lons.csv"), maplons)
     np.savetxt(os.path.join(outputDir, "lats.csv"), maplats)
@@ -459,7 +466,6 @@ def elaborateMeasures(
         ),
         bias,
     )
-
 
     # np.savetxt(os.path.join(outputDir, "dtcount.csv"), dtcount)
 

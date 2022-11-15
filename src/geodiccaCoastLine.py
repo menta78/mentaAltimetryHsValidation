@@ -1,7 +1,7 @@
 from src.geodiccaUtility import *
 
 # from alphaBetaLab import abFixBasemap
-#from mpl_toolkits import basemap
+# from mpl_toolkits import basemap
 import math
 
 
@@ -16,7 +16,7 @@ class coastLine:
             self.basemap = basemap.Basemap(resolution=resolution)
         else:
             self.basemap = basemap.Basemap(
-                #resolution=resolution,
+                # resolution=resolution,
                 resolution=resolution,
                 llcrnrlon=llcrnr[0],
                 llcrnrlat=llcrnr[1],

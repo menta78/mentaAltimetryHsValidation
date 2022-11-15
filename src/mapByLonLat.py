@@ -4,14 +4,23 @@ import src.geodiccaCoastLine
 
 
 def mapByLonLatCumm(
-    mp, times, lons, lats, msrs, mods, mapdx, mapdy, lonlims=[-180, 180], latlims=[-90, 90]
+    mp,
+    times,
+    lons,
+    lats,
+    msrs,
+    mods,
+    mapdx,
+    mapdy,
+    lonlims=[-180, 180],
+    latlims=[-90, 90],
 ):
     # import pdb; pdb.set_trace()
     maplons = np.arange(lonlims[0], lonlims[1], mapdx)
     maplats = np.arange(latlims[0], latlims[1], mapdy)
 
-    #mp = {}
-    
+    # mp = {}
+
     for tm, lon, lat, msr, mod in zip(times, lons, lats, msrs, mods):
         if (mod > 20) or (msr > 20):
             continue
@@ -22,7 +31,9 @@ def mapByLonLatCumm(
         ix = int((lon - lonlims[0]) // mapdx)
         iy = int((lat - latlims[0]) // mapdy)
 
-        lst = mp.get((ix, iy), [[], [], [], [], []]) # return empty if value doesn't exists
+        lst = mp.get(
+            (ix, iy), [[], [], [], [], []]
+        )  # return empty if value doesn't exists
         mp[(ix, iy)] = lst
 
         _tms = lst[0]
@@ -38,6 +49,7 @@ def mapByLonLatCumm(
         _mods.append(mod)
 
     return maplons, maplats, mp
+
 
 def mapByLonLat(
     times, lons, lats, msrs, mods, mapdx, mapdy, lonlims=[-180, 180], latlims=[-90, 90]
@@ -58,7 +70,9 @@ def mapByLonLat(
         ix = int((lon - lonlims[0]) // mapdx)
         iy = int((lat - latlims[0]) // mapdy)
 
-        lst = mp.get((ix, iy), [[], [], [], [], []]) # return empty if value doesn't exists
+        lst = mp.get(
+            (ix, iy), [[], [], [], [], []]
+        )  # return empty if value doesn't exists
         mp[(ix, iy)] = lst
 
         _tms = lst[0]
@@ -167,11 +181,11 @@ def computeCumDeviations(lons, lats, mapdata):
             sqDevSum[iy, ix] = _sqDevSum
             mdlByObsSum[iy, ix] = _mdlByObsSum
             dtcount[iy, ix] = len(mods)
-#            print(iy, ix)
+            #            print(iy, ix)
             _consideredCells += 1
     print("        considered cells: " + str(_consideredCells))
     return obsSum, sqObsSum, sqModSum, devSum, sqDevSum, mdlByObsSum, dtcount
-    
+
 
 def computeMean_cell(lons, lats, mapdata, mapDataAll):
 
@@ -188,19 +202,21 @@ def computeMean_cell(lons, lats, mapdata, mapDataAll):
 
             if len(mods) < nminobs:
                 continue
-            
+
             # tm_mean_ =  np.nanmean(tm)
             # lon_mean_ = np.nanmean(lon)
             # lat_mean_ = np.nanmean(lat)
             # sat_mean_ = np.nanmean(msrs)
             # mod_mean_ = np.nanmean(mods)
-            tm_mean_ =  tm
+            tm_mean_ = tm
             lon_mean_ = np.nanmean(lon)
             lat_mean_ = np.nanmean(lat)
             sat_mean_ = msrs
             mod_mean_ = mods
 
-            lst = mapDataAll.get((ix, iy), [[], [], [], [], []]) # return empty if value doesn't exists
+            lst = mapDataAll.get(
+                (ix, iy), [[], [], [], [], []]
+            )  # return empty if value doesn't exists
             lst[0].append(tm_mean_)
             lst[1].append(lon_mean_)
             lst[2].append(lat_mean_)
@@ -210,6 +226,7 @@ def computeMean_cell(lons, lats, mapdata, mapDataAll):
             mapDataAll[(ix, iy)] = lst
 
     return mapDataAll
+
 
 def computeMean(lons, lats, mapdata):
     _mod_mean = 0
@@ -228,9 +245,10 @@ def computeMean(lons, lats, mapdata):
             _sat_mean += np.sum(msrs)
             _consideredCells += 1
     print("        considered cells: " + str(_consideredCells))
-    sat_mean = _sat_mean/_consideredCells
-    mod_mean = _mod_mean/_consideredCells
+    sat_mean = _sat_mean / _consideredCells
+    mod_mean = _mod_mean / _consideredCells
     return sat_mean, mod_mean
+
 
 def computeSkillsSsh(lons, lats, mapdata):
     sqObsSum = np.ones((len(lats), len(lons))) * np.nan
@@ -248,7 +266,7 @@ def computeSkillsSsh(lons, lats, mapdata):
             _sqDevSum = np.sum((mods - msrs) ** 2.0)
             sqDevSum[iy, ix] = _sqDevSum
             dtcount[iy, ix] = len(mods)
-#            print(iy, ix)
+            #            print(iy, ix)
             _consideredCells += 1
     print("        considered cells: " + str(_consideredCells))
     return sqDevSum, dtcount

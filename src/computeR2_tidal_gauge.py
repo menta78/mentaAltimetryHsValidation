@@ -60,7 +60,6 @@ def convert_datetime_nctime(nctime):
         float: _description_
     """
 
-
     def getNcCalendar(nctime):
         try:
             return nctime.calendar
@@ -71,7 +70,6 @@ def convert_datetime_nctime(nctime):
 
     date = netCDF4.num2date(nctime, units=nctime.units, calendar=clndr)
     return date
-
 
 
 def convert_timestamp_nc_calendar(nctime, timestamp):
@@ -85,7 +83,6 @@ def convert_timestamp_nc_calendar(nctime, timestamp):
         float: _description_
     """
 
-
     def getNcCalendar(nctime):
         try:
             return nctime.calendar
@@ -95,7 +92,7 @@ def convert_timestamp_nc_calendar(nctime, timestamp):
     clndr = getNcCalendar(nctime)
 
     if isinstance(timestamp, datetime):
-        ttimestamp = timestamp        
+        ttimestamp = timestamp
     else:
         ttimestamp = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
 
@@ -196,8 +193,8 @@ def get_ssh_time_model(modelDir, modelListFiltered):
             sshVarName = "hvel"
             timeVarName = "time"
             try:
-                ssh = ds.variables[sshVarName][:,:,0,0]
-                #ssh = ds.variables[sshVarName][:,:]
+                ssh = ds.variables[sshVarName][:, :, 0, 0]
+                # ssh = ds.variables[sshVarName][:,:]
                 time = ds.variables[timeVarName]
                 i += 1
             except:
@@ -208,8 +205,8 @@ def get_ssh_time_model(modelDir, modelListFiltered):
             fpth = os.path.join(modelDir, filename)
             ds = netCDF4.Dataset(fpth)
             try:
-                ssh_ = ds.variables[sshVarName][:,:,0,0]
-                #ssh_ = ds.variables[sshVarName][:,:]
+                ssh_ = ds.variables[sshVarName][:, :, 0, 0]
+                # ssh_ = ds.variables[sshVarName][:,:]
                 time_ = ds.variables[timeVarName]
             except:
                 print("something wrong in file " + fpth)
@@ -238,28 +235,33 @@ def get_latlon_model(modelDir, filename):
 
 
 def interpolate_ssh_tidal_points(latModel, lonModel, sshModel, nctime, tidalGauge):
-    #import matplotlib.pyplot as plt
+    # import matplotlib.pyplot as plt
     lonTidal = tidalGauge["longitude"].to_numpy()
     latTidal = tidalGauge["latitude"].to_numpy()
 
     # Prepare times
     timeTidal = tidalGauge["date_time"].to_numpy()
     timeTidalTimestamp_ = [t.astype(datetime) for t in timeTidal]
-    timeTidalTimestamp = [t/1e9 for t in timeTidalTimestamp_]
+    timeTidalTimestamp = [t / 1e9 for t in timeTidalTimestamp_]
     timeModel_ = convert_datetime_nctime(nctime)
-    timeModel = [datetime.strptime(t.strftime("%Y-%m-%d %H:%M:%S"), "%Y-%m-%d %H:%M:%S").timestamp() for t in timeModel_]
+    timeModel = [
+        datetime.strptime(
+            t.strftime("%Y-%m-%d %H:%M:%S"), "%Y-%m-%d %H:%M:%S"
+        ).timestamp()
+        for t in timeModel_
+    ]
 
     minIdx = np.where(np.in1d(timeTidalTimestamp, [timeModel[0]]))[0]
     maxIdx = np.where(np.in1d(timeTidalTimestamp, [timeModel[-1]]))[0]
-    timeTidalTimestamp = timeTidalTimestamp[minIdx[0]:maxIdx[0]]
+    timeTidalTimestamp = timeTidalTimestamp[minIdx[0] : maxIdx[0]]
 
     # Interpolating in space
     nobs = len(timeTidalTimestamp)
     ntime = len(timeModel)
-    intp0 = np.zeros([ntime, nobs]) * np.nan #number of times, number of tidal gauges
+    intp0 = np.zeros([ntime, nobs]) * np.nan  # number of times, number of tidal gauges
     triObj = Triangulation(latModel, lonModel)
-    #plt.triplot(triObj)
-    #plt.savefig("mesh.png")
+    # plt.triplot(triObj)
+    # plt.savefig("mesh.png")
 
     intp = np.zeros([ntime, 1]) * np.nan
 
@@ -273,11 +275,11 @@ def interpolate_ssh_tidal_points(latModel, lonModel, sshModel, nctime, tidalGaug
         intpltr = LinearTriInterpolator(triObj, sshii)
         intp0[itm, :] = intpltr(latTidal, lonTidal)
 
-        #intpltr = interp1d(timeTidalTimestamp, intp0[itm, :])
-        #intp[itm] = intpltr(timeModel[itm])
+        # intpltr = interp1d(timeTidalTimestamp, intp0[itm, :])
+        # intp[itm] = intpltr(timeModel[itm])
 
-#    print(intp[:])
-#    return
+    #    print(intp[:])
+    #    return
 
     intp = np.zeros([nobs, 1]) * np.nan
     for iobs in range(nobs):
@@ -285,18 +287,21 @@ def interpolate_ssh_tidal_points(latModel, lonModel, sshModel, nctime, tidalGaug
         intp[iobs] = intpltr(timeTidalTimestamp[iobs])
 
     sl = tidalGauge["sea_level"].to_numpy()
-    sl = sl[minIdx[0]:maxIdx[0]]
+    sl = sl[minIdx[0] : maxIdx[0]]
     for iobs in range(nobs):
         print(datetime.fromtimestamp(timeTidalTimestamp[iobs]), intp[iobs], sl[iobs])
 
 
 def get_tidal_variables(tidalGauge, timeModel):
-    lonTidal = tidalGauge["longitude"].to_numpy() # a number
+    lonTidal = tidalGauge["longitude"].to_numpy()  # a number
     latTidal = tidalGauge["latitude"].to_numpy()
     timeTidal = tidalGauge["date_time"].to_numpy()
-    timeTidalConverted_ = [datetime.utcfromtimestamp(int(t)/1e9) for t in timeTidal]
-    timeTidalConverted = [convert_timestamp_nc_calendar(timeModel, t) for t in timeTidalConverted_]
+    timeTidalConverted_ = [datetime.utcfromtimestamp(int(t) / 1e9) for t in timeTidal]
+    timeTidalConverted = [
+        convert_timestamp_nc_calendar(timeModel, t) for t in timeTidalConverted_
+    ]
     return lonTidal, latTidal, timeTidalConverted
+
 
 """ def compute_r2(g3, modelDir, ncExpression=r"schout_([0-9]*)\_compressed.nc", varNames=None, startDate, endDate):
     varNames = (

@@ -29,11 +29,10 @@ def elaborateMeasures(
     filterHsThreshold=0.0,
     dx=0.2,
     dy=0.2,
-    pth = 90, 
+    pth=90,
 ):
 
     years = []
-
 
     def iterateByYear():
         fls_ = [f for f in os.listdir(hsSatAndModelDir) if re.match("(.*)\.npy", f)]
@@ -146,10 +145,7 @@ def elaborateMeasures(
         if _sqDevSum is None:
             continue
         if sqDevSum is None:
-            (
-                sqDevSum,
-                dtcount,
-            ) = (
+            (sqDevSum, dtcount,) = (
                 _sqDevSum,
                 _dtcount,
             )
@@ -198,7 +194,6 @@ def elaborateMeasures(
     diff = np.nansum(sqDevSum)
     print(diff)
 
-
     # Compute rmse and extract mean from data
     sat_mean, mod_mean = mll.computeMean(maplons, maplats, mapdata)
 
@@ -222,11 +217,11 @@ def elaborateMeasures(
             mods_sum = np.sum(np.array(data[4]))
 
             deviation_[iy, ix] = np.sum((mods - msrs) ** 2.0)
-#            print(deviation_[iy, ix])
-#            print(iy, ix)
+            #            print(deviation_[iy, ix])
+            #            print(iy, ix)
             _consideredCells += 1
 
-    deviation = deviation_/(_consideredCells)
+    deviation = deviation_ / (_consideredCells)
     sat_mean = msrs_sum / _consideredCells
     mod_mean = mods_sum / _consideredCells
 
@@ -234,25 +229,25 @@ def elaborateMeasures(
 
     # flatting array
     for i in range(len(data_sat_)):
-      data_sat.extend(data_sat_[i])
+        data_sat.extend(data_sat_[i])
     for i in range(len(data_mod_)):
-      data_mod.extend(data_mod_[i])
+        data_mod.extend(data_mod_[i])
 
-    #sat_mean = np.nanmean(data_sat)
-    #mod_mean = np.nanmean(data_mod)
+    # sat_mean = np.nanmean(data_sat)
+    # mod_mean = np.nanmean(data_mod)
     print("mean sat data = ", sat_mean)
     print("mean mod data = ", mod_mean)
 
     data_mod = data_mod - mod_mean
-#    data_sat = data_sat - sat_mean
+    #    data_sat = data_sat - sat_mean
 
-#    sat_meann = np.nanmean(data_sat)
-#    print("mean sat data after remove mean = ", sat_meann)
+    #    sat_meann = np.nanmean(data_sat)
+    #    print("mean sat data after remove mean = ", sat_meann)
 
     pth_data_mod = np.nanpercentile(data_mod, pth)
     pth_data_sat = np.nanpercentile(data_sat, pth)
-    print("pth sat = " , pth_data_sat)
-    print("pth mod = " , pth_data_mod)
+    print("pth sat = ", pth_data_sat)
+    print("pth mod = ", pth_data_mod)
 
     filter_data_sat = []
     filter_data_mod = []
@@ -272,10 +267,10 @@ def elaborateMeasures(
             mods = np.array(data[4])
             for i in range(len(msrs)):
                 if msrs[i] >= pth_data_sat and mods[i] >= pth_data_mod:
-      #              nse1 += (mods[i] - msrs[i])**2
-      #              nse2 += (msrs[i] - sat_mean)**2
-      #              ssres += (mods[i] - msrs[i])**2
-      #              sstot += (msrs[i] - sat_mean)**2
+                    #              nse1 += (mods[i] - msrs[i])**2
+                    #              nse2 += (msrs[i] - sat_mean)**2
+                    #              ssres += (mods[i] - msrs[i])**2
+                    #              sstot += (msrs[i] - sat_mean)**2
                     filter_data_sat.append(msrs[i])
                     filter_data_mod.append(mods[i])
                 else:
@@ -285,31 +280,29 @@ def elaborateMeasures(
     filt_data_mod = np.array(filter_data_mod)
 
     print("mean filt_data_sat = ", np.nanmean(filt_data_sat))
-    nse1 = np.sum((filt_data_mod - filt_data_sat)**2)
-    nse2 = np.sum((filt_data_sat - np.nanmean(filt_data_sat))**2)
+    nse1 = np.sum((filt_data_mod - filt_data_sat) ** 2)
+    nse2 = np.sum((filt_data_sat - np.nanmean(filt_data_sat)) ** 2)
     # It is exactly the same, right?
-    ssres = np.sum((filt_data_mod - filt_data_sat)**2)
-    sstot = np.sum((filt_data_sat - np.nanmean(filt_data_sat))**2)
-
+    ssres = np.sum((filt_data_mod - filt_data_sat) ** 2)
+    sstot = np.sum((filt_data_sat - np.nanmean(filt_data_sat)) ** 2)
 
     print("considered cells after percentile filtering: ", len(filter_data_sat))
-    nse = 1 - nse1/nse2
-    r2 = 1 - ssres/sstot
+    nse = 1 - nse1 / nse2
+    r2 = 1 - ssres / sstot
     print("NSE = ", nse)
     print("R2 = ", r2)
 
-    #cnd = dtcount < minObsForValidation
-    #obsSum[cnd] = np.nan
-    #sqObsSum[cnd] = np.nan
-    #devSum[cnd] = np.nan
-    #sqDevSum[cnd] = np.nan
-    #mdlByObsSum[cnd] = np.nan
-    #dtcount[cnd] = np.nan
-    #obsMaxSum[cnd] = np.nan
-    #mdlMaxSum[cnd] = np.nan
-    #obsTotMax[cnd] = np.nan
-    #mdlTotMax[cnd] = np.nan
-
+    # cnd = dtcount < minObsForValidation
+    # obsSum[cnd] = np.nan
+    # sqObsSum[cnd] = np.nan
+    # devSum[cnd] = np.nan
+    # sqDevSum[cnd] = np.nan
+    # mdlByObsSum[cnd] = np.nan
+    # dtcount[cnd] = np.nan
+    # obsMaxSum[cnd] = np.nan
+    # mdlMaxSum[cnd] = np.nan
+    # obsTotMax[cnd] = np.nan
+    # mdlTotMax[cnd] = np.nan
 
     rmseTot = np.sqrt(np.nansum(deviation))
     totIndStr = """

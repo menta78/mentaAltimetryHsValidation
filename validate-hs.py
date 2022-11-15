@@ -9,7 +9,7 @@ import src.computeStats as computeStats
 from datetime import datetime
 
 # Directory where the raw globwave files are located
-#rawSatDataDir = "/home/ggarcia/Projects/mentaAltimetryHsValidation/satData/rawData"
+# rawSatDataDir = "/home/ggarcia/Projects/mentaAltimetryHsValidation/satData/rawData"
 
 rootDir = "/eos/jeodpp/data/projects/CLIMEX/mentaAltimetryHsValidation/"
 
@@ -24,9 +24,7 @@ assert os.path.exists(crsSatDataDir) == True
 modelNcFilesDir = os.path.join(rootDir, "data/schismwwm")
 
 # Directory where the pairs observation/model are to be generated
-hsModelAndSatObsDir = (
-    rootDir + "data/satWaveModelPairs/"
-)
+hsModelAndSatObsDir = rootDir + "data/satWaveModelPairs/"
 assert os.path.exists(hsModelAndSatObsDir) == True
 
 # Directory where the stats are generated
@@ -58,9 +56,7 @@ if doCoarsenSatData:
     # The data are averaged on a latitudinal tract with size latdelta.
     # You can do this once, then you can disable the coarseining, unless you want to change latdelta, or the time extent of the sat data
     latdelta = 0.5
-    coarsenCmemsSshSatData(
-        rawSatDataDir, crsSatDataDir, startDate, endDate, latdelta
-    )
+    coarsenCmemsSshSatData(rawSatDataDir, crsSatDataDir, startDate, endDate, latdelta)
 
 
 doInterpolateModelToSat = False
@@ -93,5 +89,5 @@ computeHsStats.elaborateMeasures(
     filterHighSsh=True,
     filterSshMaximum=filterSshMaximum,
     latlims=latlims,
-    pth = 95,
+    pth=95,
 )

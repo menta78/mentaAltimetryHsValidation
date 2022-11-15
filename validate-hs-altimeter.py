@@ -60,5 +60,5 @@ computeHsStats.elaborateMeasures(
     filterHighSsh=True,
     filterSshMaximum=filterSshMaximum,
     latlims=latlims,
-    pth = pth,
+    pth=pth,
 )

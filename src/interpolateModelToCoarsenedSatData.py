@@ -136,15 +136,14 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
     if _meanModelFile:
         ds = netCDF4.Dataset(_meanModelFile)
         try:
-            meanelev = ds.variables["elev"][0,:]
+            meanelev = ds.variables["elev"][0, :]
         except:
             print("something wrong in file " + meanModelFile)
             outFlPath = "none"
             return outFlPath
 
         for i in range(hs.shape[-1]):
-            hs[:,i] = hs[:,i] - meanelev[i]
-
+            hs[:, i] = hs[:, i] - meanelev[i]
 
     lonSat = dtSatAll[:, 1]
     latSat = dtSatAll[:, 2]
@@ -313,7 +312,6 @@ def __elabFileHs(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
     # for i in range(hs.shape[-1]):
     #     hs[:,i] = hs[:,i] - meanelev[i]
 
-
     lonSat = dtSatAll[:, 1]
     latSat = dtSatAll[:, 2]
 
@@ -418,8 +416,7 @@ def interpolateModelTocoarsenCmemsSshSatData_schismWWM(
     print("interpolating model data to sat")
     mdlfl0 = [f for f in os.listdir(modelNcFileDir) if re.match(flpattern, f)]
     dts = [
-        int(re.match("ERA5_schismwwm_([0-9]*)\.nc", fn).groups(0)[0])
-        for fn in mdlfl0
+        int(re.match("ERA5_schismwwm_([0-9]*)\.nc", fn).groups(0)[0]) for fn in mdlfl0
     ]
     print(dts)
     iii = np.argsort(dts)
@@ -464,8 +461,7 @@ def interpolateModelToCoarsenedSatData_schismWWM(
     print("interpolating model data to sat")
     mdlfl0 = [f for f in os.listdir(modelNcFileDir) if re.match(flpattern, f)]
     dts = [
-        int(re.match("ERA5_schismwwm_([0-9]*)\.nc", fn).groups(0)[0])
-        for fn in mdlfl0
+        int(re.match("ERA5_schismwwm_([0-9]*)\.nc", fn).groups(0)[0]) for fn in mdlfl0
     ]
     iii = np.argsort(dts)
     mdlfl = np.array(mdlfl0)[iii]

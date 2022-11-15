@@ -6,6 +6,7 @@ import itertools
 
 import src.utils as utils
 
+
 def elaborateMeasures(
     target,
     timeSerieModel,
@@ -13,7 +14,7 @@ def elaborateMeasures(
     startDate,
     endDate,
     outputDir,
-    pth = 90,
+    pth=90,
 ):
 
     r2lst = []
@@ -40,14 +41,14 @@ def elaborateMeasures(
     rmse = np.mean(np.array(rmselst))
     pearson = np.mean(np.array(pearsonlst))
 
-    nnse = 1/(2-nse)
-    nr2 = 1/(2-r2)
+    nnse = 1 / (2 - nse)
+    nr2 = 1 / (2 - r2)
 
     N = stats["N"]
 
     print("=========================================")
     print("N = ", N)
-    print("nse = ",nse)
+    print("nse = ", nse)
     print("nnse = ", nnse)
     print("r2 = ", r2)
     print("nr2 = ", nr2)
@@ -57,14 +58,23 @@ def elaborateMeasures(
     print("Pearson  Correlation =", pearson)
     print("=========================================")
 
-    fileStats = os.path.join(outputDir,'tidalGauge_pth_'+str(pth)+"_"+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d")+".txt")
+    fileStats = os.path.join(
+        outputDir,
+        "tidalGauge_pth_"
+        + str(pth)
+        + "_"
+        + startDate.strftime("%Y%m%d")
+        + "_"
+        + endDate.strftime("%Y%m%d")
+        + ".txt",
+    )
 
-    with open(fileStats, 'w') as f:
-        f.write("nse = " + str(nse)+"\n")
-        f.write("nnse = " + str(nnse)+"\n")
-        f.write("r2 = " + str(r2)+"\n")
-        f.write("nr2 = " + str(nr2)+"\n")
-        f.write("rmse = " + str(rmse)+"\n")
-        f.write("abs bias = " + str(ab)+"\n")
-        f.write("rel bias = " + str(rb)+"\n")
-        f.write("rel bias = " + str(pearson)+"\n")
+    with open(fileStats, "w") as f:
+        f.write("nse = " + str(nse) + "\n")
+        f.write("nnse = " + str(nnse) + "\n")
+        f.write("r2 = " + str(r2) + "\n")
+        f.write("nr2 = " + str(nr2) + "\n")
+        f.write("rmse = " + str(rmse) + "\n")
+        f.write("abs bias = " + str(ab) + "\n")
+        f.write("rel bias = " + str(rb) + "\n")
+        f.write("rel bias = " + str(pearson) + "\n")
