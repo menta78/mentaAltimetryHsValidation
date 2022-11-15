@@ -365,6 +365,12 @@ def elaborateMeasures(
             hh[iy, ix] = _hh
             nrmse[iy, ix] = _nrmse
 
+            mask = bias == 99999
+            bias = np.ma.masked_array(bias, mask)
+            nrmse = np.ma.masked_array(nrmse, mask)
+            nbi = np.ma.masked_array(nbi, mask)
+            hh = np.ma.masked_array(hh, mask)
+
             # lst = mpabBias.get((ix, iy), []) # return empty if value doesn't exists
             # lst = nbi
             # mpabBias[(ix, iy)] = lst
@@ -381,21 +387,25 @@ def elaborateMeasures(
             # lst = nrmse
             # mpnrmse[(ix, iy)] = lst
 
-            ablst.append(_absBias)
-            nrmselst.append(_nrmse)
-            nbilst.append(_nbi)
-            hhlst.append(_hh)
+            # ablst.append(_absBias)
+            # nrmselst.append(_nrmse)
+            # nbilst.append(_nbi)
+            # hhlst.append(_hh)
 
-    abArray = np.array(ablst)
-    nrmseArray = np.array(nrmselst)
-    nbiArray = np.array(nbilst)
-    hhArray = np.array(hhlst)
+    # abArray = np.array(ablst)
+    # nrmseArray = np.array(nrmselst)
+    # nbiArray = np.array(nbilst)
+    # hhArray = np.array(hhlst)
 
-    abTot = np.nanmean(abArray)
-    hhTot = np.nanmean(hhArray)
-    nbiTot = np.nanmean(nbiArray)
-    nrmseTot = np.nanmean(nrmseArray)
+    # abTot = np.nanmean(abArray)
+    # hhTot = np.nanmean(hhArray)
+    # nbiTot = np.nanmean(nbiArray)
+    # nrmseTot = np.nanmean(nrmseArray)
 
+    abTot = np.nanmean(bias)
+    hhTot = np.nanmean(hh)
+    nbiTot = np.nanmean(nbi)
+    nrmseTot = np.nanmean(nrmse)
 
     # modssh_mean = np.nanmean(modssh_)
     # satssh_mean = np.nanmean(satssh_)
