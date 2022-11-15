@@ -11,7 +11,7 @@ def mapByLonLatCumm(
     maplats = np.arange(latlims[0], latlims[1], mapdy)
 
     #mp = {}
-
+    
     for tm, lon, lat, msr, mod in zip(times, lons, lats, msrs, mods):
         if (mod > 20) or (msr > 20):
             continue

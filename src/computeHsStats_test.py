@@ -275,13 +275,10 @@ def elaborateMeasures(
     obs = np.array([])
     model = np.array([])
 
-    r2lst = []
-    nselst = []
     ablst = []
-    rblst = []
-    rmselst = []
     nrmselst = []
-    pearsonlst = []
+    hhlst = []
+    nbilst = []
 
    #looping on tidal gauge files
     obs = np.array([])
@@ -312,22 +309,24 @@ def elaborateMeasures(
     # ax.legend()
     # plt.savefig("testtt.png")
 
-    fig, ax = plt.subplots()
-    ix = 6
-    iy = 69
-    data = mapdata.get((ix, iy))
-    obs = np.array(data[3])
-    model = np.array(data[4])
-    print(np.mean(mapdata.get((ix, iy))[1]), np.mean(mapdata.get((ix, iy))[2]))
-    r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(obs, model, pth)
-    print("r2 = ", r2_)
-    print("pearson = ", pearson_)
-    print("bias = ", ab_)
-    print("rmse = ", rmse_)
-    ax.plot(obs, label='observation')
-    ax.plot(model, label='model', alpha=.5)
-    ax.legend()
-    plt.savefig("testtt.png")
+    # fig, ax = plt.subplots()
+    # ix = 6
+    # iy = 69
+    # data = mapdata.get((ix, iy))
+    # obs = np.array(data[3])
+    # model = np.array(data[4])
+    # print(np.mean(mapdata.get((ix, iy))[1]), np.mean(mapdata.get((ix, iy))[2]))
+    # r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(obs, model, pth)
+    # print("r2 = ", r2_)
+    # print("pearson = ", pearson_)
+    # print("bias = ", ab_)
+    # print("rmse = ", rmse_)
+    # ax.plot(obs, label='observation')
+    # ax.plot(model, label='model', alpha=.5)
+    # ax.legend()
+    # plt.savefig("testtt.png")
+
+    # jfirjfir
 
     r2lst = []
     nselst = []
@@ -337,10 +336,19 @@ def elaborateMeasures(
     nrmselst = []
     pearsonlst = []
 
-    nminobs = 0
-    
-    for ix in range(len(lons)):
-        for iy in range(len(lats)):
+    nminobs = 1
+
+    mpabBias = {}
+    mpnrmse = {}
+    mpnbi = {}
+    mphh = {}
+
+    bias = np.ones((len(maplats), len(maplons))) * 99999
+    nrmse = np.ones((len(maplats), len(maplons))) * 99999
+    nbi = np.ones((len(maplats), len(maplons))) * 99999
+    hh = np.ones((len(maplats), len(maplons))) * 99999
+    for ix in range(len(maplons)):
+        for iy in range(len(maplats)):
             data = mapdata.get((ix, iy))
             if not data:
                 continue
@@ -350,24 +358,54 @@ def elaborateMeasures(
             if len(model) <= nminobs:
                 continue
 
-            r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(obs, model, pth)
+            _nbi, _absBias, _nrmse, _hh = utils.computeStatsHs(obs, model, pth)
 
-            r2lst.append(r2_)
-            nselst.append(nse_)
-            ablst.append(ab_)
-            rmselst.append(rmse_)
-            nrmselst.append(nrmse_)
-            rblst.append(rb_)
-            pearsonlst.append(pearson_)
+            bias[iy, ix] = _absBias
+            nbi[iy, ix] = _nbi
+            hh[iy, ix] = _hh
+            nrmse[iy, ix] = _nrmse
 
-    r2 = np.nanmean(np.array(r2lst))
-    nse = np.nanmean(np.array(nselst))
-    ab = np.nanmean(np.array(ablst))
-    rb = np.nanmean(np.array(rblst))
-    rmse = np.nanmean(np.array(rmselst))
-    nrmse = np.nanmean(np.array(nrmselst))
-    pearson = np.nanmean(np.array(pearsonlst))
+            mask = bias == 99999
+            bias = np.ma.masked_array(bias, mask)
+            nrmse = np.ma.masked_array(nrmse, mask)
+            nbi = np.ma.masked_array(nbi, mask)
+            hh = np.ma.masked_array(hh, mask)
 
+            # lst = mpabBias.get((ix, iy), []) # return empty if value doesn't exists
+            # lst = nbi
+            # mpabBias[(ix, iy)] = lst
+            
+            # lst = mpnbi.get((ix, iy), []) # return empty if value doesn't exists
+            # lst = nbi
+            # mpnbi[(ix, iy)] = lst
+
+            # lst = mphh.get((ix, iy), []) # return empty if value doesn't exists
+            # lst = hh
+            # mphh[(ix, iy)] = lst
+
+            # lst = mpnrmse.get((ix, iy), []) # return empty if value doesn't exists
+            # lst = nrmse
+            # mpnrmse[(ix, iy)] = lst
+
+            # ablst.append(_absBias)
+            # nrmselst.append(_nrmse)
+            # nbilst.append(_nbi)
+            # hhlst.append(_hh)
+
+    # abArray = np.array(ablst)
+    # nrmseArray = np.array(nrmselst)
+    # nbiArray = np.array(nbilst)
+    # hhArray = np.array(hhlst)
+
+    # abTot = np.nanmean(abArray)
+    # hhTot = np.nanmean(hhArray)
+    # nbiTot = np.nanmean(nbiArray)
+    # nrmseTot = np.nanmean(nrmseArray)
+
+    abTot = np.nanmean(bias)
+    hhTot = np.nanmean(hh)
+    nbiTot = np.nanmean(nbi)
+    nrmseTot = np.nanmean(nrmse)
 
     # modssh_mean = np.nanmean(modssh_)
     # satssh_mean = np.nanmean(satssh_)
@@ -375,39 +413,17 @@ def elaborateMeasures(
     # satssh = satssh_ - satssh_mean
     # modssh = modssh_  # - modssh_mean
 
-    # r2, nse, ab, rb, rmse, nrmse, pearson = utils.computeStats(satssh, modssh, pth)
-    nnse = 1 / (2 - nse)
-    nr2 = 1 / (2 - r2)
-
-    totIndStr = """
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-TOTAL ERROR INDICATORS:
-rmse: {rmseTot:2.5f}
-NSE: {nse:2.5f}
-R2: {r2:2.5f}
-NNSE: {nnse:2.5f}
-NR2: {nr2:2.5f}
-Bias: {absre:2.5f}
-RelBias: {reb:2.5f}
-Pearson: {pearson:2.5f}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-"""
-    totIndStr = totIndStr.format(
-        rmseTot=rmse,
-        nse=nse,
-        r2=r2,
-        nnse=nnse,
-        nr2=nr2,
-        absre=ab,
-        reb=rb,
-        pearson=pearson,
-    )
-    print("")
-    print(totIndStr)
-    print("")
+    print("=========================================")
+    print("Start date ", startDate, "   :::::::   End date", endDate)
+    print("Percentile ", pth)
+    print("nrmse = ", nrmseTot)
+    print("abs bias = ", abTot)
+    print("hh = ", hhTot)
+    print("nbi =", nbiTot)
+    print("=========================================")
 
     statFile = (
-        "ssh-altimeter_"
+        "hs-altimeter_"
         + startDate.strftime("%Y%m%d")
         + "_"
         + endDate.strftime("%Y%m%d")
@@ -415,15 +431,11 @@ Pearson: {pearson:2.5f}
     )
     totIndsFilePath = os.path.join(outputDir, statFile)
     with open(totIndsFilePath, "w") as f:
-        f.write(totIndStr)
-        f.close()
+        f.write("nrmse = " + str(nrmseTot)+"\n")
+        f.write("abs bias = " + str(abTot)+"\n")
+        f.write("nbi = " + str(nbiTot)+"\n")
+        f.write("hh = " + str(hhTot)+"\n")
 
-
-    # rmse = np.sqrt(sqDevSum)
-    # bias = devSum / obsSum
-    # absBias = devSum / dtcount
-    # nrmse = np.sqrt(sqDevSum / sqObsSum)
-    # hh = np.sqrt(sqDevSum / mdlByObsSum)
 
     # saving to files
     try:
@@ -432,81 +444,55 @@ Pearson: {pearson:2.5f}
         pass
 
 
-
-    # lons = Maplons[0]
-    # lats = Maplats[0]
-    # nminobs = 0
-
-    # ModData = np.ones((len(lats), len(lons))) * np.nan
-    # ObsData = ModData
-
-    # modd = []
-    # obss = []
-
-    # # initalize new map
-    # mp = {}
-    # # for ix in range(len(lons)):
-    # #     for iy in range(len(lats)):
-    # #         lst = mp.get((ix, iy), [[], []])
-    # #         mp[(ix, iy)] = lst
-
-    # # store all data´
-    # _obs = []
-    # _mod = []
-    # for mapdata in Mapdata:
-    #     for ix in range(len(lons)):
-    #         for iy in range(len(lats)):
-    #             data = mapdata.get((ix, iy))
-    #             if not data:
-    #                 continue
-    #             msrs = data[3]
-    #             mods = data[4]
-    #             if len(mods) < nminobs:
-    #                 continue
-
-    #             assert len(mods) == len(msrs)
-
-    #             lst = mp.get((ix, iy), [[], []])
-    #             _obs.append(msrs)
-    #             _mod.append(mods)
-    #             lst[0] = _obs
-    #             lst[1] = _mod
-    #             mp[(ix, iy)] = lst
-
-    # Mod = np.ones((len(lats), len(lons))) * np.nan
-    # Obs = np.ones((len(lats), len(lons))) * np.nan
-
-    # for ix in range(len(lons)):
-    #     for iy in range(len(lats)):
-
-    #         data = mp.get((ix, iy))
-    #         if not data:
-    #             continue
-            
-    #         obs = [item for sublist in data[0] for item in sublist]
-    #         mod = [item for sublist in data[1] for item in sublist]
-
-    #         Mod[iy, ix] = np.array(mod)[0]
-    #         Obs[iy, ix] = np.array(obs)[0]
-        
-    # print(Mod[:,0])
-    # fjrifir
-
-    np.savetxt(os.path.join(outputDir, "lons.csv"), Maplons[0])
-    np.savetxt(os.path.join(outputDir, "lats.csv"), Maplats[0])
+    np.savetxt(os.path.join(outputDir, "lons.csv"), maplons)
+    np.savetxt(os.path.join(outputDir, "lats.csv"), maplats)
     # np.savetxt(os.path.join(outputDir, "rmse-ssh-altimeter_"+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d")+".csv"), rmse)
     # np.savetxt(os.path.join(outputDir, "bias-ssh-altimeter_"+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d")+".csv"), bias)
     np.savetxt(
         os.path.join(
             outputDir,
-            "pearson-ssh-altimeter_"
+            "HS-nrmse-altimeter_"
             + startDate.strftime("%Y%m%d")
             + "_"
             + endDate.strftime("%Y%m%d")
             + ".csv",
         ),
-        pearson,
+        nrmse,
     )
+    np.savetxt(
+        os.path.join(
+            outputDir,
+            "HS-hh-altimeter_"
+            + startDate.strftime("%Y%m%d")
+            + "_"
+            + endDate.strftime("%Y%m%d")
+            + ".csv",
+        ),
+        hh,
+    )
+    np.savetxt(
+        os.path.join(
+            outputDir,
+            "HS-nbi-altimeter_"
+            + startDate.strftime("%Y%m%d")
+            + "_"
+            + endDate.strftime("%Y%m%d")
+            + ".csv",
+        ),
+        nbi,
+    )
+    np.savetxt(
+        os.path.join(
+            outputDir,
+            "HS-bias-altimeter_"
+            + startDate.strftime("%Y%m%d")
+            + "_"
+            + endDate.strftime("%Y%m%d")
+            + ".csv",
+        ),
+        bias,
+    )
+
 
     # np.savetxt(os.path.join(outputDir, "dtcount.csv"), dtcount)
 
