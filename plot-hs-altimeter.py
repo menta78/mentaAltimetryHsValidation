@@ -38,8 +38,8 @@ title_font = {'size':'12', 'color':'black', 'weight':'normal',
 # time interval
 startDate, endDate = datetime(1995, 1, 1), datetime(1999, 12, 30)
 startDate, endDate = datetime(2012, 1, 1), datetime(2019, 12, 31)
-startDate, endDate = datetime(2003, 1, 1), datetime(2009, 12, 30)
 startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 29)
+startDate, endDate = datetime(2003, 1, 1), datetime(2009, 12, 30)
 
 
 
@@ -106,6 +106,7 @@ nrmse = np.ma.masked_array(nrmse, mask)
 nbi = np.ma.masked_array(nbi, mask)
 hh = np.ma.masked_array(hh, mask)
 
+
 m=Basemap()
 
 #==========================================================================================
@@ -119,7 +120,7 @@ grd = gridspec.GridSpec(1, 2, wspace=.025, width_ratios=[1, .05])
 axMap = plt.subplot(grd[0, 0])
 
 plt1 = axMap.imshow(nrmse, 
-        cmap='Reds',
+        cmap='summer',
         origin='lower',
         extent=[-180,180, -90,90],
         vmin=0, vmax=1)
@@ -147,10 +148,10 @@ grd = gridspec.GridSpec(1, 2, wspace=.025, width_ratios=[1, .05])
 axMap = plt.subplot(grd[0, 0])
 
 plt1 = axMap.imshow(nbi, 
-        cmap='Reds',
+        cmap='RdBu',
         origin='lower',
         extent=[-180,180, -90,90],
-        vmin=0, vmax=1)
+        vmin=-1, vmax=1)
 m.drawcoastlines(linewidth=0.5)
 m.fillcontinents(color='gray')
 #axMap.set(xlim=[-180,180], ylim=[-90,90])
@@ -176,7 +177,7 @@ grd = gridspec.GridSpec(1, 2, wspace=.025, width_ratios=[1, .05])
 axMap = plt.subplot(grd[0, 0])
 
 plt1 = axMap.imshow(hh, 
-        cmap='Reds',
+        cmap='summer',
         origin='lower',
         extent=[-180,180, -90,90],
         vmin=0, vmax=1)
@@ -207,7 +208,7 @@ plt1 = axMap.imshow(bias,
         cmap='RdBu',
         origin='lower',
         extent=[-180,180, -90,90],
-        vmin=-1, vmax=1)
+        vmin=-5, vmax=5)
 m.drawcoastlines(linewidth=0.5)
 m.fillcontinents(color='gray')
 #axMap.set(xlim=[-180,180], ylim=[-90,90])

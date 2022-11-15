@@ -28,8 +28,8 @@ rootDir = os.path.dirname(os.path.realpath(__file__))
 # time interval
 startDate, endDate = datetime(1995, 1, 1), datetime(1999, 12, 30)
 startDate, endDate = datetime(2012, 1, 1), datetime(2019, 12, 31)
-startDate, endDate = datetime(2003, 1, 1), datetime(2009, 12, 30)
 startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 29)
+startDate, endDate = datetime(2003, 1, 1), datetime(2009, 12, 30)
 
 overwriteExisting = True
 
@@ -46,7 +46,7 @@ filterHighSsh = True
 boundaries = None
 
 # computing the statistics
-dx, dy = 10.0, 10.0
+dx, dy = 2.0, 2.0
 computeHsStats.maskPointsCloseToTheCoast = False
 
 latlims = [-90, 90]

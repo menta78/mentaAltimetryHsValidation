@@ -178,6 +178,7 @@ def computeStatsHs(obs_, model_, pth):
 
 
     devSum = np.nansum(model - obs)
+    sqDevSum = np.nansum((model - obs)**2)
     obsSum = np.nansum(obs)
     #print(obsSum)
 
@@ -186,13 +187,8 @@ def computeStatsHs(obs_, model_, pth):
 
     nbi = devSum / obsSum
     absBias = devSum / N
-    nrmse = np.sqrt(devSum / np.nansum(obs**2))
-    hh = np.sqrt(devSum / cov)
-    # nbiYMaxTot = np.nansum(mdlMaxSum - obsMaxSum) / np.nansum(obsMaxSum)
-    # nbiTotMaxTot = np.nansum(mdlTotMax - obsTotMax) / np.nansum(obsTotMax)
-
-    if (obsSum == 0)  or (cov == 0):
-        return 0, absBias, 0, 0
+    nrmse = np.sqrt(sqDevSum / np.nansum(obs**2))
+    hh = np.sqrt(sqDevSum / cov)
 
     return nbi, absBias, nrmse, hh
 

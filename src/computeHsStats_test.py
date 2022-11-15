@@ -328,20 +328,7 @@ def elaborateMeasures(
 
     # jfirjfir
 
-    r2lst = []
-    nselst = []
-    ablst = []
-    rblst = []
-    rmselst = []
-    nrmselst = []
-    pearsonlst = []
-
-    nminobs = 1
-
-    mpabBias = {}
-    mpnrmse = {}
-    mpnbi = {}
-    mphh = {}
+    nminobs = 1000
 
     bias = np.ones((len(maplats), len(maplons))) * 99999
     nrmse = np.ones((len(maplats), len(maplons))) * 99999
@@ -359,38 +346,18 @@ def elaborateMeasures(
                 continue
 
             _nbi, _absBias, _nrmse, _hh = utils.computeStatsHs(obs, model, pth)
-
+            
             bias[iy, ix] = _absBias
             nbi[iy, ix] = _nbi
             hh[iy, ix] = _hh
             nrmse[iy, ix] = _nrmse
 
-            mask = bias == 99999
-            bias = np.ma.masked_array(bias, mask)
-            nrmse = np.ma.masked_array(nrmse, mask)
-            nbi = np.ma.masked_array(nbi, mask)
-            hh = np.ma.masked_array(hh, mask)
+    mask = bias == 99999
+    bias = np.ma.masked_array(bias, mask)
+    nrmse = np.ma.masked_array(nrmse, mask)
+    nbi = np.ma.masked_array(nbi, mask)
+    hh = np.ma.masked_array(hh, mask)
 
-            # lst = mpabBias.get((ix, iy), []) # return empty if value doesn't exists
-            # lst = nbi
-            # mpabBias[(ix, iy)] = lst
-            
-            # lst = mpnbi.get((ix, iy), []) # return empty if value doesn't exists
-            # lst = nbi
-            # mpnbi[(ix, iy)] = lst
-
-            # lst = mphh.get((ix, iy), []) # return empty if value doesn't exists
-            # lst = hh
-            # mphh[(ix, iy)] = lst
-
-            # lst = mpnrmse.get((ix, iy), []) # return empty if value doesn't exists
-            # lst = nrmse
-            # mpnrmse[(ix, iy)] = lst
-
-            # ablst.append(_absBias)
-            # nrmselst.append(_nrmse)
-            # nbilst.append(_nbi)
-            # hhlst.append(_hh)
 
     # abArray = np.array(ablst)
     # nrmseArray = np.array(nrmselst)
