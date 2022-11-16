@@ -7,12 +7,13 @@ import itertools
 
 filterHighSsh = False
 
+
 def getFiles(hsSatAndModelDir, startDate, endDate):
     fl = []
 
     while startDate <= endDate:
         strtime = startDate.strftime("%Y%m%d")
-        pthfile = hsSatAndModelDir + "/ERA5_schismwwm_"+strtime+"*.npy"
+        pthfile = hsSatAndModelDir + "/ERA5_schismwwm_" + strtime + "*.npy"
         fileFound = glob.glob(pthfile)
         fl.append(fileFound)
         startDate += timedelta(days=1)
@@ -29,9 +30,8 @@ def elaborateMeasures(
     meanFileModel,
     filterLowHs=False,
     filterHsThreshold=0.0,
-    pth = 90,
+    pth=90,
 ):
-
     def loadFile(flpth):
         print("")
         print("    loading file " + flpth)
@@ -44,9 +44,7 @@ def elaborateMeasures(
         if filterHighSsh:
             sshsat = satdts[:, 0]
             sshmdl = satdts[:, 1]
-            cnd = np.logical_and(
-                sshsat < filterSshMaximum, sshmdl < filterSshMaximum
-            )
+            cnd = np.logical_and(sshsat < filterSshMaximum, sshmdl < filterSshMaximum)
             satdts = satdts[cnd, :]
         return satdts
 
@@ -55,64 +53,67 @@ def elaborateMeasures(
     obs = np.array([])
     model = np.array([])
 
-
     for f in fls:
         data_ = loadFile(f)
-        obs_ = data_[:,0]
-        model_ = data_[:,1]
+        obs_ = data_[:, 0]
+        model_ = data_[:, 1]
 
         obs = np.concatenate([obs, obs_])
         model = np.concatenate([model, model_])
 
-
-
     meanModel = np.nanmean(model)
     model = model - meanModel
-        
+
     pmodel = np.nanpercentile(model, pth)
     pobs = np.nanpercentile(obs, pth)
 
-    condition = obs>=0
+    condition = obs >= 0
 
-    meanObs = np.nanmean(obs, where= condition)
+    meanObs = np.nanmean(obs, where=condition)
 
-    condition1 = obs >= pobs 
+    condition1 = obs >= pobs
     condition2 = model >= pmodel
-    #condition = condition1 & condition2
+    # condition = condition1 & condition2
     condition = condition1 | condition2
 
-    nsc1 = np.nansum(np.abs(obs-model), where=condition)
-    nsc2 = np.nansum(np.abs(obs-np.nanmean(obs)), where=condition)
+    nsc1 = np.nansum(np.abs(obs - model), where=condition)
+    nsc2 = np.nansum(np.abs(obs - np.nanmean(obs)), where=condition)
     N = np.sum(condition)
 
-    ssres = np.nansum((obs-model)**2, where=condition)
-    sstot = np.nansum((obs-np.nanmean(obs))**2, where=condition)
+    ssres = np.nansum((obs - model) ** 2, where=condition)
+    sstot = np.nansum((obs - np.nanmean(obs)) ** 2, where=condition)
 
-    absre_ = np.nansum(model-obs, where=condition)
+    absre_ = np.nansum(model - obs, where=condition)
     nobs = np.nansum(obs, where=condition)
 
-    absre = absre_/N
-    nse  = 1 - nsc1/nsc2
-    nnse = 1/(2-nse)
-    r2   = 1 - ssres/sstot
-    nr2 = 1/(2-r2)
-    re = absre_/nobs
-    rmse = np.sqrt(ssres/N)
-
+    absre = absre_ / N
+    nse = 1 - nsc1 / nsc2
+    nnse = 1 / (2 - nse)
+    r2 = 1 - ssres / sstot
+    nr2 = 1 / (2 - r2)
+    re = absre_ / nobs
+    rmse = np.sqrt(ssres / N)
 
     print("ssres", ssres)
     print("sstot", sstot)
     print("N", N)
 
-    print("nse = ",nse, "nnse = ", nnse, "r2 = ", r2, "nr2 = ", nr2)
+    print("nse = ", nse, "nnse = ", nnse, "r2 = ", r2, "nr2 = ", nr2)
     print("rmse = ", rmse)
     print("abs bias = ", absre, "relative bias = ", re)
 
-    with open('data/stats/tidalGauge_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d")+".txt", 'w') as f:
-        f.write("nse = " + str(nse)+"\n")
-        f.write("nnse = " + str(nnse)+"\n")
-        f.write("r2 = " + str(r2)+"\n")
-        f.write("nr2 = " + str(nr2)+"\n")
-        f.write("rmse = " + str(rmse)+"\n")
-        f.write("abs bias = " + str(absre)+"\n")
-        f.write("rel bias = " + str(re)+"\n")
+    with open(
+        "data/stats/tidalGauge_"
+        + startDate.strftime("%Y%m%d")
+        + "_"
+        + endDate.strftime("%Y%m%d")
+        + ".txt",
+        "w",
+    ) as f:
+        f.write("nse = " + str(nse) + "\n")
+        f.write("nnse = " + str(nnse) + "\n")
+        f.write("r2 = " + str(r2) + "\n")
+        f.write("nr2 = " + str(nr2) + "\n")
+        f.write("rmse = " + str(rmse) + "\n")
+        f.write("abs bias = " + str(absre) + "\n")
+        f.write("rel bias = " + str(re) + "\n")

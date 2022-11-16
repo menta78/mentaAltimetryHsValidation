@@ -265,7 +265,6 @@ def elaborateMeasures(
 
     cnd = dtcount < minObsForValidation
 
-
     sqDevSum[cnd] = np.nan
     sqObsSum[cnd] = np.nan
     sqModSum[cnd] = np.nan
@@ -279,7 +278,6 @@ def elaborateMeasures(
     # r2, nse, ab, rb, rmse, nrmse, pearson = utils.computeStats(obs_, model_, pth)
     # nnse = 1/(2-nse)
     # nr2 = 1/(2-r2)
-
 
     totIndStr = """
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -296,14 +294,14 @@ N: {N:2.5f}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
     totIndStr = totIndStr.format(
-        rmseTot = rmseTot,
-        nse     = nse,
-        r2      = r2,
-        nnse     = nnse,
-        nr2      = nr2,
-        absre = ab,
-        reb = rb,
-        pearson = pearson,
+        rmseTot=rmseTot,
+        nse=nse,
+        r2=r2,
+        nnse=nnse,
+        nr2=nr2,
+        absre=ab,
+        reb=rb,
+        pearson=pearson,
     )
 
     print("")

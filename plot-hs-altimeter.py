@@ -31,9 +31,13 @@ rootDir = os.path.dirname(os.path.realpath(__file__))
     statsDir,
 ) = utils.load_paths(rootDir)
 
-options_savefig = {'dpi': 150, "bbox_inches": "tight", "transparent": False}
-title_font = {'size':'12', 'color':'black', 'weight':'normal',
-                      'verticalalignment':'bottom'}
+options_savefig = {"dpi": 150, "bbox_inches": "tight", "transparent": False}
+title_font = {
+    "size": "12",
+    "color": "black",
+    "weight": "normal",
+    "verticalalignment": "bottom",
+}
 
 # time interval
 startDate, endDate = datetime(1995, 1, 1), datetime(1999, 12, 30)
@@ -119,117 +123,149 @@ nbi = np.ma.masked_array(nbi, mask)
 hh = np.ma.masked_array(hh, mask)
 
 
-m=Basemap()
+m = Basemap()
 
-#==========================================================================================
+# ==========================================================================================
 # NRMSE
-#==========================================================================================
+# ==========================================================================================
 
-fig, ax = plt.subplots(figsize=(9,4))
-grd = gridspec.GridSpec(1, 2, wspace=.025, width_ratios=[1, .05])
+fig, ax = plt.subplots(figsize=(9, 4))
+grd = gridspec.GridSpec(1, 2, wspace=0.025, width_ratios=[1, 0.05])
 
 # Map and scatter plot
 axMap = plt.subplot(grd[0, 0])
 
-plt1 = axMap.imshow(nrmse, 
-        cmap='summer',
-        origin='lower',
-        extent=[-180,180, -90,90],
-        vmin=0, vmax=1)
+plt1 = axMap.imshow(
+    nrmse, cmap="summer", origin="lower", extent=[-180, 180, -90, 90], vmin=0, vmax=1
+)
 m.drawcoastlines(linewidth=0.5)
-m.fillcontinents(color='gray')
-#axMap.set(xlim=[-180,180], ylim=[-90,90])
+m.fillcontinents(color="gray")
+# axMap.set(xlim=[-180,180], ylim=[-90,90])
 axMap.set_aspect("equal", "box")
 axMap.set_title("NRMSE", **title_font)
 
 # Colorbar
-axCb = plt.subplot(grd[0,1])
-cb = Colorbar(ax = axCb, mappable = plt1, orientation = 'vertical') #, ticklocation = 'top')
+axCb = plt.subplot(grd[0, 1])
+cb = Colorbar(ax=axCb, mappable=plt1, orientation="vertical")  # , ticklocation = 'top')
 
-plt.savefig('data/stats/HS-nrmse_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d") + ".png", **options_savefig)
+plt.savefig(
+    "data/stats/HS-nrmse_"
+    + "pth_"
+    + str(pth)
+    + "_"
+    + startDate.strftime("%Y%m%d")
+    + "_"
+    + endDate.strftime("%Y%m%d")
+    + ".png",
+    **options_savefig
+)
 plt.close(fig)
 
-#==========================================================================================
+# ==========================================================================================
 # NBI
-#==========================================================================================
+# ==========================================================================================
 
-fig, ax = plt.subplots(figsize=(9,4))
-grd = gridspec.GridSpec(1, 2, wspace=.025, width_ratios=[1, .05])
+fig, ax = plt.subplots(figsize=(9, 4))
+grd = gridspec.GridSpec(1, 2, wspace=0.025, width_ratios=[1, 0.05])
 
 # Map and scatter plot
 axMap = plt.subplot(grd[0, 0])
 
-plt1 = axMap.imshow(nbi, 
-        cmap='RdBu',
-        origin='lower',
-        extent=[-180,180, -90,90],
-        vmin=-1, vmax=1)
+plt1 = axMap.imshow(
+    nbi, cmap="RdBu", origin="lower", extent=[-180, 180, -90, 90], vmin=-1, vmax=1
+)
 m.drawcoastlines(linewidth=0.5)
-m.fillcontinents(color='gray')
-#axMap.set(xlim=[-180,180], ylim=[-90,90])
+m.fillcontinents(color="gray")
+# axMap.set(xlim=[-180,180], ylim=[-90,90])
 axMap.set_aspect("equal", "box")
 axMap.set_title("NBI", **title_font)
 
 # Colorbar
-axCb = plt.subplot(grd[0,1])
-cb = Colorbar(ax = axCb, mappable = plt1, orientation = 'vertical') #, ticklocation = 'top')
+axCb = plt.subplot(grd[0, 1])
+cb = Colorbar(ax=axCb, mappable=plt1, orientation="vertical")  # , ticklocation = 'top')
 
-plt.savefig('data/stats/HS-nbi_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d") + ".png", **options_savefig)
+plt.savefig(
+    "data/stats/HS-nbi_"
+    + "pth_"
+    + str(pth)
+    + "_"
+    + startDate.strftime("%Y%m%d")
+    + "_"
+    + endDate.strftime("%Y%m%d")
+    + ".png",
+    **options_savefig
+)
 plt.close(fig)
 
 
-#==========================================================================================
+# ==========================================================================================
 # HH
-#==========================================================================================
+# ==========================================================================================
 
-fig, ax = plt.subplots(figsize=(9,4))
-grd = gridspec.GridSpec(1, 2, wspace=.025, width_ratios=[1, .05])
+fig, ax = plt.subplots(figsize=(9, 4))
+grd = gridspec.GridSpec(1, 2, wspace=0.025, width_ratios=[1, 0.05])
 
 # Map and scatter plot
 axMap = plt.subplot(grd[0, 0])
 
-plt1 = axMap.imshow(hh, 
-        cmap='summer',
-        origin='lower',
-        extent=[-180,180, -90,90],
-        vmin=0, vmax=1)
+plt1 = axMap.imshow(
+    hh, cmap="summer", origin="lower", extent=[-180, 180, -90, 90], vmin=0, vmax=1
+)
 m.drawcoastlines(linewidth=0.5)
-m.fillcontinents(color='gray')
-#axMap.set(xlim=[-180,180], ylim=[-90,90])
+m.fillcontinents(color="gray")
+# axMap.set(xlim=[-180,180], ylim=[-90,90])
 axMap.set_aspect("equal", "box")
 axMap.set_title("HH", **title_font)
 
 # Colorbar
-axCb = plt.subplot(grd[0,1])
-cb = Colorbar(ax = axCb, mappable = plt1, orientation = 'vertical') #, ticklocation = 'top')
+axCb = plt.subplot(grd[0, 1])
+cb = Colorbar(ax=axCb, mappable=plt1, orientation="vertical")  # , ticklocation = 'top')
 
-plt.savefig('data/stats/HS-hh_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d") + ".png", **options_savefig)
+plt.savefig(
+    "data/stats/HS-hh_"
+    + "pth_"
+    + str(pth)
+    + "_"
+    + startDate.strftime("%Y%m%d")
+    + "_"
+    + endDate.strftime("%Y%m%d")
+    + ".png",
+    **options_savefig
+)
 plt.close(fig)
 
-#==========================================================================================
+# ==========================================================================================
 # BIAS
-#==========================================================================================
+# ==========================================================================================
 
-fig, ax = plt.subplots(figsize=(9,4))
-grd = gridspec.GridSpec(1, 2, wspace=.025, width_ratios=[1, .05])
+fig, ax = plt.subplots(figsize=(9, 4))
+grd = gridspec.GridSpec(1, 2, wspace=0.025, width_ratios=[1, 0.05])
 
 # Map and scatter plot
 axMap = plt.subplot(grd[0, 0])
 
-plt1 = axMap.imshow(bias, 
-        cmap='RdBu',
-        origin='lower',
-        extent=[-180,180, -90,90],
-        vmin=-5, vmax=5)
+plt1 = axMap.imshow(
+    bias, cmap="RdBu", origin="lower", extent=[-180, 180, -90, 90], vmin=-5, vmax=5
+)
 m.drawcoastlines(linewidth=0.5)
-m.fillcontinents(color='gray')
-#axMap.set(xlim=[-180,180], ylim=[-90,90])
+m.fillcontinents(color="gray")
+# axMap.set(xlim=[-180,180], ylim=[-90,90])
 axMap.set_aspect("equal", "box")
 axMap.set_title("BIAS", **title_font)
 
 # Colorbar
-axCb = plt.subplot(grd[0,1])
-cb = Colorbar(ax = axCb, mappable = plt1, orientation = 'vertical') #, ticklocation = 'top')
+axCb = plt.subplot(grd[0, 1])
+cb = Colorbar(ax=axCb, mappable=plt1, orientation="vertical")  # , ticklocation = 'top')
 
-plt.savefig('data/stats/HS-bias_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d") + ".png", **options_savefig)
+plt.savefig(
+    "data/stats/HS-bias_"
+    + "pth_"
+    + str(pth)
+    + "_"
+    + startDate.strftime("%Y%m%d")
+    + "_"
+    + endDate.strftime("%Y%m%d")
+    + ".png",
+    **options_savefig
+)
 plt.close(fig)

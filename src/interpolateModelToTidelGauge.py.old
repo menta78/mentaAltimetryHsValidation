@@ -2,7 +2,8 @@ import multiprocessing
 import os
 import re
 from datetime import datetime, timedelta
-#from GeslaDataset.gesla import GeslaDataset
+
+# from GeslaDataset.gesla import GeslaDataset
 
 import netCDF4
 import numpy as np
@@ -14,21 +15,23 @@ GRID_TYPE_REGULAR = "regular"
 GRID_TYPE_UNSTRUCT = "unstructured"
 
 
-def read_file(line, fileName = "data/tidalGaugeData/stations-tidalGauge.txt"):
+def read_file(line, fileName="data/tidalGaugeData/stations-tidalGauge.txt"):
     # open the sample file used
     file = open(fileName)
-    
+
     # read the content of the file opened
     content = file.readlines()
 
-    return content[line].rstrip('\n')
+    return content[line].rstrip("\n")
 
 
 def datetime2matlabdn(dt):
-   ord = dt.toordinal()
-   mdn = dt + timedelta(days = 366)
-   frac = (dt-datetime(dt.year,dt.month,dt.day,0,0,0)).seconds / (24.0 * 60.0 * 60.0)
-   return mdn.toordinal() + frac
+    ord = dt.toordinal()
+    mdn = dt + timedelta(days=366)
+    frac = (dt - datetime(dt.year, dt.month, dt.day, 0, 0, 0)).seconds / (
+        24.0 * 60.0 * 60.0
+    )
+    return mdn.toordinal() + frac
 
 
 def toJulian(tarray_):
@@ -40,6 +43,7 @@ def toJulian(tarray_):
         i += 1
     return tarray
 
+
 def get_subsest_list(array, a, b):
     if a >= b:
         print("first value must be smaller than second")
@@ -48,8 +52,8 @@ def get_subsest_list(array, a, b):
     if a < min(array) or b > max(array):
         return [], False, 0, 0
 
-    i = np.argmin(np.abs(np.array(array)-a))
-    j = np.argmin(np.abs(np.array(array)-b))
+    i = np.argmin(np.abs(np.array(array) - a))
+    j = np.argmin(np.abs(np.array(array) - b))
 
     return array[i:j], True, i, j
 
@@ -89,7 +93,6 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
         outFlPath = "none"
         return "case " + str(mdlF)
 
-
     outFlName = mdlF.replace(".nc", "_" + "tidalGauge")
     outFlPath = os.path.join(_destDir, outFlName)
     if (not _overwriteExisting) and os.path.isfile(outFlPath + ".npy"):
@@ -106,15 +109,15 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
             ds.close()
             return "case " + str(mdlF)
 
-    tmmdl = toJulian(netCDF4.num2date(
-        tmnc[:], tmnc.units, clndr, only_use_cftime_datetimes=False
-    ))
-  
+    tmmdl = toJulian(
+        netCDF4.num2date(tmnc[:], tmnc.units, clndr, only_use_cftime_datetimes=False)
+    )
+
     _lock.acquire()
     try:
         lon = ds.variables[varNames[0]][:]
         lat = ds.variables[varNames[1]][:]
-        hs = ds.variables[varNames[2]][:,:]
+        hs = ds.variables[varNames[2]][:, :]
 
         usePrev = not mdlFPrev is None
         if usePrev:
@@ -122,12 +125,14 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
             try:
                 ds_ = netCDF4.Dataset(fpth_)
                 tmnc_ = ds_.variables[timeVarName]
-                tmmdl_ = toJulian(netCDF4.num2date(
-                    tmnc_[-1],
-                    tmnc_.units,
-                    getNcCalendar(tmnc_),
-                    only_use_cftime_datetimes=False,
-                ))
+                tmmdl_ = toJulian(
+                    netCDF4.num2date(
+                        tmnc_[-1],
+                        tmnc_.units,
+                        getNcCalendar(tmnc_),
+                        only_use_cftime_datetimes=False,
+                    )
+                )
                 hs_ = ds_.variables[varNames[2]][-1, :]
                 hs_ = hs_.reshape([1, len(hs_)])
                 hs = np.concatenate([hs_, hs], axis=0)
@@ -142,12 +147,14 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
             try:
                 ds_ = netCDF4.Dataset(fpth_)
                 tmnc_ = ds_.variables[timeVarName]
-                tmmdl_ = toJulian(netCDF4.num2date(
-                    tmnc_[0],
-                    tmnc_.units,
-                    getNcCalendar(tmnc_),
-                    only_use_cftime_datetimes=False,
-                ))
+                tmmdl_ = toJulian(
+                    netCDF4.num2date(
+                        tmnc_[0],
+                        tmnc_.units,
+                        getNcCalendar(tmnc_),
+                        only_use_cftime_datetimes=False,
+                    )
+                )
                 hs_ = ds_.variables[varNames[2]][0, :]
                 hs_ = hs_.reshape([1, len(hs_)])
                 hs = np.concatenate([hs, hs_], axis=0)
@@ -160,19 +167,17 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
     finally:
         _lock.release()
 
-
     # Substract the model's mean of each node
     ds = netCDF4.Dataset(_meanModelFile)
     try:
-        meanelev = ds.variables["elev"][0,:]
+        meanelev = ds.variables["elev"][0, :]
     except:
         print("something wrong in file " + meanModelFile)
         outFlPath = "none"
         return outFlPath
 
     for i in range(hs.shape[-1]):
-        hs[:,i] = hs[:,i] - meanelev[i]
-
+        hs[:, i] = hs[:, i] - meanelev[i]
 
     if _gridType == GRID_TYPE_UNSTRUCT:
         triObj = Triangulation(lat, lon)
@@ -181,8 +186,7 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
     else:
         raise Exception("unsupported grid type: " + _gridType)
 
-
-    #TODO:
+    # TODO:
     # Hay que restarle la media a hs
 
     print("    ... Interpolant schism model for each time step")
@@ -208,7 +212,7 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
             )
             intp0[itm, :] = intpltr((latSat, lonSat))
 
-    resT  = []
+    resT = []
     intpT = []
     lonT = []
     latT = []
@@ -218,16 +222,18 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
 
     for i in range(nobs):
         print("    ... interpolating on time")
-        
+
         tmstmpTidal_ = _timeTidal[i][:]
 
         # Get timestamps recorded in the stations that belongs to the array of timestamps of the schism model
-        tmstmpTidal, isSubset, idxMin, idxMax = get_subsest_list(tmstmpTidal_, min(tmmdl), max(tmmdl))
-        
+        tmstmpTidal, isSubset, idxMin, idxMax = get_subsest_list(
+            tmstmpTidal_, min(tmmdl), max(tmmdl)
+        )
+
         if not isSubset:
             print("Missing data station " + read_file(i))
             continue
-        
+
         ntTidal = len(tmstmpTidal)
         intp = np.zeros([ntTidal, 1]) * np.nan
 
@@ -240,11 +246,11 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
         lonn = np.array(_lonTidal[i])
         latt = np.array(_latTidal[i])
 
-        aux_ = res*0 + 1
+        aux_ = res * 0 + 1
 
-        Lonn = lonn*aux_
-        Latt = latt*aux_
-        Indx = j*aux_
+        Lonn = lonn * aux_
+        Latt = latt * aux_
+        Indx = j * aux_
 
         # print("===")
         # print(intp)
@@ -256,7 +262,7 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
         # intp_ = np.zeros([intp.shape[0], 1])
         # res_ = np.zeros([res.shape[0], 1])
 
-        # intp_[:,0] = intp 
+        # intp_[:,0] = intp
         # res_[:,0]  = res
 
         resT.append(res.tolist())
@@ -279,22 +285,20 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
     latTT = np.zeros([len(latT), 1])
     indxTT = np.zeros([len(indxT), 1])
 
-
-    resTT[:,0] = np.array(resT)
-    intpTT[:,0] = np.array(intpT)
-    lonTT[:,0] = np.array(lonT)
-    latTT[:,0] = np.array(latT)
-    indxTT[:,0] = np.array(indxT)
-
+    resTT[:, 0] = np.array(resT)
+    intpTT[:, 0] = np.array(intpT)
+    lonTT[:, 0] = np.array(lonT)
+    latTT[:, 0] = np.array(latT)
+    indxTT[:, 0] = np.array(indxT)
 
     dtSatAndMod = np.concatenate([resTT, intpTT, lonTT, latTT, indxTT], axis=1)
     print("    ... saving output file in ", _destDir)
-    #outFlName = mdlF.replace(".nc", "_" + read_file(i) + "_tidalGauge_" + tmstrt.strftime("%Y%m%d") )
+    # outFlName = mdlF.replace(".nc", "_" + read_file(i) + "_tidalGauge_" + tmstrt.strftime("%Y%m%d") )
     outFlName = mdlF.replace(".nc", "_" + "tidalGauge")
     outFlPath = os.path.join(_destDir, outFlName)
     print(outFlName)
     np.save(outFlPath, dtSatAndMod)
-    
+
     return outFlPath
 
 
@@ -321,8 +325,7 @@ def interpolateModelToTidalGauge_schismWWM(
     print("interpolating model data to tidal gauge")
     mdlfl0 = [f for f in os.listdir(modelNcFileDir) if re.match(flpattern, f)]
     dts = [
-        int(re.match("ERA5_schismwwm_([0-9]*)\.nc", fn).groups(0)[0])
-        for fn in mdlfl0
+        int(re.match("ERA5_schismwwm_([0-9]*)\.nc", fn).groups(0)[0]) for fn in mdlfl0
     ]
     iii = np.argsort(dts)
     mdlfl = np.array(mdlfl0)[iii]
@@ -343,7 +346,7 @@ def interpolateModelToTidalGauge_schismWWM(
     _lonTidal = varsTidal[0]
     _latTidal = varsTidal[1]
     _resTidal = varsTidal[2]
-    _timeTidal= varsTidal[3]
+    _timeTidal = varsTidal[3]
 
     # dtmngr = coarsenSatData.satDataManager(crsSatDataDir, boundaries)
     if nParWorker > 1:

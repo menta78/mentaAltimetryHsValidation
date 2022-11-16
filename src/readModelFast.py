@@ -2,12 +2,12 @@ import multiprocessing
 import os
 import re
 from datetime import datetime, timedelta
-#from GeslaDataset.gesla import GeslaDataset
+
+# from GeslaDataset.gesla import GeslaDataset
 
 import netCDF4
 import numpy as np
 import src.utils as utils
-
 
 
 def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
@@ -45,7 +45,6 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
         outFlPath = "none"
         return "case " + str(mdlF)
 
-
     outFlName = mdlF.replace(".nc", "_" + "tidalGauge")
     outFlPath = os.path.join(_destDir, outFlName)
     if (not _overwriteExisting) and os.path.isfile(outFlPath + ".npy"):
@@ -62,15 +61,15 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
             ds.close()
             return "case " + str(mdlF)
 
-    tmmdl = toJulian(netCDF4.num2date(
-        tmnc[:], tmnc.units, clndr, only_use_cftime_datetimes=False
-    ))
-  
+    tmmdl = toJulian(
+        netCDF4.num2date(tmnc[:], tmnc.units, clndr, only_use_cftime_datetimes=False)
+    )
+
     _lock.acquire()
     try:
         lon = ds.variables[varNames[0]][:]
         lat = ds.variables[varNames[1]][:]
-        hs = ds.variables[varNames[2]][:,:]
+        hs = ds.variables[varNames[2]][:, :]
 
         usePrev = not mdlFPrev is None
         if usePrev:
@@ -78,12 +77,14 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
             try:
                 ds_ = netCDF4.Dataset(fpth_)
                 tmnc_ = ds_.variables[timeVarName]
-                tmmdl_ = toJulian(netCDF4.num2date(
-                    tmnc_[-1],
-                    tmnc_.units,
-                    getNcCalendar(tmnc_),
-                    only_use_cftime_datetimes=False,
-                ))
+                tmmdl_ = toJulian(
+                    netCDF4.num2date(
+                        tmnc_[-1],
+                        tmnc_.units,
+                        getNcCalendar(tmnc_),
+                        only_use_cftime_datetimes=False,
+                    )
+                )
                 hs_ = ds_.variables[varNames[2]][-1, :]
                 hs_ = hs_.reshape([1, len(hs_)])
                 hs = np.concatenate([hs_, hs], axis=0)
@@ -98,12 +99,14 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
             try:
                 ds_ = netCDF4.Dataset(fpth_)
                 tmnc_ = ds_.variables[timeVarName]
-                tmmdl_ = toJulian(netCDF4.num2date(
-                    tmnc_[0],
-                    tmnc_.units,
-                    getNcCalendar(tmnc_),
-                    only_use_cftime_datetimes=False,
-                ))
+                tmmdl_ = toJulian(
+                    netCDF4.num2date(
+                        tmnc_[0],
+                        tmnc_.units,
+                        getNcCalendar(tmnc_),
+                        only_use_cftime_datetimes=False,
+                    )
+                )
                 hs_ = ds_.variables[varNames[2]][0, :]
                 hs_ = hs_.reshape([1, len(hs_)])
                 hs = np.concatenate([hs, hs_], axis=0)
@@ -139,8 +142,7 @@ def readNcSchism(
     print("interpolating model data to tidal gauge")
     mdlfl0 = [f for f in os.listdir(modelNcFileDir) if re.match(flpattern, f)]
     dts = [
-        int(re.match("ERA5_schismwwm_([0-9]*)\.nc", fn).groups(0)[0])
-        for fn in mdlfl0
+        int(re.match("ERA5_schismwwm_([0-9]*)\.nc", fn).groups(0)[0]) for fn in mdlfl0
     ]
     iii = np.argsort(dts)
     mdlfl = np.array(mdlfl0)[iii]
@@ -156,7 +158,6 @@ def readNcSchism(
     _destDir = destDir
     _startDate, _endDate = startDate, endDate
     _varnames = ["SCHISM_hgrid_node_x", "SCHISM_hgrid_node_y", "elev", "time"]
-
 
     # dtmngr = coarsenSatData.satDataManager(crsSatDataDir, boundaries)
     if nParWorker > 1:

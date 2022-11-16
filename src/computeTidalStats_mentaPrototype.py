@@ -8,12 +8,13 @@ import src.utils_test as utils
 
 filterHighSsh = False
 
+
 def getFiles(hsSatAndModelDir, startDate, endDate):
     fl = []
 
     while startDate <= endDate:
         strtime = startDate.strftime("%Y%m%d")
-        pthfile = hsSatAndModelDir + "/ERA5_schismwwm_"+strtime+"*.npy"
+        pthfile = hsSatAndModelDir + "/ERA5_schismwwm_" + strtime + "*.npy"
         fileFound = glob.glob(pthfile)
         fl.append(fileFound)
         startDate += timedelta(days=1)
@@ -28,11 +29,10 @@ def elaborateMeasures(
     outputDir,
     filterLowHs=False,
     filterHsThreshold=0.0,
-    pth = 90,
+    pth=90,
 ):
-
     def loadFile(flpth):
-        #print("    loading file " + flpth)
+        # print("    loading file " + flpth)
         satdts = np.load(flpth)
         # if filterHighSsh:
         #     sshsat = satdts[:, 0]
@@ -56,18 +56,18 @@ def elaborateMeasures(
     nrmselst = []
     pearsonlst = []
 
-   #looping on tidal gauge files
+    # looping on tidal gauge files
     obs = np.array([])
     model = np.array([])
 
     for f in fls:
         data_ = loadFile(f)
-        obs_ = data_[:,0]
-        model_ = data_[:,1]
+        obs_ = data_[:, 0]
+        model_ = data_[:, 1]
 
-        model = np.concatenate((model,model_), axis=0)
+        model = np.concatenate((model, model_), axis=0)
         obs = np.concatenate((obs, obs_), axis=0)
-        
+
     r2, nse, ab, rb, rmse, nrmse, pearson = utils.computeStats(obs, model, pth)
 
     #     r2lst.append(r2_)
@@ -86,13 +86,13 @@ def elaborateMeasures(
     # nrmse = np.mean(np.array(nrmselst))
     # pearson = np.mean(np.array(pearsonlst))
 
-    nnse = 1/(2-nse)
-    nr2 = 1/(2-r2)
+    nnse = 1 / (2 - nse)
+    nr2 = 1 / (2 - r2)
 
     print("=========================================")
     print("Start date ", startDate, "   :::::::   End date", endDate)
     print("Percentile ", pth)
-    print("nse = ",nse)
+    print("nse = ", nse)
     print("nnse = ", nnse)
     print("r2 = ", r2)
     print("nr2 = ", nr2)
@@ -103,14 +103,20 @@ def elaborateMeasures(
     print("Pearson  Correlation =", pearson)
     print("=========================================")
 
-
-    with open('data/stats/tidalGauge_'+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d")+".txt", 'w') as f:
-        f.write("nse = " + str(nse)+"\n")
-        f.write("nnse = " + str(nnse)+"\n")
-        f.write("r2 = " + str(r2)+"\n")
-        f.write("nr2 = " + str(nr2)+"\n")
-        f.write("rmse = " + str(rmse)+"\n")
-        f.write("nrmse = " + str(nrmse)+"\n")
-        f.write("abs bias = " + str(ab)+"\n")
-        f.write("rel bias = " + str(rb)+"\n")
-        f.write("pearson = " + str(pearson)+"\n")
+    with open(
+        "data/stats/tidalGauge_"
+        + startDate.strftime("%Y%m%d")
+        + "_"
+        + endDate.strftime("%Y%m%d")
+        + ".txt",
+        "w",
+    ) as f:
+        f.write("nse = " + str(nse) + "\n")
+        f.write("nnse = " + str(nnse) + "\n")
+        f.write("r2 = " + str(r2) + "\n")
+        f.write("nr2 = " + str(nr2) + "\n")
+        f.write("rmse = " + str(rmse) + "\n")
+        f.write("nrmse = " + str(nrmse) + "\n")
+        f.write("abs bias = " + str(ab) + "\n")
+        f.write("rel bias = " + str(rb) + "\n")
+        f.write("pearson = " + str(pearson) + "\n")

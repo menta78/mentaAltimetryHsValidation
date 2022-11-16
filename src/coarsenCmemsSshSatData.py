@@ -15,7 +15,7 @@ def coarsenCmemsSshSatData(
 ):
     # areaRectangles is a list of rectangles [minlon minlat, maxlon, maxlat]
     drs = list([d for d in os.listdir(rootdir) if re.match("[0-9]{4}", d)])
-    #drs = list([d for d in os.listdir(rootdir)])
+    # drs = list([d for d in os.listdir(rootdir)])
     drs.sort()
     print(drs)
 
@@ -30,7 +30,7 @@ def coarsenCmemsSshSatData(
         6: "dt_global_tpn_phy_l3",
         7: "dt_global_j1_phy_l3",
         8: "dt_global_j1n_phy_l3",
-        9: "dt_global_j1n_phy_l3"
+        9: "dt_global_j1n_phy_l3",
     }
 
     satIds = list(satelliteMap.keys())

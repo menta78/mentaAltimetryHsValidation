@@ -258,7 +258,7 @@ def elaborateMeasures(
 
         while startDate <= endDate:
             strtime = startDate.strftime("%Y%m%d")
-            pthfile = hsSatAndModelDir + "/ERA5_schismwwm_"+strtime+"*.npy"
+            pthfile = hsSatAndModelDir + "/ERA5_schismwwm_" + strtime + "*.npy"
             fileFound = glob.glob(pthfile)
             fl.append(fileFound)
             startDate += timedelta(days=1)
@@ -283,7 +283,7 @@ def elaborateMeasures(
     nrmselst = []
     pearsonlst = []
 
-   #looping on tidal gauge files
+    # looping on tidal gauge files
     obs = np.array([])
     model = np.array([])
     dts = np.array([])
@@ -294,16 +294,26 @@ def elaborateMeasures(
         dts_ = data_[:, 0]
         lons = data_[:, 1]
         lats = data_[:, 2]
-        obs_ = data_[:,3]
-        model_ = data_[:,4]
+        obs_ = data_[:, 3]
+        model_ = data_[:, 4]
 
-        maplons, maplats, mapdata = mll.mapByLonLatCumm(mapdata, dts_, lons, lats, obs_, model_, dx, dy, lonlims=lonlims, latlims=latlims)
-        #mapdata = mll.computeMean_cell(lons, lats, mapdata, mapdata)
-        
+        maplons, maplats, mapdata = mll.mapByLonLatCumm(
+            mapdata,
+            dts_,
+            lons,
+            lats,
+            obs_,
+            model_,
+            dx,
+            dy,
+            lonlims=lonlims,
+            latlims=latlims,
+        )
+        # mapdata = mll.computeMean_cell(lons, lats, mapdata, mapdata)
+
         # model = np.concatenate((model, model_), axis=0)
         # obs = np.concatenate((obs, obs_), axis=0)
         # dts = np.concatenate((dts, dts_), axis=0)
-
 
     # fig, ax = plt.subplots()
     # # It's missing time array
@@ -324,8 +334,8 @@ def elaborateMeasures(
     print("pearson = ", pearson_)
     print("bias = ", ab_)
     print("rmse = ", rmse_)
-    ax.plot(obs, label='observation')
-    ax.plot(model, label='model', alpha=.5)
+    ax.plot(obs, label="observation")
+    ax.plot(model, label="model", alpha=0.5)
     ax.legend()
     plt.savefig("testtt.png")
 
@@ -338,7 +348,7 @@ def elaborateMeasures(
     pearsonlst = []
 
     nminobs = 0
-    
+
     for ix in range(len(lons)):
         for iy in range(len(lats)):
             data = mapdata.get((ix, iy))
@@ -350,7 +360,9 @@ def elaborateMeasures(
             if len(model) <= nminobs:
                 continue
 
-            r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(obs, model, pth)
+            r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(
+                obs, model, pth
+            )
 
             r2lst.append(r2_)
             nselst.append(nse_)
@@ -367,7 +379,6 @@ def elaborateMeasures(
     rmse = np.nanmean(np.array(rmselst))
     nrmse = np.nanmean(np.array(nrmselst))
     pearson = np.nanmean(np.array(pearsonlst))
-
 
     # modssh_mean = np.nanmean(modssh_)
     # satssh_mean = np.nanmean(satssh_)
@@ -418,7 +429,6 @@ Pearson: {pearson:2.5f}
         f.write(totIndStr)
         f.close()
 
-
     # rmse = np.sqrt(sqDevSum)
     # bias = devSum / obsSum
     # absBias = devSum / dtcount
@@ -430,8 +440,6 @@ Pearson: {pearson:2.5f}
         os.makedirs(outputDir)
     except:
         pass
-
-
 
     # lons = Maplons[0]
     # lats = Maplats[0]
@@ -482,13 +490,13 @@ Pearson: {pearson:2.5f}
     #         data = mp.get((ix, iy))
     #         if not data:
     #             continue
-            
+
     #         obs = [item for sublist in data[0] for item in sublist]
     #         mod = [item for sublist in data[1] for item in sublist]
 
     #         Mod[iy, ix] = np.array(mod)[0]
     #         Obs[iy, ix] = np.array(obs)[0]
-        
+
     # print(Mod[:,0])
     # fjrifir
 

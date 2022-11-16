@@ -16,7 +16,7 @@ class coastLine:
             self.basemap = basemap.Basemap(resolution=resolution)
         else:
             self.basemap = basemap.Basemap(
-                #resolution=resolution,
+                # resolution=resolution,
                 resolution=resolution,
                 llcrnrlon=llcrnr[0],
                 llcrnrlat=llcrnr[1],

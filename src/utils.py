@@ -155,35 +155,30 @@ def getModelVariables(flsPath, varNames=None):
 
     return tmmdl, lon, lat, var
 
+
 def computeStatsHs(obs_, model_, pth):
 
     # computing r2 (and other measures) gauge by gauge
     pmodel = np.nanpercentile(model_, pth)
     pobs = np.nanpercentile(obs_, pth)
 
-    #print(pmodel, pobs)
+    # print(pmodel, pobs)
     # considering the data above the 95th percentile of the observation
-    cnd = np.logical_and(
-        obs_ >= pobs, model_ >= model_
-    )
+    cnd = np.logical_and(obs_ >= pobs, model_ >= model_)
     model = model_[cnd]
     obs = obs_[cnd]
-
-
 
     N = len(obs)
 
     # for i in range(N):
     #     print(obs[i], model[i])
 
-
     devSum = np.nansum(model - obs)
-    sqDevSum = np.nansum((model - obs)**2)
+    sqDevSum = np.nansum((model - obs) ** 2)
     obsSum = np.nansum(obs)
-    #print(obsSum)
+    # print(obsSum)
 
-
-    cov = np.nansum( obs * model )
+    cov = np.nansum(obs * model)
 
     nbi = devSum / obsSum
     absBias = devSum / N
@@ -192,18 +187,16 @@ def computeStatsHs(obs_, model_, pth):
 
     return nbi, absBias, nrmse, hh
 
-    
+
 def computeStats(obs_, model_, pth):
 
     # computing r2 (and other measures) gauge by gauge
     pmodel = np.nanpercentile(model_, pth)
     pobs = np.nanpercentile(obs_, pth)
 
-    #print(pmodel, pobs)
+    # print(pmodel, pobs)
     # considering the data above the 95th percentile of the observation
-    cnd = np.logical_and(
-        obs_ >= pobs, model_ >= model_
-    )
+    cnd = np.logical_and(obs_ >= pobs, model_ >= model_)
     model = model_[cnd]
     obs = obs_[cnd]
 
@@ -219,33 +212,27 @@ def computeStats(obs_, model_, pth):
     #     print(obs[i], model[i])
 
     ssres_ = np.nansum((obs - model) ** 2)
-    #sstot_ = np.nansum((obs) ** 2)
+    # sstot_ = np.nansum((obs) ** 2)
     sstot_ = np.nansum((obs - np.nanmean(obs_)) ** 2)
     nsc1 = np.nansum(np.abs(obs - model))
     nsc2 = np.nansum(np.abs(obs - np.nanmean(obs_)))
-    #nsc2 = np.nansum(np.abs(obs))
+    # nsc2 = np.nansum(np.abs(obs))
 
     absre_ = np.nansum(model - obs)
     nobs = np.nansum(obs)
 
-    sigmaObs = np.sqrt(
-        np.nansum((obs - np.nanmean(obs_)) ** 2)
-    )
+    sigmaObs = np.sqrt(np.nansum((obs - np.nanmean(obs_)) ** 2))
     # sigmaObs = np.sqrt(
     #     np.nansum((obs) ** 2)
     # )
 
-    sigmaModel = np.sqrt(
-        np.nansum((model - np.nanmean(model_)) ** 2)
-    )
+    sigmaModel = np.sqrt(np.nansum((model - np.nanmean(model_)) ** 2))
 
     # sigmaModel = np.sqrt(
     #     np.nansum((model) ** 2)
     # )
 
-    cov_ = np.nansum(
-        (obs - np.nanmean(obs_)) * (model - np.nanmean(model_))
-    )
+    cov_ = np.nansum((obs - np.nanmean(obs_)) * (model - np.nanmean(model_)))
 
     # cov_ = np.nansum(
     #     (obs) * (model)
@@ -253,9 +240,9 @@ def computeStats(obs_, model_, pth):
 
     r2 = 1 - ssres_ / sstot_
     nse = 1 - nsc1 / nsc2
-    ab = absre_/N
+    ab = absre_ / N
     rb = absre_ / nobs * 100
-    nrmse = np.sqrt(ssres_/N)
+    nrmse = np.sqrt(ssres_ / N)
     rmse = np.sqrt(ssres_)
     pearson = cov_ / (sigmaModel * sigmaObs)
 
@@ -301,4 +288,3 @@ def load_paths(rootDir):
         hsModelAndSatObsTidalDir,
         statsDir,
     )
-

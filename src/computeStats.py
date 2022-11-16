@@ -28,7 +28,7 @@ def elaborateMeasures(
     filterHsThreshold=0.0,
     dx=0.2,
     dy=0.2,
-    pth = 90,
+    pth=90,
 ):
 
     years = []

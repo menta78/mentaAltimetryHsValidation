@@ -4,22 +4,24 @@ import numpy as np
 import h5py
 
 from src.interpolateModelToTidelGauge import interpolateModelToTidalGauge_schismWWM
+
 # from src.computeTidalStats import elaborateMeasures
 from src.computeTidalStats_test import elaborateMeasures
 from src.plotStatsTidals_test import elaborateMeasuresPlot
 
 import src.utils_test as utils
 
+
 def get_serie_gesla(fileName):
-    f = h5py.File(fileName,'r')
+    f = h5py.File(fileName, "r")
     data = f.get("GESELD")
 
-    npoints = data["residual"].shape[0] # number of stations
+    npoints = data["residual"].shape[0]  # number of stations
 
-    res   = []
-    time  = []
-    lon   = []
-    lat   = []
+    res = []
+    time = []
+    lon = []
+    lat = []
 
     for i in range(npoints):
         ref = f["GESELD"]["longitude"][i][0]
@@ -31,6 +33,7 @@ def get_serie_gesla(fileName):
         ref = f["GESELD"]["time"][i][0]
         time.append(np.array(f[ref][0]))
     return lon, lat, res, time
+
 
 def getMeanEachTidal(fileName):
     _, lat, res, _ = get_serie_gesla(fileName)
@@ -82,8 +85,8 @@ if r2Compute:
         endDate,
         hsModelAndSatObsTidalDir,
         statsDir,
-        pth = pth,
-    ) 
+        pth=pth,
+    )
 
 r2ComputePlot = True
 
@@ -93,5 +96,5 @@ if r2ComputePlot:
         endDate,
         hsModelAndSatObsTidalDir,
         statsDir,
-        pth = pth,
-) 
+        pth=pth,
+    )

@@ -28,7 +28,7 @@ def elaborateMeasures(
     filterHsThreshold=0.0,
     dx=0.2,
     dy=0.2,
-    pth = 90,
+    pth=90,
 ):
 
     years = []
@@ -254,9 +254,9 @@ R2: {r2:2.5f}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
     totIndStr = totIndStr.format(
-        rmseTot = rmseTot,
-        nse     = nse,
-        r2      = r2,
+        rmseTot=rmseTot,
+        nse=nse,
+        r2=r2,
     )
     print("")
     print(totIndStr)
