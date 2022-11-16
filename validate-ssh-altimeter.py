@@ -35,6 +35,8 @@ overwriteExisting = True
 
 pth = 95
 
+nminobs = 2
+
 # number of processes to be used for the interpolation
 nParWorker = 8
 
@@ -61,4 +63,6 @@ computeSshStats.elaborateMeasures(
     filterSshMaximum=filterSshMaximum,
     latlims=latlims,
     pth=pth,
+    nminobs = nminobs
 )
+

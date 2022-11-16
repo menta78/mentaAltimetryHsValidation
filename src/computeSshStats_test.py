@@ -32,6 +32,7 @@ def elaborateMeasures(
     dx=0.2,
     dy=0.2,
     pth=90,
+    nminobs = 2,
 ):
 
     years = []
@@ -322,32 +323,31 @@ def elaborateMeasures(
     # ax.legend()
     # plt.savefig("testtt.png")
 
-    fig, ax = plt.subplots()
-    ix = 6
-    iy = 69
-    data = mapdata.get((ix, iy))
-    obs = np.array(data[3])
-    model = np.array(data[4])
-    print(np.mean(mapdata.get((ix, iy))[1]), np.mean(mapdata.get((ix, iy))[2]))
-    r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(obs, model, pth)
-    print("r2 = ", r2_)
-    print("pearson = ", pearson_)
-    print("bias = ", ab_)
-    print("rmse = ", rmse_)
-    ax.plot(obs, label="observation")
-    ax.plot(model, label="model", alpha=0.5)
-    ax.legend()
-    plt.savefig("testtt.png")
+    # fig, ax = plt.subplots()
+    # ix = 6
+    # iy = 69
+    # data = mapdata.get((ix, iy))
+    # obs = np.array(data[3])
+    # model = np.array(data[4])
+    # print(np.mean(mapdata.get((ix, iy))[1]), np.mean(mapdata.get((ix, iy))[2]))
+    # r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(obs, model, pth)
+    # print("r2 = ", r2_)
+    # print("pearson = ", pearson_)
+    # print("bias = ", ab_)
+    # print("rmse = ", rmse_)
+    # ax.plot(obs, label="observation")
+    # ax.plot(model, label="model", alpha=0.5)
+    # ax.legend()
+    # plt.savefig("testtt.png")
 
-    r2lst = []
-    nselst = []
-    ablst = []
-    rblst = []
-    rmselst = []
-    nrmselst = []
-    pearsonlst = []
 
-    nminobs = 0
+    r2 = np.ones((len(maplats), len(maplons))) * 99999
+    nse = np.ones((len(maplats), len(maplons))) * 99999
+    nrmse = np.ones((len(maplats), len(maplons))) * 99999
+    bias = np.ones((len(maplats), len(maplons))) * 99999
+    rmse = np.ones((len(maplats), len(maplons))) * 99999
+    pearson = np.ones((len(maplats), len(maplons))) * 99999
+    relbias = np.ones((len(maplats), len(maplons))) * 99999
 
     for ix in range(len(lons)):
         for iy in range(len(lats)):
@@ -360,25 +360,25 @@ def elaborateMeasures(
             if len(model) <= nminobs:
                 continue
 
-            r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(
+            r2_, nse_, absBias_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(
                 obs, model, pth
             )
 
-            r2lst.append(r2_)
-            nselst.append(nse_)
-            ablst.append(ab_)
-            rmselst.append(rmse_)
-            nrmselst.append(nrmse_)
-            rblst.append(rb_)
-            pearsonlst.append(pearson_)
+            r2[iy, ix] = r2_
+            nse[iy, ix] = nse_
+            bias[iy, ix] = absBias_
+            relbias[iy, ix] = rb_
+            rmse[iy, ix] = rmse_
+            nrmse[iy, ix] = nrmse_
+            pearson[iy, ix] = pearson_
 
-    r2 = np.nanmean(np.array(r2lst))
-    nse = np.nanmean(np.array(nselst))
-    ab = np.nanmean(np.array(ablst))
-    rb = np.nanmean(np.array(rblst))
-    rmse = np.nanmean(np.array(rmselst))
-    nrmse = np.nanmean(np.array(nrmselst))
-    pearson = np.nanmean(np.array(pearsonlst))
+    mask = bias == 99999
+    bias = np.ma.masked_array(bias, mask)
+    nrmse = np.ma.masked_array(nrmse, mask)
+    relbias = np.ma.masked_array(relbias, mask)
+    r2 = np.ma.masked_array(r2, mask)
+    pearson = np.ma.masked_array(pearson, mask)
+    nse = np.ma.masked_array(nse, mask)
 
     # modssh_mean = np.nanmean(modssh_)
     # satssh_mean = np.nanmean(satssh_)
@@ -390,28 +390,38 @@ def elaborateMeasures(
     nnse = 1 / (2 - nse)
     nr2 = 1 / (2 - r2)
 
+    abTot = np.nanmean(bias)
+    relabTot = np.nanmean(relbias)
+    rmseTot = np.nanmean(rmse)
+    nrmseTot = np.nanmean(nrmse)
+    pearsonTot = np.nanmean(pearson)
+    nseTot = np.nanmean(nse)
+    nnseTot = np.nanmean(nnse)
+    r2Tot = np.nanmean(r2)
+    nr2Tot = np.nanmean(nr2)
+
     totIndStr = """
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 TOTAL ERROR INDICATORS:
 rmse: {rmseTot:2.5f}
-NSE: {nse:2.5f}
-R2: {r2:2.5f}
-NNSE: {nnse:2.5f}
-NR2: {nr2:2.5f}
-Bias: {absre:2.5f}
-RelBias: {reb:2.5f}
-Pearson: {pearson:2.5f}
+NSE: {nseTot:2.5f}
+R2: {r2Tot:2.5f}
+NNSE: {nnseTot:2.5f}
+NR2: {nr2Tot:2.5f}
+Bias: {abTot:2.5f}
+RelBias: {relabTot:2.5f}
+Pearson: {pearsonTot:2.5f}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
     totIndStr = totIndStr.format(
-        rmseTot=rmse,
-        nse=nse,
-        r2=r2,
-        nnse=nnse,
-        nr2=nr2,
-        absre=ab,
-        reb=rb,
-        pearson=pearson,
+        rmseTot=rmseTot,
+        nseTot=nseTot,
+        r2Tot=r2Tot,
+        nnseTot=nnseTot,
+        nr2Tot=nr2Tot,
+        abTot=abTot,
+        relabTot=relabTot,
+        pearsonTot=pearsonTot,
     )
     print("")
     print(totIndStr)
@@ -419,6 +429,9 @@ Pearson: {pearson:2.5f}
 
     statFile = (
         "ssh-altimeter_"
+        + "pth_"
+        + str(pth)
+        + "_"
         + startDate.strftime("%Y%m%d")
         + "_"
         + endDate.strftime("%Y%m%d")
@@ -500,20 +513,69 @@ Pearson: {pearson:2.5f}
     # print(Mod[:,0])
     # fjrifir
 
-    np.savetxt(os.path.join(outputDir, "lons.csv"), Maplons[0])
-    np.savetxt(os.path.join(outputDir, "lats.csv"), Maplats[0])
+    np.savetxt(os.path.join(outputDir, "lons-ssh.csv"),maplons)
+    np.savetxt(os.path.join(outputDir, "lats-ssh.csv"), maplats)
     # np.savetxt(os.path.join(outputDir, "rmse-ssh-altimeter_"+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d")+".csv"), rmse)
     # np.savetxt(os.path.join(outputDir, "bias-ssh-altimeter_"+startDate.strftime("%Y%m%d")+"_"+endDate.strftime("%Y%m%d")+".csv"), bias)
+
     np.savetxt(
         os.path.join(
             outputDir,
-            "pearson-ssh-altimeter_"
+            "SSH-rmse-altimeter_"
+            + "pth_"
+            + str(pth)
+            + "_"
+            + startDate.strftime("%Y%m%d")
+            + "_"
+            + endDate.strftime("%Y%m%d")
+            + ".csv",
+        ),
+        rmse,
+    )
+
+    np.savetxt(
+        os.path.join(
+            outputDir,
+            "SSH-pearson-altimeter_"
+            + "pth_"
+            + str(pth)
+            + "_"
             + startDate.strftime("%Y%m%d")
             + "_"
             + endDate.strftime("%Y%m%d")
             + ".csv",
         ),
         pearson,
+    )
+
+    np.savetxt(
+        os.path.join(
+            outputDir,
+            "SSH-r2-altimeter_"
+            + "pth_"
+            + str(pth)
+            + "_"
+            + startDate.strftime("%Y%m%d")
+            + "_"
+            + endDate.strftime("%Y%m%d")
+            + ".csv",
+        ),
+        r2,
+    )
+
+    np.savetxt(
+        os.path.join(
+            outputDir,
+            "SSH-bias-altimeter_"
+            + "pth_"
+            + str(pth)
+            + "_"
+            + startDate.strftime("%Y%m%d")
+            + "_"
+            + endDate.strftime("%Y%m%d")
+            + ".csv",
+        ),
+        bias,
     )
 
     # np.savetxt(os.path.join(outputDir, "dtcount.csv"), dtcount)
