@@ -41,7 +41,7 @@ startDate, endDate = datetime(2012, 1, 1), datetime(2019, 12, 31)
 startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 29)
 startDate, endDate = datetime(2003, 1, 1), datetime(2009, 12, 30)
 
-
+pth= 0 
 
 
 lonFile = os.path.join(statsDir, "lons.csv")
@@ -50,6 +50,9 @@ latFile = os.path.join(statsDir, "lats.csv")
 nrmseFile = os.path.join(
         statsDir,
         "HS-nrmse-altimeter_"
+        + "pth_"
+        + str(pth)
+        + "_"
         + startDate.strftime("%Y%m%d")
         + "_"
         + endDate.strftime("%Y%m%d")
@@ -59,6 +62,9 @@ nrmseFile = os.path.join(
 hhFile = os.path.join(
         statsDir,
         "HS-hh-altimeter_"
+        + "pth_"
+        + str(pth)
+        + "_"
         + startDate.strftime("%Y%m%d")
         + "_"
         + endDate.strftime("%Y%m%d")
@@ -68,6 +74,9 @@ hhFile = os.path.join(
 nbiFile = os.path.join(
         statsDir,
         "HS-nbi-altimeter_"
+        + "pth_"
+        + str(pth)
+        + "_"
         + startDate.strftime("%Y%m%d")
         + "_"
         + endDate.strftime("%Y%m%d")
@@ -77,6 +86,9 @@ nbiFile = os.path.join(
 biasFile = os.path.join(
         statsDir,
         "HS-bias-altimeter_"
+        + "pth_"
+        + str(pth)
+        + "_"
         + startDate.strftime("%Y%m%d")
         + "_"
         + endDate.strftime("%Y%m%d")

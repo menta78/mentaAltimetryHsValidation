@@ -33,7 +33,7 @@ startDate, endDate = datetime(2003, 1, 1), datetime(2009, 12, 30)
 
 overwriteExisting = True
 
-pth = 95
+pth = 0
 
 # number of processes to be used for the interpolation
 nParWorker = 8
