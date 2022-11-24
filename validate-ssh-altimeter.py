@@ -35,7 +35,7 @@ overwriteExisting = True
 
 pth = 95
 
-nminobs = 2
+nminobs = 100
 
 # number of processes to be used for the interpolation
 nParWorker = 8

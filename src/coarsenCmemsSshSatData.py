@@ -21,16 +21,20 @@ def coarsenCmemsSshSatData(
 
     os.chdir(rootdir)
 
+    """
     satelliteMap = {
-        1: "GLO_PHY_L3",
-        2: "dt_global_g2_phy_l3",
-        3: "dt_global_j1_phy_l3",
-        4: "dt_global_e2_phy_l3",
-        5: "dt_global_tp_phy_l3",
-        6: "dt_global_tpn_phy_l3",
-        7: "dt_global_j1_phy_l3",
+        1: "dt_global_g2_phy_l3",
+        2: "dt_global_j1_phy_l3",
+        3: "dt_global_e2_phy_l3",
+        4: "dt_global_tp_phy_l3",
+        5: "dt_global_tpn_phy_l3",
+        6: "dt_global_j1_phy_l3",
+        7: "dt_global_j1n_phy_l3",
         8: "dt_global_j1n_phy_l3",
-        9: "dt_global_j1n_phy_l3",
+    }
+    """
+    satelliteMap = {
+        1: "dt_global_en_phy_l3",
     }
 
     satIds = list(satelliteMap.keys())
@@ -71,7 +75,9 @@ def coarsenCmemsSshSatData(
                 times = np.array(timevar)
                 lons = np.array(ds.variables["longitude"])
                 lats = np.array(ds.variables["latitude"])
-                hss = np.array(ds.variables["mdt"])
+                slaF = np.array(ds.variables["sla_filtered"])
+                dac = np.array(ds.variables["dac"])
+                hss = slaF + dac
                 for areaRectangle in areaRectangles:
                     minlon = areaRectangle[0]
                     minlat = areaRectangle[1]

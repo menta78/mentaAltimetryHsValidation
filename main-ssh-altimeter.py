@@ -32,7 +32,7 @@ meanModelFile = None
 startDate, endDate = datetime(2002, 3, 22), datetime(2009, 12, 30)
 startDate, endDate = datetime(1995, 1, 1), datetime(1999, 12, 30)
 startDate, endDate = datetime(2012, 1, 1), datetime(2019, 12, 31)
-startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 29)
+startDate, endDate = datetime(2003, 1, 1), datetime(2009, 12, 31)
 
 overwriteExisting = False
 
@@ -46,19 +46,21 @@ filterHighSsh = True
 # set this if you need to limit your analysis to a subdomain
 boundaries = None
 
-doCoarsenSatData = False
+doCoarsenSatData = True
 if doCoarsenSatData:
     # coarsening the sat data.
     # This must be done because single alt observation are noisy and too numerous.
     # The data are averaged on a latitudinal tract with size latdelta.
     # You can do this once, then you can disable the coarseining, unless you want to change latdelta, or the time extent of the sat data
     latdelta = 0.5
+    rawSatDataDir = "/eos/jeodpp/data/projects/CLIMEX/mentaAltimetryHsValidation/data/rawDataSpecific"
     coarsenCmemsSshSatData(
         rawSatDataDir, crsSatDataDir, startDate, endDate, latdelta
     )
 
 
 doInterpolateModelToSat = True
+meanModelFile = None
 if doInterpolateModelToSat:
     # interpolating the model hs along the sat tracks
     interpolateModelTocoarsenCmemsSshSatData_schismWWM(
@@ -73,6 +75,8 @@ if doInterpolateModelToSat:
         nParWorker=nParWorker,
     )
 
+
+fekeofek
 
 # computing the statistics
 dx, dy = 1.0, 1.0

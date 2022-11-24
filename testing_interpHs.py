@@ -35,16 +35,36 @@ def loadFile(flpth):
     return satdts
 
 
-testFile = os.path.join(crsSatDataDir, "SSH_dt_global_en_phy_l3_2003.npy")
+dateTime="20041123"
+fileNPY=f"ERA5_schismwwm_{dateTime}_hsModelAndSatObs_{dateTime}.npy"
+
+
+testFile = os.path.join(hsModelAndSatObsHsDir, fileNPY)
 data = loadFile(testFile)
+print(data.shape[:])
 
 obs_ = data[:,3]
+model_ = data[:,4]
 
 filter_arr = np.logical_and(obs_ >= -10, obs_ <= 10)
 
 obs = obs_[filter_arr]
+model = model_[filter_arr]
 
-print(obs.shape[::100])
+obs = obs-np.nanmean(obs)
+model = model-np.nanmean(model)
 
-plt.plot(obs-np.nanmean(obs), '.')
+pobs = np.nanpercentile(obs, 0)
+flr = np.logical_and(obs>=pobs, model>=model)
+
+obs = obs[flr]
+model =model[flr]
+
+
+print(obs.shape)
+
+fig, ax = plt.subplots()
+ax.plot(obs, label="observation")
+ax.plot(model, label="model", alpha=0.5)
+ax.legend()
 plt.show()

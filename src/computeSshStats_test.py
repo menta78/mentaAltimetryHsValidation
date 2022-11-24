@@ -292,11 +292,24 @@ def elaborateMeasures(
 
     for f in fls:
         data_ = loadFile(f)
+        obs_ = data_[:, 3]
+        model_ = data_[:, 4]
+        model = np.concatenate((model, model_), axis=0)
+        obs = np.concatenate((obs, obs_), axis=0)
+
+    fltr = np.logical_and(obs >= -10, obs <= 10)
+    obs=obs[fltr]
+    model=model[fltr]
+    meanobs = np.nanmean(obs)
+    meanmodel = np.nanmean(model)
+
+    for f in fls:
+        data_ = loadFile(f)
         dts_ = data_[:, 0]
         lons = data_[:, 1]
         lats = data_[:, 2]
-        obs_ = data_[:, 3]
-        model_ = data_[:, 4]
+        obs_ = data_[:, 3]-meanobs
+        model_ = data_[:, 4]-meanmodel
 
         maplons, maplats, mapdata = mll.mapByLonLatCumm(
             mapdata,
@@ -316,29 +329,24 @@ def elaborateMeasures(
         # obs = np.concatenate((obs, obs_), axis=0)
         # dts = np.concatenate((dts, dts_), axis=0)
 
-    # fig, ax = plt.subplots()
-    # # It's missing time array
-    # ax.plot(obs, label='observation')
-    # ax.plot(model, label='model', alpha=.5)
-    # ax.legend()
-    # plt.savefig("testtt.png")
+    print(meanobs, meanmodel)
 
-    # fig, ax = plt.subplots()
-    # ix = 6
-    # iy = 69
-    # data = mapdata.get((ix, iy))
-    # obs = np.array(data[3])
-    # model = np.array(data[4])
-    # print(np.mean(mapdata.get((ix, iy))[1]), np.mean(mapdata.get((ix, iy))[2]))
-    # r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(obs, model, pth)
-    # print("r2 = ", r2_)
-    # print("pearson = ", pearson_)
-    # print("bias = ", ab_)
-    # print("rmse = ", rmse_)
-    # ax.plot(obs, label="observation")
-    # ax.plot(model, label="model", alpha=0.5)
-    # ax.legend()
-    # plt.savefig("testtt.png")
+    fig, ax = plt.subplots()
+    ix = 16
+    iy = 17
+    data = mapdata.get((ix, iy))
+    obs = np.array(data[3])
+    model = np.array(data[4])
+    print(np.mean(mapdata.get((ix, iy))[1]), np.mean(mapdata.get((ix, iy))[2]))
+    r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(obs, model, pth)
+    print("r2 = ", r2_)
+    print("pearson = ", pearson_)
+    print("bias = ", ab_)
+    print("rmse = ", rmse_)
+    ax.plot(obs, label="observation")
+    ax.plot(model, label="model", alpha=0.5)
+    ax.legend()
+    plt.savefig("testtt.png")
 
 
     r2 = np.ones((len(maplats), len(maplons))) * 99999
@@ -363,6 +371,11 @@ def elaborateMeasures(
             r2_, nse_, absBias_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(
                 obs, model, pth
             )
+            """
+            if (r2_ > 0.7) & (pearson_ > 0.9):
+                print("ix = ", ix, "iy = ", iy)
+                fjrijfri
+            """
 
             r2[iy, ix] = r2_
             nse[iy, ix] = nse_
