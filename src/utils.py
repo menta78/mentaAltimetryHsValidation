@@ -4,6 +4,7 @@ import os
 import re
 from datetime import datetime, timedelta
 
+from scipy import signal
 import h5py
 import netCDF4
 import numpy as np
@@ -189,6 +190,18 @@ def computeStatsHs(obs_, model_, pth):
 
 
 def computeStats(obs_, model_, pth):
+
+    meanobs = np.nanmean(obs_)
+    meanmodel = np.nanmean(model_)
+
+    """
+    model_ = signal.detrend(model_) 
+    obs_ = signal.detrend(obs_) 
+    """
+
+    model_ = model_ - meanmodel
+    obs_ = obs_ - meanobs
+
 
     # computing r2 (and other measures) gauge by gauge
     pmodel = np.nanpercentile(model_, pth)
