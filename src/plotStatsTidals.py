@@ -7,7 +7,7 @@ import matplotlib.gridspec as gridspec
 import itertools
 from mpl_toolkits.basemap import Basemap
 
-import src.utils_test as utils
+import src.utils as utils
 
 
 filterHighSsh = False

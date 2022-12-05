@@ -4,6 +4,8 @@ import os
 import re
 from datetime import datetime, timedelta
 
+from scipy import signal, stats
+
 import h5py
 import netCDF4
 import numpy as np
@@ -174,6 +176,7 @@ def computeStatsHs(obs_, model_, pth):
     #     print(obs[i], model[i])
 
     devSum = np.nansum(model - obs)
+    sqDevSum = np.nansum((model - obs) ** 2)
     obsSum = np.nansum(obs)
     # print(obsSum)
 
@@ -181,18 +184,24 @@ def computeStatsHs(obs_, model_, pth):
 
     nbi = devSum / obsSum
     absBias = devSum / N
-    nrmse = np.sqrt(devSum / np.nansum(obs**2))
-    hh = np.sqrt(devSum / cov)
-    # nbiYMaxTot = np.nansum(mdlMaxSum - obsMaxSum) / np.nansum(obsMaxSum)
-    # nbiTotMaxTot = np.nansum(mdlTotMax - obsTotMax) / np.nansum(obsTotMax)
-
-    if (obsSum == 0) or (cov == 0):
-        return 0, absBias, 0, 0
+    nrmse = np.sqrt(sqDevSum / np.nansum(obs**2))
+    hh = np.sqrt(sqDevSum / cov)
 
     return nbi, absBias, nrmse, hh
 
 
 def computeStats(obs_, model_, pth):
+
+    not_nan_ind = ~np.isnan(obs_)
+    obs__ = signal.detrend(obs_[not_nan_ind]) 
+
+    model__ = model_[not_nan_ind]
+
+    meanobs = np.nanmean(obs__)
+    meanmodel = np.nanmean(model__)
+
+    model_ = model__ - meanmodel
+    obs_ = obs__ - meanobs
 
     # computing r2 (and other measures) gauge by gauge
     pmodel = np.nanpercentile(model_, pth)
@@ -216,31 +225,25 @@ def computeStats(obs_, model_, pth):
     #     print(obs[i], model[i])
 
     ssres_ = np.nansum((obs - model) ** 2)
-    # sstot_ = np.nansum((obs) ** 2)
-    sstot_ = np.nansum((obs - np.nanmean(obs_)) ** 2)
+    sstot_ = np.nansum((obs) ** 2)
+    #sstot_ = np.nansum((obs - np.nanmean(obs_)) ** 2)
     nsc1 = np.nansum(np.abs(obs - model))
-    nsc2 = np.nansum(np.abs(obs - np.nanmean(obs_)))
-    # nsc2 = np.nansum(np.abs(obs))
+    #nsc2 = np.nansum(np.abs(obs - np.nanmean(obs_)))
+    nsc2 = np.nansum(np.abs(obs))
 
     absre_ = np.nansum(model - obs)
     nobs = np.nansum(obs)
 
-    sigmaObs = np.sqrt(np.nansum((obs - np.nanmean(obs_)) ** 2))
-    # sigmaObs = np.sqrt(
-    #     np.nansum((obs) ** 2)
-    # )
+    #sigmaObs = np.sqrt(np.nansum((obs - np.nanmean(obs_)) ** 2))
+    sigmaObs = np.sqrt(np.nansum((obs) ** 2))
 
-    sigmaModel = np.sqrt(np.nansum((model - np.nanmean(model_)) ** 2))
+    #sigmaModel = np.sqrt(np.nansum((model - np.nanmean(model_)) ** 2))
 
-    # sigmaModel = np.sqrt(
-    #     np.nansum((model) ** 2)
-    # )
+    sigmaModel = np.sqrt(np.nansum((model) ** 2))
 
-    cov_ = np.nansum((obs - np.nanmean(obs_)) * (model - np.nanmean(model_)))
+    #cov_ = np.nansum((obs - np.nanmean(obs_)) * (model - np.nanmean(model_)))
 
-    # cov_ = np.nansum(
-    #     (obs) * (model)
-    # )
+    cov_ = np.nansum((obs) * (model))
 
     r2 = 1 - ssres_ / sstot_
     nse = 1 - nsc1 / nsc2
@@ -249,6 +252,7 @@ def computeStats(obs_, model_, pth):
     nrmse = np.sqrt(ssres_ / N)
     rmse = np.sqrt(ssres_)
     pearson = cov_ / (sigmaModel * sigmaObs)
+
 
     return r2, nse, ab, rb, rmse, nrmse, pearson
 

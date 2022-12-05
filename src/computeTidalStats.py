@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from matplotlib import pyplot as plt
 import itertools
 
+import src.utils_test as utils
 
 filterHighSsh = False
 
@@ -26,30 +27,36 @@ def elaborateMeasures(
     endDate,
     hsSatAndModelDir,
     outputDir,
-    meanFileTidals,
-    meanFileModel,
     filterLowHs=False,
     filterHsThreshold=0.0,
     pth=90,
 ):
     def loadFile(flpth):
-        print("")
-        print("    loading file " + flpth)
-
-        try:
-            satdts = np.load(flpth)
-        except Exception:
-            pass
-
-        if filterHighSsh:
-            sshsat = satdts[:, 0]
-            sshmdl = satdts[:, 1]
-            cnd = np.logical_and(sshsat < filterSshMaximum, sshmdl < filterSshMaximum)
-            satdts = satdts[cnd, :]
+        # print("    loading file " + flpth)
+        satdts = np.load(flpth)
+        # if filterHighSsh:
+        #     sshsat = satdts[:, 0]
+        #     sshmdl = satdts[:, 1]
+        #     cnd = np.logical_and(
+        #         sshsat < filterSshMaximum, sshmdl < filterSshMaximum
+        #     )
+        #     satdts = satdts[cnd, :]
         return satdts
 
     fls = getFiles(hsSatAndModelDir, startDate, endDate)
 
+    obs = np.array([])
+    model = np.array([])
+
+    r2lst = []
+    nselst = []
+    ablst = []
+    rblst = []
+    rmselst = []
+    nrmselst = []
+    pearsonlst = []
+
+    # looping on tidal gauge files
     obs = np.array([])
     model = np.array([])
 
@@ -58,49 +65,53 @@ def elaborateMeasures(
         obs_ = data_[:, 0]
         model_ = data_[:, 1]
 
-        obs = np.concatenate([obs, obs_])
-        model = np.concatenate([model, model_])
+        model = np.concatenate((model, model_), axis=0)
+        obs = np.concatenate((obs, obs_), axis=0)
 
-    meanModel = np.nanmean(model)
-    model = model - meanModel
+        if len(obs) < 1:
+            continue
+        r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(obs, model, pth)
 
-    pmodel = np.nanpercentile(model, pth)
-    pobs = np.nanpercentile(obs, pth)
+        r2lst.append(r2_)
+        nselst.append(nse_)
+        ablst.append(ab_)
+        rmselst.append(rmse_)
+        nrmselst.append(nrmse_)
+        rblst.append(rb_)
+        pearsonlst.append(pearson_)
 
-    condition = obs >= 0
 
-    meanObs = np.nanmean(obs, where=condition)
+    r2array = np.array(r2lst)
+    nsearray = np.array(nselst)
+    abarray = np.array(ablst)
+    rbarray = np.array(rblst)
+    rmsearray = np.array(rmselst)
+    nrmsearray = np.array(nrmselst)
+    pearsonarray = np.array(pearsonlst)
+    r2 = np.mean(r2array)
+    nse = np.mean(nsearray)
+    ab = np.mean(abarray)
+    rb = np.mean(rbarray)
+    rmse = np.mean(rmsearray)
+    nrmse = np.mean(nrmsearray)
+    pearson = np.mean(pearsonarray)
 
-    condition1 = obs >= pobs
-    condition2 = model >= pmodel
-    # condition = condition1 & condition2
-    condition = condition1 | condition2
-
-    nsc1 = np.nansum(np.abs(obs - model), where=condition)
-    nsc2 = np.nansum(np.abs(obs - np.nanmean(obs)), where=condition)
-    N = np.sum(condition)
-
-    ssres = np.nansum((obs - model) ** 2, where=condition)
-    sstot = np.nansum((obs - np.nanmean(obs)) ** 2, where=condition)
-
-    absre_ = np.nansum(model - obs, where=condition)
-    nobs = np.nansum(obs, where=condition)
-
-    absre = absre_ / N
-    nse = 1 - nsc1 / nsc2
     nnse = 1 / (2 - nse)
-    r2 = 1 - ssres / sstot
     nr2 = 1 / (2 - r2)
-    re = absre_ / nobs
-    rmse = np.sqrt(ssres / N)
 
-    print("ssres", ssres)
-    print("sstot", sstot)
-    print("N", N)
-
-    print("nse = ", nse, "nnse = ", nnse, "r2 = ", r2, "nr2 = ", nr2)
+    print("=========================================")
+    print("Start date ", startDate, "   :::::::   End date", endDate)
+    print("Percentile ", pth)
+    print("nse = ", nse)
+    print("nnse = ", nnse)
+    print("r2 = ", r2)
+    print("nr2 = ", nr2)
     print("rmse = ", rmse)
-    print("abs bias = ", absre, "relative bias = ", re)
+    print("nrmse = ", nrmse)
+    print("abs bias = ", ab)
+    print("relative bias = ", rb)
+    print("Pearson  Correlation =", pearson)
+    print("=========================================")
 
     with open(
         "data/stats/tidalGauge_"
@@ -115,5 +126,7 @@ def elaborateMeasures(
         f.write("r2 = " + str(r2) + "\n")
         f.write("nr2 = " + str(nr2) + "\n")
         f.write("rmse = " + str(rmse) + "\n")
-        f.write("abs bias = " + str(absre) + "\n")
-        f.write("rel bias = " + str(re) + "\n")
+        f.write("nrmse = " + str(nrmse) + "\n")
+        f.write("abs bias = " + str(ab) + "\n")
+        f.write("rel bias = " + str(rb) + "\n")
+        f.write("pearson = " + str(pearson) + "\n")

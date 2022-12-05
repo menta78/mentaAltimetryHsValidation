@@ -45,7 +45,7 @@ startDate, endDate = datetime(2012, 1, 1), datetime(2019, 12, 31)
 startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 29)
 startDate, endDate = datetime(2003, 1, 1), datetime(2009, 12, 30)
 
-pth= 0
+pth= 95
 
 
 lonFile = os.path.join(statsDir, "lons-ssh.csv")
@@ -126,7 +126,7 @@ pearson = np.ma.masked_array(pearson, mask)
 m = Basemap()
 
 # ==========================================================================================
-# NRMSE
+# RMSE
 # ==========================================================================================
 
 fig, ax = plt.subplots(figsize=(9, 4))
@@ -136,7 +136,7 @@ grd = gridspec.GridSpec(1, 2, wspace=0.025, width_ratios=[1, 0.05])
 axMap = plt.subplot(grd[0, 0])
 
 plt1 = axMap.imshow(
-    rmse, cmap="summer", origin="lower", extent=[-180, 180, -90, 90], vmin=-1, vmax=1
+    rmse, cmap="RdBu", origin="lower", extent=[-180, 180, -90, 90], vmin=-2, vmax=2
 )
 m.drawcoastlines(linewidth=0.5)
 m.fillcontinents(color="gray")

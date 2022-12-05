@@ -5,7 +5,7 @@ from src.interpolateModelToCoarsenedSatData import (
     interpolateModelToCoarsenedSatData_schismWWM,
 )
 
-import src.computeSshStats_test as computeSshStats
+import src.computeSshStats as computeSshStats
 from datetime import datetime
 
 import src.utils as utils
@@ -35,7 +35,7 @@ overwriteExisting = True
 
 pth = 95
 
-nminobs = 100
+nminobs = 1000
 
 # number of processes to be used for the interpolation
 nParWorker = 8

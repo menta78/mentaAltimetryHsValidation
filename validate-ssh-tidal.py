@@ -6,10 +6,10 @@ import h5py
 from src.interpolateModelToTidelGauge import interpolateModelToTidalGauge_schismWWM
 
 # from src.computeTidalStats import elaborateMeasures
-from src.computeTidalStats_test import elaborateMeasures
-from src.plotStatsTidals_test import elaborateMeasuresPlot
+from src.computeTidalStats import elaborateMeasures
+from src.plotStatsTidals import elaborateMeasuresPlot
 
-import src.utils_test as utils
+import src.utils as utils
 
 
 def get_serie_gesla(fileName):
@@ -63,6 +63,7 @@ rootDir = os.path.dirname(os.path.realpath(__file__))
 # time interval
 startDate, endDate = datetime(2002, 3, 22), datetime(2009, 12, 30)
 startDate, endDate = datetime(1995, 1, 1), datetime(1999, 12, 31)
+startDate, endDate = datetime(2003, 1, 1), datetime(2009, 12, 30)
 overwriteExisting = False
 
 # number of processes to be used for the interpolation

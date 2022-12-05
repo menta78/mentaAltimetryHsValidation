@@ -53,7 +53,7 @@ if doCoarsenSatData:
     # The data are averaged on a latitudinal tract with size latdelta.
     # You can do this once, then you can disable the coarseining, unless you want to change latdelta, or the time extent of the sat data
     latdelta = 0.5
-    rawSatDataDir = "/eos/jeodpp/data/projects/CLIMEX/mentaAltimetryHsValidation/data/rawDataSpecific"
+    rawSatDataDir = "/eos/jeodpp/data/projects/CLIMEX/mentaAltimetryHsValidation/data/rawData"
     coarsenCmemsSshSatData(
         rawSatDataDir, crsSatDataDir, startDate, endDate, latdelta
     )

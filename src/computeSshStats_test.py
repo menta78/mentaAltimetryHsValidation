@@ -290,6 +290,7 @@ def elaborateMeasures(
     dts = np.array([])
     mapdata = {}
 
+    """
     for f in fls:
         data_ = loadFile(f)
         obs_ = data_[:, 3]
@@ -302,14 +303,15 @@ def elaborateMeasures(
     model=model[fltr]
     meanobs = np.nanmean(obs)
     meanmodel = np.nanmean(model)
+    """
 
     for f in fls:
         data_ = loadFile(f)
         dts_ = data_[:, 0]
         lons = data_[:, 1]
         lats = data_[:, 2]
-        obs_ = data_[:, 3]-meanobs
-        model_ = data_[:, 4]-meanmodel
+        obs_ = data_[:, 3]
+        model_ = data_[:, 4]
 
         maplons, maplats, mapdata = mll.mapByLonLatCumm(
             mapdata,
@@ -329,11 +331,9 @@ def elaborateMeasures(
         # obs = np.concatenate((obs, obs_), axis=0)
         # dts = np.concatenate((dts, dts_), axis=0)
 
-    print(meanobs, meanmodel)
-
     fig, ax = plt.subplots()
-    ix = 16
-    iy = 17
+    ix = 50
+    iy = 40
     data = mapdata.get((ix, iy))
     obs = np.array(data[3])
     model = np.array(data[4])
@@ -371,10 +371,10 @@ def elaborateMeasures(
             r2_, nse_, absBias_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(
                 obs, model, pth
             )
+
             """
-            if (r2_ > 0.7) & (pearson_ > 0.9):
+            if (pearson_ > 0.9) & (r2_ > 0.8):
                 print("ix = ", ix, "iy = ", iy)
-                fjrijfri
             """
 
             r2[iy, ix] = r2_
