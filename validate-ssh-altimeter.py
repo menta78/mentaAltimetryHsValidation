@@ -29,26 +29,26 @@ rootDir = os.path.dirname(os.path.realpath(__file__))
 startDate, endDate = datetime(1995, 1, 1), datetime(1999, 12, 30)
 startDate, endDate = datetime(2012, 1, 1), datetime(2019, 12, 31)
 startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 28)
-startDate, endDate = datetime(2003, 1, 1), datetime(2009, 12, 30)
+startDate, endDate = datetime(2003, 1, 1), datetime(2019, 12, 30)
 
 overwriteExisting = True
 
 pth = 95
 
-nminobs = 1000
+nminobs = 250
 
 # number of processes to be used for the interpolation
 nParWorker = 8
 
 # threshold above which hs should be considered
-filterSshMaximum = 100
+filterSshMaximum = 250
 filterHighSsh = True
 
 # set this if you need to limit your analysis to a subdomain
 boundaries = None
 
 # computing the statistics
-dx, dy = 2.0, 2.0
+dx, dy = 1.0, 1.0
 computeSshStats.maskPointsCloseToTheCoast = False
 
 latlims = [-90, 90]

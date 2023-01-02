@@ -63,7 +63,7 @@ rootDir = os.path.dirname(os.path.realpath(__file__))
 # time interval
 startDate, endDate = datetime(2002, 3, 22), datetime(2009, 12, 30)
 startDate, endDate = datetime(1995, 1, 1), datetime(1999, 12, 31)
-startDate, endDate = datetime(2003, 1, 1), datetime(2009, 12, 30)
+startDate, endDate = datetime(1995, 1, 1), datetime(2009, 12, 30)
 overwriteExisting = False
 
 # number of processes to be used for the interpolation
@@ -79,7 +79,7 @@ filterHighSsh = True
 # set this if you need to limit your analysis to a subdomain
 boundaries = None
 
-r2Compute = True
+r2Compute = False
 if r2Compute:
     elaborateMeasures(
         startDate,

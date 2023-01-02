@@ -124,6 +124,7 @@ def elaborateMeasures(
         # obs = np.concatenate((obs, obs_), axis=0)
         # dts = np.concatenate((dts, dts_), axis=0)
 
+    """
     fig, ax = plt.subplots()
     ix = 50
     iy = 40
@@ -140,6 +141,7 @@ def elaborateMeasures(
     ax.plot(model, label="model", alpha=0.5)
     ax.legend()
     plt.savefig("testtt.png")
+    """
 
 
     r2 = np.ones((len(maplats), len(maplons))) * 99999

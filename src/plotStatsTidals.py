@@ -139,6 +139,8 @@ def elaborateMeasuresPlot(
             model_ = model[idx:-1] - np.nanmean(model[idx:-1])
             obs_ = obs[idx:-1] - np.nanmean(obs[idx:-1])
             # nse, r2, absre, re = computeSkills(obs, model, meanTidals, meanModels, pth)
+            if len(obs_) < 1:
+                continue
 
             r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(
                 obs_, model_, pth
@@ -159,6 +161,9 @@ def elaborateMeasuresPlot(
         uniqueLat.append(Latt[idx])
         model_ = model[idx:idxNext] - np.nanmean(model[idx:idxNext])
         obs_ = obs[idx:idxNext] - np.nanmean(obs[idx:-1])
+
+        if len(obs_) < 10:
+            continue
 
         r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(
             obs_, model_, pth

@@ -5,6 +5,7 @@ import re
 from datetime import datetime, timedelta
 
 from scipy import signal, stats
+from scipy.ndimage import uniform_filter1d
 
 import h5py
 import netCDF4
@@ -203,6 +204,7 @@ def computeStats(obs_, model_, pth):
     model_ = model__ - meanmodel
     obs_ = obs__ - meanobs
 
+
     # computing r2 (and other measures) gauge by gauge
     pmodel = np.nanpercentile(model_, pth)
     pobs = np.nanpercentile(obs_, pth)
@@ -223,6 +225,12 @@ def computeStats(obs_, model_, pth):
 
     # for i in range(N):
     #     print(obs[i], model[i])
+
+    # Compute moving average applying a convolution
+    # We use  uniform_filter1d because is much faster than numpy convolution
+    obs = uniform_filter1d(obs, size=20)
+    model = uniform_filter1d(model, size=20)
+    
 
     ssres_ = np.nansum((obs - model) ** 2)
     sstot_ = np.nansum((obs) ** 2)
@@ -252,6 +260,7 @@ def computeStats(obs_, model_, pth):
     rmse = np.sqrt(ssres_/N)
     nrmse = rmse/max(obs)*100
     pearson = cov_ / (sigmaModel * sigmaObs)
+    #pearson = (np.nansum( obs - np.nanmean(obs_)) ) / (sigmaModel * sigmaObs)
 
 
     return r2, nse, ab, rb, rmse, nrmse, pearson
