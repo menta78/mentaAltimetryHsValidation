@@ -272,9 +272,11 @@ def load_paths(rootDir):
     tidalGaugeDataDir = os.path.join(rootDir, "data/tidalGaugeData")
     crsSatDataDir = os.path.join(rootDir, "data/crsSatData/")
     crsWaveSatDataDir = os.path.join(rootDir, "data/crsSatDataWaves/")
+    buoysDir = os.path.join(rootDir, "data/buoys/")
     assert os.path.exists(tidalGaugeDataDir) == True
     assert os.path.exists(crsSatDataDir) == True
     assert os.path.exists(crsWaveSatDataDir) == True
+    assert os.path.exists(buoysDir) == True
 
     # Directory where the model nc files are located
     modelNcFilesDir = os.path.join(rootDir, "data/schismwwm")
@@ -284,9 +286,11 @@ def load_paths(rootDir):
     hsModelAndSatObsSshDir = os.path.join(rootDir, "data/satModelPairs/")
     hsModelAndSatObsHsDir = os.path.join(rootDir, "data/satWaveModelPairs/")
     hsModelAndSatObsTidalDir = os.path.join(rootDir, "data/tidalInterpolations/")
+    hsModelAndSatObsBuoysDir = os.path.join(rootDir, "data/buoysInterpolations/")
     assert os.path.exists(hsModelAndSatObsSshDir) == True
     assert os.path.exists(hsModelAndSatObsHsDir) == True
     assert os.path.exists(hsModelAndSatObsTidalDir) == True
+    assert os.path.exists(hsModelAndSatObsBuoysDir) == True
 
     # Directory where the stats are generated
     statsDir = os.path.join(rootDir, "data/stats")
@@ -297,11 +301,14 @@ def load_paths(rootDir):
 
     return (
         tidalGaugeDataDir,
+        buoysDir,
         crsSatDataDir,
         crsWaveSatDataDir,
         modelNcFilesDir,
         hsModelAndSatObsSshDir,
         hsModelAndSatObsHsDir,
         hsModelAndSatObsTidalDir,
+        hsModelAndSatObsBuoysDir,
         statsDir,
     )
+
