@@ -41,6 +41,7 @@ def elaborateMeasuresPlot(
     filterLowHs=False,
     filterHsThreshold=0.0,
     pth=90,
+    nminobs = 1,
 ):
     def loadFile(flpth):
         # print("")
@@ -93,11 +94,10 @@ def elaborateMeasuresPlot(
     for i in range(len(jIdx)):
         if i == len(jIdx) - 1:
             idx = jIdx[i]
-            uniqueLon.append(Lonn[idx])
-            uniqueLat.append(Latt[idx])
-            model_ = model[idx:-1] - np.nanmean(model[idx:-1])
-            obs_ = obs[idx:-1] - np.nanmean(obs[idx:-1])
+            model_ = model[idx:-1] #- np.nanmean(model[idx:-1])
+            obs_ = obs[idx:-1] #- np.nanmean(obs[idx:-1])
             # nse, r2, absre, re = computeSkills(obs, model, meanTidals, meanModels, pth)
+
             if len(obs_) < 1:
                 continue
 
@@ -105,6 +105,8 @@ def elaborateMeasuresPlot(
                 obs_, model_, pth
             )
 
+            uniqueLon.append(Lonn[idx])
+            uniqueLat.append(Latt[idx])
             nbilst.append(nbi_)
             hhlst.append(hh_)
             ablst.append(absBias_)
@@ -113,24 +115,23 @@ def elaborateMeasuresPlot(
 
         idx = jIdx[i]
         idxNext = jIdx[i + 1]
-        uniqueLon.append(Lonn[idx])
-        uniqueLat.append(Latt[idx])
-        model_ = model[idx:idxNext] - np.nanmean(model[idx:idxNext])
-        obs_ = obs[idx:idxNext] - np.nanmean(obs[idx:-1])
 
-        if len(obs_) < 10:
+        model_ = model[idx:idxNext] #- np.nanmean(model[idx:idxNext])
+        obs_ = obs[idx:idxNext] #- np.nanmean(obs[idx:-1])
+
+        if len(obs_) < nminobs:
             continue
 
-        nbi_, absBias_, nrmse_, hh_ = utils.computeStatsHs(
-                obs_, model_, pth
-            )
+        nbi_, absBias_, nrmse_, hh_ = utils.computeStatsHs(obs_, model_, pth)
 
+        uniqueLon.append(Lonn[idx])
+        uniqueLat.append(Latt[idx])
         nbilst.append(nbi_)
         hhlst.append(hh_)
         ablst.append(absBias_)
         nrmselst.append(nrmse_)
 
-        print("Running Tidal Gauge", i)
+        print("Assesing Buoy", i)
 
     nbiT = np.array(nbilst)
     hhT = np.array(hhlst)
@@ -143,7 +144,7 @@ def elaborateMeasuresPlot(
     m = Basemap()
 
     # ==========================================================================================
-    # NSE
+    # NBI
     # ==========================================================================================
 
     fig, ax = plt.subplots(figsize=(9, 4))
@@ -151,32 +152,35 @@ def elaborateMeasuresPlot(
 
     # Map and scatter plot
     axMap = plt.subplot(grd[0, 0])
-    m.drawcoastlines(linewidth=0.5)
+
+    print(uniqueLat.shape[:])
+    print(nbiT.shape[:])
+
     plt1 = axMap.scatter(
         uniqueLon,
         uniqueLat,
         s=20,
-        c=nseT,
+        c=nbiT,
         cmap="RdBu",
-        edgecolors="black",
-        linewidths=0.5,
-        vmin=0,
+        vmin=0, 
         vmax=1,
     )
-    axMap.set(xlim=[-180, 180], ylim=[-90, 90])
+
+    m.drawcoastlines(linewidth=0.5)
+    m.fillcontinents(color="gray")
+    # axMap.set(xlim=[-180,180], ylim=[-90,90])
     axMap.set_aspect("equal", "box")
-    axMap.set_title(
-        "Normalized Nash–Sutcliffe model efficiency coefficient", **title_font
-    )
+    axMap.set_title("NBI", **title_font)
 
     # Colorbar
     axCb = plt.subplot(grd[0, 1])
-    cb = Colorbar(
-        ax=axCb, mappable=plt1, orientation="vertical"
-    )  # , ticklocation = 'top')
+    cb = Colorbar(ax=axCb, mappable=plt1, orientation="vertical")  # , ticklocation = 'top')
 
     plt.savefig(
-        "data/stats/tidalGauge_nse_"
+        "data/stats/buoys-hs-nbi_"
+        + "pth_"
+        + str(pth)
+        + "_"
         + startDate.strftime("%Y%m%d")
         + "_"
         + endDate.strftime("%Y%m%d")
@@ -186,45 +190,45 @@ def elaborateMeasuresPlot(
     plt.close(fig)
 
     # ==========================================================================================
-    # R2
+    # HH
     # ==========================================================================================
 
     fig, ax = plt.subplots(figsize=(9, 4))
-    grd = gridspec.GridSpec(1, 2, wspace=0.025, width_ratios=(1, 0.05))
+    grd = gridspec.GridSpec(1, 2, wspace=0.025, width_ratios=[1, 0.05])
 
     # Map and scatter plot
     axMap = plt.subplot(grd[0, 0])
-    m.drawcoastlines(linewidth=0.5)
-    plt2 = plt.scatter(
+
+    plt1 = axMap.scatter(
         uniqueLon,
         uniqueLat,
         s=20,
-        c=r2T,
-        cmap="RdBu",
-        edgecolors="black",
-        linewidths=0.5,
-        vmin=0,
+        c=hhT,
+        cmap="summer",
+        vmin=0, 
         vmax=1,
     )
-    axMap.set(xlim=[-180, 180], ylim=[-90, 90])
+    m.drawcoastlines(linewidth=0.5)
+    m.fillcontinents(color="gray")
+    # axMap.set(xlim=[-180,180], ylim=[-90,90])
     axMap.set_aspect("equal", "box")
-    axMap.set_title("Normalized R2", **title_font)
+    axMap.set_title("HH", **title_font)
 
     # Colorbar
     axCb = plt.subplot(grd[0, 1])
-    cb = Colorbar(
-        ax=axCb, mappable=plt2, orientation="vertical"
-    )  # , ticklocation = 'top')
+    cb = Colorbar(ax=axCb, mappable=plt1, orientation="vertical")  # , ticklocation = 'top')
 
     plt.savefig(
-        "data/stats/tidalGauge_r2_"
+        "data/stats/buoys-hs-hh_"
+        + "pth_"
+        + str(pth)
+        + "_"
         + startDate.strftime("%Y%m%d")
         + "_"
         + endDate.strftime("%Y%m%d")
         + ".png",
         **options_savefig
     )
-    plt.show()
     plt.close(fig)
 
     # ==========================================================================================
@@ -259,88 +263,7 @@ def elaborateMeasuresPlot(
     )  # , ticklocation = 'top')
 
     plt.savefig(
-        "data/stats/tidalGauge_absre_"
-        + startDate.strftime("%Y%m%d")
-        + "_"
-        + endDate.strftime("%Y%m%d")
-        + ".png",
-        **options_savefig
-    )
-    plt.close(fig)
-
-    # ==========================================================================================
-    # Relative Bias
-    # ==========================================================================================
-
-    fig, ax = plt.subplots(figsize=(9, 4))
-    grd = gridspec.GridSpec(1, 2, wspace=0.025, width_ratios=(1, 0.05))
-
-    # Map and scatter plot
-    axMap = plt.subplot(grd[0, 0])
-    m.drawcoastlines(linewidth=0.5)
-    plt4 = plt.scatter(
-        uniqueLon,
-        uniqueLat,
-        s=20,
-        c=reT,
-        cmap="RdBu",
-        edgecolors="black",
-        linewidths=0.5,
-        vmin=-100,
-        vmax=100,
-    )
-    axMap.set(xlim=[-180, 180], ylim=[-90, 90])
-    axMap.set_aspect("equal", "box")
-    axMap.set_title("Relative Bias (%)", **title_font)
-
-    # Colorbar
-    axCb = plt.subplot(grd[0, 1])
-    cb = Colorbar(
-        ax=axCb, mappable=plt4, orientation="vertical"
-    )  # , ticklocation = 'top')
-
-    plt.savefig(
-        "data/stats/tidalGauge_re_"
-        + startDate.strftime("%Y%m%d")
-        + "_"
-        + endDate.strftime("%Y%m%d")
-        + ".png",
-        **options_savefig
-    )
-    plt.close(fig)
-
-    # ==========================================================================================
-    # Pearson
-    # ==========================================================================================
-    fig, ax = plt.subplots(figsize=(9, 4))
-    grd = gridspec.GridSpec(1, 2, wspace=0.025, width_ratios=(1, 0.05))
-
-    # Map and scatter plot
-    axMap = plt.subplot(grd[0, 0])
-    m.drawcoastlines(linewidth=0.5)
-    plt5 = plt.scatter(
-        uniqueLon,
-        uniqueLat,
-        s=20,
-        c=pearsonT,
-        cmap="RdBu",
-        edgecolors="black",
-        linewidths=0.5,
-        vmin=0,
-        vmax=1,
-    )
-    axMap.set(xlim=[-180, 180], ylim=[-90, 90])
-    axMap.set_aspect("equal", "box")
-    axMap.set_title("Pearson Correlation Coefficient", **title_font)
-
-    # Colorbar
-    axCb = plt.subplot(grd[0, 1])
-    cb = Colorbar(
-        ax=axCb, mappable=plt5, orientation="vertical"
-    )  # , ticklocation = 'top')
-
-    plt.savefig(
-        "data/stats/tidalGauge_pearson_"
+        "data/stats/buoys-hs-absre_"
         + startDate.strftime("%Y%m%d")
         + "_"
         + endDate.strftime("%Y%m%d")
@@ -380,7 +303,7 @@ def elaborateMeasuresPlot(
     )  # , ticklocation = 'top')
 
     plt.savefig(
-        "data/stats/tidalGauge_nrmse_"
+        "data/stats/buoys-hs-nrmse_"
         + startDate.strftime("%Y%m%d")
         + "_"
         + endDate.strftime("%Y%m%d")
