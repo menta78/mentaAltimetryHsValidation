@@ -98,4 +98,5 @@ if r2ComputePlot:
         hsModelAndSatObsTidalDir,
         statsDir,
         pth=pth,
+        nminobs = 250,
     )

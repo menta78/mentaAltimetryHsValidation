@@ -184,7 +184,8 @@ if r2ComputePlot:
         endDate,
         hsModelAndSatObsBuoysDir,
         statsDir,
-        meanFileTidals,
-        meanFileModel,
+        None,
+        None,
         pth = pth,
+        nminobs = 10,
 ) 

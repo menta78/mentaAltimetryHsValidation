@@ -81,6 +81,7 @@ def elaborateMeasuresPlot(
     filterLowHs=False,
     filterHsThreshold=0.0,
     pth=90,
+    nminobs = 1,
 ):
     def loadFile(flpth):
         # print("")
@@ -160,7 +161,7 @@ def elaborateMeasuresPlot(
         model_ = model[idx:idxNext] #- np.nanmean(model[idx:idxNext])
         obs_ = obs[idx:idxNext] #- np.nanmean(obs[idx:-1])
 
-        if len(obs_) < 10:
+        if len(obs_) < nminobs:
             continue
 
         r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(
