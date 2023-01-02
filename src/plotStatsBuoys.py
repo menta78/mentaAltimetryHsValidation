@@ -41,6 +41,7 @@ def elaborateMeasuresPlot(
     filterLowHs=False,
     filterHsThreshold=0.0,
     pth=90,
+    nminobs = 1,
 ):
     def loadFile(flpth):
         # print("")
@@ -118,7 +119,7 @@ def elaborateMeasuresPlot(
         model_ = model[idx:idxNext] #- np.nanmean(model[idx:idxNext])
         obs_ = obs[idx:idxNext] #- np.nanmean(obs[idx:-1])
 
-        if len(obs_) < 1:
+        if len(obs_) < nminobs:
             continue
 
         nbi_, absBias_, nrmse_, hh_ = utils.computeStatsHs(obs_, model_, pth)
