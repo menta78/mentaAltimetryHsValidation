@@ -134,10 +134,8 @@ def elaborateMeasuresPlot(
     for i in range(len(jIdx)):
         if i == len(jIdx) - 1:
             idx = jIdx[i]
-            uniqueLon.append(Lonn[idx])
-            uniqueLat.append(Latt[idx])
-            model_ = model[idx:-1] - np.nanmean(model[idx:-1])
-            obs_ = obs[idx:-1] - np.nanmean(obs[idx:-1])
+            model_ = model[idx:-1] #- np.nanmean(model[idx:-1])
+            obs_ = obs[idx:-1] #- np.nanmean(obs[idx:-1])
             # nse, r2, absre, re = computeSkills(obs, model, meanTidals, meanModels, pth)
             if len(obs_) < 1:
                 continue
@@ -146,6 +144,8 @@ def elaborateMeasuresPlot(
                 obs_, model_, pth
             )
 
+            uniqueLon.append(Lonn[idx])
+            uniqueLat.append(Latt[idx])
             r2lst.append(r2_)
             nselst.append(nse_)
             ablst.append(ab_)
@@ -157,10 +157,8 @@ def elaborateMeasuresPlot(
 
         idx = jIdx[i]
         idxNext = jIdx[i + 1]
-        uniqueLon.append(Lonn[idx])
-        uniqueLat.append(Latt[idx])
-        model_ = model[idx:idxNext] - np.nanmean(model[idx:idxNext])
-        obs_ = obs[idx:idxNext] - np.nanmean(obs[idx:-1])
+        model_ = model[idx:idxNext] #- np.nanmean(model[idx:idxNext])
+        obs_ = obs[idx:idxNext] #- np.nanmean(obs[idx:-1])
 
         if len(obs_) < 10:
             continue
@@ -169,6 +167,8 @@ def elaborateMeasuresPlot(
             obs_, model_, pth
         )
 
+        uniqueLon.append(Lonn[idx])
+        uniqueLat.append(Latt[idx])
         r2lst.append(r2_)
         nselst.append(nse_)
         ablst.append(ab_)
