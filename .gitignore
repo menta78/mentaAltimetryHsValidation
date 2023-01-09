@@ -12,3 +12,7 @@ env*
 *.mat
 *.txt
 *.log
+*.kml
+*.kmz
+docs
+*.jpeg

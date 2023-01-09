@@ -136,7 +136,7 @@ grd = gridspec.GridSpec(1, 2, wspace=0.025, width_ratios=[1, 0.05])
 axMap = plt.subplot(grd[0, 0])
 
 plt1 = axMap.imshow(
-    nrmse, cmap="summer", origin="lower", extent=[-180, 180, -90, 90], vmin=0, vmax=1
+    nrmse, cmap="rainbow", origin="lower", extent=[-180, 180, -90, 90], vmin=0, vmax=1
 )
 m.drawcoastlines(linewidth=0.5)
 m.fillcontinents(color="gray")
@@ -172,7 +172,7 @@ grd = gridspec.GridSpec(1, 2, wspace=0.025, width_ratios=[1, 0.05])
 axMap = plt.subplot(grd[0, 0])
 
 plt1 = axMap.imshow(
-    nbi, cmap="RdBu", origin="lower", extent=[-180, 180, -90, 90], vmin=-1, vmax=1
+    nbi, cmap="RdYlBu", origin="lower", extent=[-180, 180, -90, 90], vmin=-1, vmax=1
 )
 m.drawcoastlines(linewidth=0.5)
 m.fillcontinents(color="gray")
@@ -209,7 +209,7 @@ grd = gridspec.GridSpec(1, 2, wspace=0.025, width_ratios=[1, 0.05])
 axMap = plt.subplot(grd[0, 0])
 
 plt1 = axMap.imshow(
-    hh, cmap="summer", origin="lower", extent=[-180, 180, -90, 90], vmin=0, vmax=1
+    hh, cmap="rainbow", origin="lower", extent=[-180, 180, -90, 90], vmin=0, vmax=1
 )
 m.drawcoastlines(linewidth=0.5)
 m.fillcontinents(color="gray")
@@ -245,7 +245,7 @@ grd = gridspec.GridSpec(1, 2, wspace=0.025, width_ratios=[1, 0.05])
 axMap = plt.subplot(grd[0, 0])
 
 plt1 = axMap.imshow(
-    bias, cmap="RdBu", origin="lower", extent=[-180, 180, -90, 90], vmin=-5, vmax=5
+    bias, cmap="RdYlBu", origin="lower", extent=[-180, 180, -90, 90], vmin=-5, vmax=5
 )
 m.drawcoastlines(linewidth=0.5)
 m.fillcontinents(color="gray")

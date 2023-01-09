@@ -10,7 +10,7 @@ from mpl_toolkits.basemap import Basemap
 import src.utils as utils
 
 
-filterHighSsh = False
+filterHighSsh = True
 options_savefig = {"dpi": 150, "bbox_inches": "tight", "transparent": False}
 title_font = {
     "size": "12",
@@ -50,9 +50,9 @@ def elaborateMeasuresPlot(
         if filterHighSsh:
             sshsat = satdts[:, 0]
             sshmdl = satdts[:, 1]
-            # cnd = np.logical_and(
-            #     sshsat < filterSshMaximum, sshmdl < filterSshMaximum
-            # )
+            cnd = np.logical_and(
+                sshsat > filterHsThreshold, sshmdl > filterHsThreshold
+            )
             satdts = satdts[cnd, :]
         return satdts
 
@@ -153,16 +153,13 @@ def elaborateMeasuresPlot(
     # Map and scatter plot
     axMap = plt.subplot(grd[0, 0])
 
-    print(uniqueLat.shape[:])
-    print(nbiT.shape[:])
-
     plt1 = axMap.scatter(
         uniqueLon,
         uniqueLat,
         s=20,
         c=nbiT,
-        cmap="RdBu",
-        vmin=0, 
+        cmap="RdYlBu",
+        vmin=-1, 
         vmax=1,
     )
 
@@ -204,7 +201,7 @@ def elaborateMeasuresPlot(
         uniqueLat,
         s=20,
         c=hhT,
-        cmap="summer",
+        cmap="rainbow",
         vmin=0, 
         vmax=1,
     )
@@ -246,7 +243,7 @@ def elaborateMeasuresPlot(
         uniqueLat,
         s=20,
         c=absreT,
-        cmap="RdBu",
+        cmap="RdYlBu",
         edgecolors="black",
         linewidths=0.5,
         vmin=-0.5,
@@ -286,7 +283,7 @@ def elaborateMeasuresPlot(
         uniqueLat,
         s=20,
         c=nrmselst,
-        cmap="Reds",
+        cmap="rainbow",
         edgecolors="black",
         linewidths=0.5,
         vmin=0,

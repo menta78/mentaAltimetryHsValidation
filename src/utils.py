@@ -10,6 +10,7 @@ from scipy.ndimage import uniform_filter1d
 import h5py
 import netCDF4
 import numpy as np
+import numpy.ma as ma
 
 
 def get_serie_gesla(fileName):
@@ -23,7 +24,8 @@ def get_serie_gesla(fileName):
     lon = []
     lat = []
 
-    for i in range(npoints):
+    # for i in range(npoints):
+    for i in range(8):
         ref = f["GESELD"]["longitude"][i][0]
         lon.append(f[ref][0][0])
         ref = f["GESELD"]["latitude"][i][0]
@@ -113,7 +115,7 @@ def getModelVariables(flsPath, varNames=None):
     varNames = (
         varNames
         if not varNames is None
-        else ["SCHISM_hgrid_node_x", "SCHISM_hgrid_node_y", "elev", "time"]
+        else ["SCHISM_hgrid_node_x", "SCHISM_hgrid_node_y", "WWM_1", "time"]
     )
 
     nfiles = len(flsPath)
@@ -159,6 +161,65 @@ def getModelVariables(flsPath, varNames=None):
     return tmmdl, lon, lat, var
 
 
+def get_hs_buoy(lstBuoys, lon=[], lat=[], time=[], hsBuoy=[], hsVars = ["VHM0"]):
+    i = 0
+
+    for buoy in lstBuoys:
+        print(buoy)
+
+        #try:
+        ds = netCDF4.Dataset(buoy)
+
+        for hsvar in hsVars:
+            if hsvar in ds.variables:
+                i += 1
+                varHs = hsvar
+        if i == 0:
+            print("ignoring ...")
+            continue
+        else:
+            i = 0
+
+        depth_qflag = ds["DEPH_QC"][:][0]
+        position_qflag = ds["POSITION_QC"][:][0]
+        time_qflag = ds["TIME_QC"][:][0]
+        hs_qflag = ds[varHs + "_QC"][:][0][0]
+
+        if (position_qflag == 1) and (time_qflag == 1) and (hs_qflag == 1):
+
+            tmnc_ = ds["TIME"]
+            hs_ = ds[varHs][:]
+            hs_ = hs_.flatten()
+            # hs__ = hs_[~hs_.mask]
+            tmnc = tmnc_[:]
+            # tmnc = tmnc__[~hs_.mask]
+            tmnc = tmnc.flatten()
+            tmmdl_ = toJulian(
+                netCDF4.num2date(
+                    tmnc[:],
+                    tmnc_.units,
+                    tmnc_.calendar,
+                    only_use_cftime_datetimes=False,
+                )
+            )
+            tmmdl = tmmdl_.data  # convert masked array to "usual" array
+
+            hs__ = ma.getdata(hs_)
+            hs = hs__.flatten()
+
+            hsBuoy.append(hs.tolist())
+            time.append(tmmdl.tolist())
+            lon.append(ma.getdata(ds["LONGITUDE"][0]))
+            lat.append(ma.getdata(ds["LATITUDE"][0]))
+        else:
+            print("ignoring...")
+        #except:
+        #    print("error in NetCDF file...")
+        #    pass
+
+    return lon, lat, time, hsBuoy
+
+
 def computeStatsHs(obs_, model_, pth):
 
     # computing r2 (and other measures) gauge by gauge
@@ -173,8 +234,8 @@ def computeStatsHs(obs_, model_, pth):
 
     N = len(obs)
 
-    # for i in range(N):
-    #     print(obs[i], model[i])
+    for i in range(N):
+        print(obs[i], model[i])
 
     devSum = np.nansum(model - obs)
     sqDevSum = np.nansum((model - obs) ** 2)
@@ -194,7 +255,7 @@ def computeStatsHs(obs_, model_, pth):
 def computeStats(obs_, model_, pth):
 
     not_nan_ind = ~np.isnan(obs_)
-    obs__ = signal.detrend(obs_[not_nan_ind]) 
+    obs__ = signal.detrend(obs_[not_nan_ind])
 
     model__ = model_[not_nan_ind]
 
@@ -203,7 +264,6 @@ def computeStats(obs_, model_, pth):
 
     model_ = model__ - meanmodel
     obs_ = obs__ - meanobs
-
 
     # computing r2 (and other measures) gauge by gauge
     pmodel = np.nanpercentile(model_, pth)
@@ -230,26 +290,25 @@ def computeStats(obs_, model_, pth):
     # We use  uniform_filter1d because is much faster than numpy convolution
     obs = uniform_filter1d(obs, size=20)
     model = uniform_filter1d(model, size=20)
-    
 
     ssres_ = np.nansum((obs - model) ** 2)
     sstot_ = np.nansum((obs) ** 2)
-    #sstot_ = np.nansum((obs - np.nanmean(obs_)) ** 2)
+    # sstot_ = np.nansum((obs - np.nanmean(obs_)) ** 2)
     nsc1 = np.nansum(np.abs(obs - model))
-    #nsc2 = np.nansum(np.abs(obs - np.nanmean(obs_)))
+    # nsc2 = np.nansum(np.abs(obs - np.nanmean(obs_)))
     nsc2 = np.nansum(np.abs(obs))
 
     absre_ = np.nansum(model - obs)
     nobs = np.nansum(obs)
 
-    #sigmaObs = np.sqrt(np.nansum((obs - np.nanmean(obs_)) ** 2))
+    # sigmaObs = np.sqrt(np.nansum((obs - np.nanmean(obs_)) ** 2))
     sigmaObs = np.sqrt(np.nansum((obs) ** 2))
 
-    #sigmaModel = np.sqrt(np.nansum((model - np.nanmean(model_)) ** 2))
+    # sigmaModel = np.sqrt(np.nansum((model - np.nanmean(model_)) ** 2))
 
     sigmaModel = np.sqrt(np.nansum((model) ** 2))
 
-    #cov_ = np.nansum((obs - np.nanmean(obs_)) * (model - np.nanmean(model_)))
+    # cov_ = np.nansum((obs - np.nanmean(obs_)) * (model - np.nanmean(model_)))
 
     cov_ = np.nansum((obs) * (model))
 
@@ -257,11 +316,10 @@ def computeStats(obs_, model_, pth):
     nse = 1 - nsc1 / nsc2
     ab = absre_ / N
     rb = absre_ / nobs * 100
-    rmse = np.sqrt(ssres_/N)
-    nrmse = rmse/max(obs)*100
+    rmse = np.sqrt(ssres_ / N)
+    nrmse = rmse / max(obs) * 100
     pearson = cov_ / (sigmaModel * sigmaObs)
-    #pearson = (np.nansum( obs - np.nanmean(obs_)) ) / (sigmaModel * sigmaObs)
-
+    # pearson = (np.nansum( obs - np.nanmean(obs_)) ) / (sigmaModel * sigmaObs)
 
     return r2, nse, ab, rb, rmse, nrmse, pearson
 
@@ -283,10 +341,10 @@ def load_paths(rootDir):
     assert os.path.exists(modelNcFilesDir) == True
 
     # Directory where the pairs observation/model are to be generated
-    hsModelAndSatObsSshDir = os.path.join(rootDir, "data/satModelPairs/")
-    hsModelAndSatObsHsDir = os.path.join(rootDir, "data/satWaveModelPairs/")
-    hsModelAndSatObsTidalDir = os.path.join(rootDir, "data/tidalInterpolations/")
-    hsModelAndSatObsBuoysDir = os.path.join(rootDir, "data/buoysInterpolations/")
+    hsModelAndSatObsSshDir = os.path.join(rootDir, "data/satSshModelPairs/")
+    hsModelAndSatObsHsDir = os.path.join(rootDir, "data/satHsModelPairs/")
+    hsModelAndSatObsTidalDir = os.path.join(rootDir, "data/tidalModelPairs/")
+    hsModelAndSatObsBuoysDir = os.path.join(rootDir, "data/buoyModelPairs/")
     assert os.path.exists(hsModelAndSatObsSshDir) == True
     assert os.path.exists(hsModelAndSatObsHsDir) == True
     assert os.path.exists(hsModelAndSatObsTidalDir) == True
@@ -311,4 +369,3 @@ def load_paths(rootDir):
         hsModelAndSatObsBuoysDir,
         statsDir,
     )
-

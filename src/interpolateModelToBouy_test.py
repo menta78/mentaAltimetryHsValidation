@@ -260,7 +260,18 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
 
         intp = intpltr(tmstmpTidal)
 
-        res = np.array(_resTidal[i][idxMin:idxMax])    
+        res = np.array(_resTidal[i][idxMin:idxMax])
+
+
+        print(intp0)
+        print(intp)
+        print(res)
+
+        print("===============")
+
+        print(tmmdl)
+        print(tmstmpTidal)
+        jdiejir            
         
 
         lonn = np.array(_lonTidal[i])

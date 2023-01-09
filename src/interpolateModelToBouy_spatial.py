@@ -9,6 +9,7 @@ import netCDF4
 import numpy as np
 import src.utils as utils
 from matplotlib.tri import LinearTriInterpolator, Triangulation
+
 from scipy.interpolate import RegularGridInterpolator, interp1d
 
 GRID_TYPE_REGULAR = "regular"
@@ -181,12 +182,12 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
         for i in range(hs.shape[-1]):
             hs[:, i] = hs[:, i] - meanelev[i]
 
-    #    if _gridType == GRID_TYPE_UNSTRUCT:
-    #        triObj = Triangulation(lat, lon)
-    #    elif _gridType == GRID_TYPE_REGULAR:
-    #        grdPoints = (lat.filled(), lon.filled())
-    #    else:
-    #        raise Exception("unsupported grid type: " + _gridType)
+    if _gridType == GRID_TYPE_UNSTRUCT:
+        triObj = Triangulation(lat, lon)
+    elif _gridType == GRID_TYPE_REGULAR:
+        grdPoints = (lat.filled(), lon.filled())
+    else:
+        raise Exception("unsupported grid type: " + _gridType)
 
     # TODO:
     # Hay que restarle la media a hs
@@ -196,23 +197,23 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
     # Generate an interpolant for each time step of the schism model
     nobs = len(_lonTidal)
     ntmmdl = len(tmmdl)
-    # intp0 = np.zeros([ntmmdl, nobs]) * np.nan
+    intp0 = np.zeros([ntmmdl, nobs]) * np.nan
 
-    #    for itm in range(ntmmdl):
-    #        print("      processing time " + str(itm))
-    #        hsii = hs[itm, :]
-    #        try:
-    #            hsii = hsii.filled(np.nan)
-    #        except:
-    #            pass
-    #        if _gridType == GRID_TYPE_UNSTRUCT:
-    #            intpltr = LinearTriInterpolator(triObj, hsii)
-    #            intp0[itm, :] = intpltr(_latTidal, _lonTidal)
-    #        elif _gridType == GRID_TYPE_REGULAR:
-    #            intpltr = RegularGridInterpolator(
-    #                grdPoints, hsii, bounds_error=False, fill_value=np.nan
-    #            )
-    #            intp0[itm, :] = intpltr((latSat, lonSat))
+    for itm in range(ntmmdl):
+        print("      processing time " + str(itm))
+        hsii = hs[itm, :]
+        try:
+            hsii = hsii.filled(np.nan)
+        except:
+            pass
+        if _gridType == GRID_TYPE_UNSTRUCT:
+            intpltr = LinearTriInterpolator(triObj, hsii)
+            intp0[itm, :] = intpltr(_latTidal, _lonTidal)
+        elif _gridType == GRID_TYPE_REGULAR:
+            intpltr = RegularGridInterpolator(
+                grdPoints, hsii, bounds_error=False, fill_value=np.nan
+            )
+            intp0[itm, :] = intpltr((latSat, lonSat))
 
     resT = []
     intpT = []
@@ -247,20 +248,32 @@ def __elabFile(mdlF, mdlFPrev=None, mdlFNext=None, varNames=None):
         intp = np.zeros([ntTidal, 1]) * np.nan
 
 
-        node = utils.find_closest_node(lon, lat, depth, [_lonTidal[i], _latTidal[i]])
-        # node = nodeModel[i]
-        print("------ node = ", node, flush=True)
-        intp0 = hs[:, node]
+        # node = utils.find_closest_node(lon, lat, depth, [_lonTidal[i], _latTidal[i]])
+        # # node = nodeModel[i]
+        # print("------ node = ", node, flush=True)
+        # intp0 = hs[:, node]
 
-        print(lon[node], lat[node])
-        print(_lonTidal[i], _latTidal[i])
-        print(depth[node])
+        # print(lon[node], lat[node])
+        # print(_lonTidal[i], _latTidal[i])
+        # print(depth[node])
 
-        intpltr = interp1d(tmmdl, intp0, bounds_error=False)
+        #intpltr = interp1d(tmmdl, intp0, bounds_error=False)
+        intpltr = interp1d(tmmdl, intp0[:, i], bounds_error=False)
 
         intp = intpltr(tmstmpTidal)
 
-        res = np.array(_resTidal[i][idxMin:idxMax])    
+        res = np.array(_resTidal[i][idxMin:idxMax])
+
+
+        print(intp0)
+        print(intp)
+        print(res)
+
+        print("===============")
+
+        print(tmmdl)
+        print(tmstmpTidal)
+        jdiejir            
         
 
         lonn = np.array(_lonTidal[i])
