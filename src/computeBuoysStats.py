@@ -6,7 +6,7 @@ import itertools
 
 import src.utils as utils
 
-filterHighSsh = False
+filterHighSsh = True
 
 
 def getFiles(hsSatAndModelDir, startDate, endDate):
@@ -34,13 +34,13 @@ def elaborateMeasures(
     def loadFile(flpth):
         # print("    loading file " + flpth)
         satdts = np.load(flpth)
-        # if filterHighSsh:
-        #     sshsat = satdts[:, 0]
-        #     sshmdl = satdts[:, 1]
-        #     cnd = np.logical_and(
-        #         sshsat < filterSshMaximum, sshmdl < filterSshMaximum
-        #     )
-        #     satdts = satdts[cnd, :]
+        if filterHighSsh:
+            sshsat = satdts[:, 0]
+            sshmdl = satdts[:, 1]
+            cnd = np.logical_and(
+                sshsat > filterHsThreshold, sshmdl > filterHsThreshold
+            )
+            satdts = satdts[cnd, :]
         return satdts
 
     fls = getFiles(hsSatAndModelDir, startDate, endDate)

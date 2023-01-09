@@ -134,7 +134,7 @@ overwriteExisting = False
 nParWorker = 1
 
 # Percentile
-pth = 95
+pth = 90
 
 # threshold above which hs should be considered
 filterSshMaximum = 100
@@ -148,7 +148,7 @@ doInterpolateModelToSat = False
 if doInterpolateModelToSat:
     lstBuoys = getFiles(buoysDir)
     lonBuoys, latBuoys, timeBuoys, hsBuoys = get_hs_buoy(lstBuoys)
-    print(len(lonBuoys), len(latBuoys), len(timeBuoys), len(timeBuoys))
+
     assert len(lonBuoys) == len(latBuoys) == len(timeBuoys) == len(timeBuoys)
     
     varsBuoys = [lonBuoys, latBuoys, hsBuoys, timeBuoys]
@@ -176,7 +176,7 @@ if r2Compute:
         pth = pth,
     ) 
 
-r2ComputePlot = True
+r2ComputePlot = False
 
 if r2ComputePlot:
     elaborateMeasuresPlot(
@@ -184,8 +184,9 @@ if r2ComputePlot:
         endDate,
         hsModelAndSatObsBuoysDir,
         statsDir,
-        None,
-        None,
         pth = pth,
-        nminobs = 10,
+        nminobs = 1,
 ) 
+
+
+timeSeriesPlot
