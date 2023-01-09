@@ -15,16 +15,20 @@ import src.utils as utils
 
 rootDir = os.path.dirname(os.path.realpath(__file__))
 
+
 (
     tidalGaugeDataDir,
+    buoysDir,
     crsSatDataDir,
     crsWaveSatDataDir,
     modelNcFilesDir,
     hsModelAndSatObsSshDir,
     hsModelAndSatObsHsDir,
     hsModelAndSatObsTidalDir,
+    hsModelAndSatObsBuoysDir,
     statsDir,
 ) = utils.load_paths(rootDir)
+
 
 meanModelFile = None
 
@@ -32,7 +36,7 @@ meanModelFile = None
 startDate, endDate = datetime(2002, 3, 22), datetime(2009, 12, 30)
 startDate, endDate = datetime(1995, 1, 1), datetime(1999, 12, 30)
 startDate, endDate = datetime(2012, 1, 1), datetime(2019, 12, 31)
-startDate, endDate = datetime(2010, 1, 1), datetime(2019, 12, 31)
+startDate, endDate = datetime(1993, 1, 1), datetime(2019, 12, 31)
 
 overwriteExisting = False
 
@@ -46,7 +50,7 @@ filterHighSsh = True
 # set this if you need to limit your analysis to a subdomain
 boundaries = None
 
-doCoarsenSatData = False
+doCoarsenSatData = True
 if doCoarsenSatData:
     # coarsening the sat data.
     # This must be done because single alt observation are noisy and too numerous.
@@ -76,7 +80,8 @@ if doInterpolateModelToSat:
     )
 
 
-fekeofek
+print("==== SUCCESS ====")
+exit
 
 # computing the statistics
 dx, dy = 1.0, 1.0
