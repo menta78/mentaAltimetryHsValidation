@@ -216,6 +216,10 @@ def interpolateModelToScatterData(
     nodesGrid = map_(find_closest_node, positionsScatterData)
     if nParWorker > 1:
         p.terminate()  # it's necessary to terminate before declaring new global variables and open new pools
+    # store nodes in a file
+    nodesFile = os.path.join(destDir, f"{scatterDataType}_nodes_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.npy")
+    np.save(nodesFile, nodesGrid)
+
 
     # load grid variables from model to interpolate
     modelVariables = load_model_variables(mdlfl)

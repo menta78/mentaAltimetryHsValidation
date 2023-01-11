@@ -24,8 +24,8 @@ def get_serie_gesla(fileName):
     lon = []
     lat = []
 
-    # for i in range(npoints):
-    for i in range(8):
+    for i in range(npoints):
+    #for i in range(8):
         ref = f["GESELD"]["longitude"][i][0]
         lon.append(f[ref][0][0])
         ref = f["GESELD"]["latitude"][i][0]
