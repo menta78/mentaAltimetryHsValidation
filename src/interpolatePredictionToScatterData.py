@@ -46,15 +46,27 @@ def find_closest_node(target):
 def load_model_variables(mdlfl):
     nfiles = len(mdlfl)
 
-    ds = netCDF4.Dataset(os.path.join(_modelNcFileDir, mdlfl[0]))
-    timeVarName = _varsModel[-1]
-
-    tmnc = ds.variables[timeVarName]
-    tmmdl = utils.toJulian(
-        netCDF4.num2date(
-            tmnc[:], tmnc.units, _timeCalendar, only_use_cftime_datetimes=False
+    try:
+        ds = netCDF4.Dataset(os.path.join(_modelNcFileDir, mdlfl[0]))
+        timeVarName = _varsModel[-1]
+        tmnc = ds.variables[timeVarName]
+        tmmdl = utils.toJulian(
+            netCDF4.num2date(
+                tmnc[:], tmnc.units, _timeCalendar, only_use_cftime_datetimes=False
+            )
         )
-    )
+    except (FileNotFoundError, KeyError):
+        try:
+            ds = netCDF4.Dataset(os.path.join(_modelNcFileDir, mdlfl[1]))
+            timeVarName = _varsModel[-1]
+            tmnc = ds.variables[timeVarName]
+            tmmdl = utils.toJulian(
+                netCDF4.num2date(
+                    tmnc[:], tmnc.units, _timeCalendar, only_use_cftime_datetimes=False
+                )
+            )
+        except (FileNotFoundError, KeyError) as e:
+            raise Exception("Could not find or read time variable from any of the NetCDF files.") from e
 
     var = ds.variables[_varsModel[2]][:, :]
 
