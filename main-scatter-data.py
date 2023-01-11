@@ -26,7 +26,7 @@ rootDir = os.path.dirname(os.path.realpath(__file__))
 # number of processes to be used for the interpolation
 nParWorker = 8
 
-doInterpolateModelTidalGauge = False
+doInterpolateModelTidalGauge = True
 if doInterpolateModelTidalGauge:
     startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 29)
 
@@ -54,7 +54,7 @@ if doInterpolateModelTidalGauge:
     )
 
 
-doInterpolateModelBuoys = True
+doInterpolateModelBuoys = False
 if doInterpolateModelBuoys:
     startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 29)
 
