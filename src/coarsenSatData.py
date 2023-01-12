@@ -19,8 +19,15 @@ def coarsenSatData(rootdir, outputdir, startdate, enddate, latdelta, areaRectang
     os.chdir(rootdir)
 
     satelliteMap = {
-        1: "CMEMS_SWH",
+        1: "SARAL",
+        2: "Envisat",
+        3: "CryoSat-2",
+        4: "Jason-1",
+        5: "Jason-2",
+        6: "Jason-3",
+        7: "CFOSAT",
     }
+
     satIds = list(satelliteMap.keys())
     satIds.sort()
 
@@ -50,18 +57,26 @@ def coarsenSatData(rootdir, outputdir, startdate, enddate, latdelta, areaRectang
             files = os.listdir(mdrpath)
             files.sort()
             for f in files:
-                print("elaborating file " + f)
                 fpath = os.path.join(mdrpath, f)
+                print("elaborating file " + f)
                 ds = netCDF4.Dataset(fpath)
-                #sats = np.array(ds.variables["satellite"])
+                sats = ds.platform
                 timevar = ds.variables["time"]
                 times = np.array(timevar)
-                # lons = np.array(ds.variables["lon"])
-                # lats = np.array(ds.variables["lat"])
-                # hss = np.array(ds.variables["swh"])
                 lons = np.array(ds.variables["longitude"])
                 lats = np.array(ds.variables["latitude"])
                 hss = np.array(ds.variables["VAVH"])
+
+                # ds = netCDF4.Dataset(fpath)
+                # #sats = np.array(ds.variables["satellite"])
+                # timevar = ds.variables["time"]
+                # times = np.array(timevar)
+                # # lons = np.array(ds.variables["lon"])
+                # # lats = np.array(ds.variables["lat"])
+                # # hss = np.array(ds.variables["swh"])
+                # lons = np.array(ds.variables["longitude"])
+                # lats = np.array(ds.variables["latitude"])
+                # hss = np.array(ds.variables["VAVH"])
                 for areaRectangle in areaRectangles:
                     minlon = areaRectangle[0]
                     minlat = areaRectangle[1]
@@ -137,6 +152,7 @@ def coarsenSatData(rootdir, outputdir, startdate, enddate, latdelta, areaRectang
             satname = satelliteMap[satid]
             outputfile = os.path.join(outputdir, satname + "_" + year)
             print("saving file for satellite " + satname)
+            print(outputfile)
             np.save(outputfile, np.array(data).transpose())
 
     toc = time.time()
