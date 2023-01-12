@@ -21,20 +21,26 @@ def coarsenCmemsSshSatData(
 
     os.chdir(rootdir)
 
-    """
     satelliteMap = {
-        1: "dt_global_g2_phy_l3",
-        2: "dt_global_j1_phy_l3",
-        3: "dt_global_e2_phy_l3",
-        4: "dt_global_tp_phy_l3",
-        5: "dt_global_tpn_phy_l3",
-        6: "dt_global_j1_phy_l3",
-        7: "dt_global_j1n_phy_l3",
-        8: "dt_global_j1n_phy_l3",
-    }
-    """
-    satelliteMap = {
-        1: "dt_global_en_phy_l3",
+        1: "ERS-1",
+        2: "Topex/Poseidon",
+        3: "Geosat Follow On",
+        4: "Cryosat-2",
+        5: "ENVISAT Extension Phase",
+        6: "Jason-1 Interleaved",
+        7: "OSTM/Jason-2",
+        8: "Jason-3",
+        9: "Haiyang-2A Geodetic Phase",
+        10: "Sentinel-3B",
+        11: "Topex/Poseidon Interleaved",
+        12: "ERS-1 Geodetic Phase",
+        13: "Cryosat-2 New Orbit",
+        14: "Haiyang-2B",
+        15: "Sentinel-3A",
+        16: "Sentinel-6A",
+        17: "Jason-3 Interleaved",
+        18: "Altika Drifting Phase",
+        19: "Altika",
     }
 
     satIds = list(satelliteMap.keys())
@@ -71,6 +77,7 @@ def coarsenCmemsSshSatData(
                 fpath = os.path.join(mdrpath, f)
                 ds = netCDF4.Dataset(fpath)
                 # sats = np.array(ds.variables["satellite"])
+                sats = ds.platform
                 timevar = ds.variables["time"]
                 times = np.array(timevar)
                 lons = np.array(ds.variables["longitude"])
@@ -93,17 +100,10 @@ def coarsenCmemsSshSatData(
                     sats = sats[cnd]
 
                 for satid in satIds:
-                    # stms = times[sats == satid]
-                    stms = times
-
-                    # slons = lons[sats == satid]
-                    slons = lons
-
-                    # slats = lats[sats == satid]
-                    slats = lats
-
-                    # shss = hss[sats == satid]
-                    shss = hss
+                    stms = times[sats == satid]
+                    slons = lons[sats == satid]
+                    slats = lats[sats == satid]
+                    shss = hss[sats == satid]
 
                     # average data are by time, lon, lat, hs
                     avgDt = dataBySatellite.get(satid, [[], [], [], []])

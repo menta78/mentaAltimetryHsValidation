@@ -45,7 +45,7 @@ def find_closest_node(target):
 
 def load_model_variables(mdlfl):
     nfiles = len(mdlfl)
-
+    print("loading file... ", mdlfl)
     try:
         ds = netCDF4.Dataset(os.path.join(_modelNcFileDir, mdlfl[0]))
         timeVarName = _varsModel[-1]
@@ -81,11 +81,16 @@ def load_model_variables(mdlfl):
             outFlPath = "none"
             return outFlPath
 
-        tmmdl_ = utils.toJulian(
-            netCDF4.num2date(
-                tmnc[:], tmnc.units, _timeCalendar, only_use_cftime_datetimes=False
-            )
-        )
+        tmmdl_ = utils.toJulian(netCDF4.num2date(tmnc[:], tmnc.units, _timeCalendar, only_use_cftime_datetimes=False))
+
+        tmstrt = netCDF4.num2date(tmnc[0], tmnc.units, _timeCalendar, only_use_cftime_datetimes=False)
+        if not _startDate is None and not _endDate is None:
+            tmend = netCDF4.num2date(tmnc[-1], tmnc.units, _timeCalendar, only_use_cftime_datetimes=False)
+        if (_endDate < tmstrt) or (_startDate > tmend):
+            print("  file out of date range. Skipping", mdlfl[i])
+            ds.close()
+            continue
+        print("processing file ...", mdlfl[i])
 
         var_ = ds.variables[_varsModel[2]][:, :]
 
@@ -154,7 +159,7 @@ def interpolate_model_scatter_observations(
     )
     print("    ... saving output file in ", _destDir)
     # outFlName = mdlF.replace(".nc", "_" + read_file(i) + "_tidalGauge_" + tmstrt.strftime("%Y%m%d") )
-    outFlName = f"{_scatterDataType}_station_{scatterObservation}"
+    outFlName = f"{_startDate.strftime('%Y')}/{_scatterDataType}_station_{scatterObservation}_{_startDate.strftime('%Y%m%d')}_{_endDate.strftime('%Y%m%d')}.npy"
     outFlPath = os.path.join(_destDir, outFlName)
     print(outFlName)
     np.save(outFlPath, dtSatAndMod)
@@ -175,6 +180,7 @@ def interpolateModelToScatterData(
     modelNcFileDir,
     destDir,
     scatterDataType,
+    nodeFile = None,
     startDate=None,
     endDate=None,
     flpattern="(.*)\.nc$",
@@ -225,12 +231,16 @@ def interpolateModelToScatterData(
 
     # localize the grid nodes associated to each location of scatter observations
     positionsScatterData = zip(_lonScatterData, _latScatterData)
-    nodesGrid = map_(find_closest_node, positionsScatterData)
+    if not nodeFile:
+        nodesGrid = map_(find_closest_node, positionsScatterData)
+    else:
+        nodesGrid = np.load(nodeFile)
+   # nodesGrid = np.load("/eos/jeodpp/data/projects/CLIMEX/mentaAltimetryHsValidation/data/tidalModelPairsNew/TidalGauge_GESLA_nodes.npy")
     if nParWorker > 1:
         p.terminate()  # it's necessary to terminate before declaring new global variables and open new pools
     # store nodes in a file
-    nodesFile = os.path.join(destDir, f"{scatterDataType}_nodes_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.npy")
-    np.save(nodesFile, nodesGrid)
+    # nodesFile = os.path.join(destDir, f"{scatterDataType}_nodes_{startDate.strftime('%Y%m%d')}_{endDate.strftime('%Y%m%d')}.npy")
+    # np.save(nodesFile, nodesGrid)
 
 
     # load grid variables from model to interpolate
@@ -254,4 +264,3 @@ def interpolateModelToScatterData(
     if nParWorker > 1:
         p.terminate()
 
-    return fls

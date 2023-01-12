@@ -25,7 +25,6 @@ def get_serie_gesla(fileName):
     lat = []
 
     for i in range(npoints):
-    #for i in range(8):
         ref = f["GESELD"]["longitude"][i][0]
         lon.append(f[ref][0][0])
         ref = f["GESELD"]["latitude"][i][0]
@@ -341,9 +340,9 @@ def load_paths(rootDir):
     assert os.path.exists(modelNcFilesDir) == True
 
     # Directory where the pairs observation/model are to be generated
-    hsModelAndSatObsSshDir = os.path.join(rootDir, "data/satSshModelPairs/")
-    hsModelAndSatObsHsDir = os.path.join(rootDir, "data/satHsModelPairs/")
-    hsModelAndSatObsTidalDir = os.path.join(rootDir, "data/tidalModelPairs/")
+    hsModelAndSatObsSshDir = os.path.join(rootDir, "data/satModelPairs/")
+    hsModelAndSatObsHsDir = os.path.join(rootDir, "data/satWaveModelPairs/")
+    hsModelAndSatObsTidalDir = os.path.join(rootDir, "data/tidalModelPairsNew/")
     hsModelAndSatObsBuoysDir = os.path.join(rootDir, "data/buoyModelPairs/")
     assert os.path.exists(hsModelAndSatObsSshDir) == True
     assert os.path.exists(hsModelAndSatObsHsDir) == True

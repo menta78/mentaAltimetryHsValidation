@@ -28,13 +28,11 @@ rootDir = os.path.dirname(os.path.realpath(__file__))
 
 
 # time interval
-startDate, endDate = datetime(1995, 1, 1), datetime(1999, 12, 30)
-startDate, endDate = datetime(2012, 1, 1), datetime(2019, 12, 31)
-startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 29)
+startDate, endDate = datetime(2002, 1, 1), datetime(2019, 12, 31)
 overwriteExisting = True
 
 # number of processes to be used for the interpolation
-nParWorker = 8
+nParWorker = 32
 
 # threshold above which hs should be considered
 filterSshMaximum = 100
@@ -50,14 +48,13 @@ if doCoarsenSatData:
     # The data are averaged on a latitudinal tract with size latdelta.
     # You can do this once, then you can disable the coarseining, unless you want to change latdelta, or the time extent of the sat data
     rawSatDataDir = os.path.join(rootDir, "data/rawDataSWH")
-    startDate, endDate = datetime(2003, 1, 1), datetime(2003, 12, 31)
     assert os.path.exists(rawSatDataDir) == True
     latdelta = 0.5
     coarsenSatData(
         rawSatDataDir, crsSatDataDir, startDate, endDate, latdelta
     )
-fjrijir
 
+print("==SUCCESS==")
 
 doInterpolateModelToSat = True
 if doInterpolateModelToSat:
@@ -72,6 +69,8 @@ if doInterpolateModelToSat:
         overwriteExisting=overwriteExisting,
         nParWorker=nParWorker,
     )
+
+print("==SUCCESS==")
 
 
 # computing the statistics

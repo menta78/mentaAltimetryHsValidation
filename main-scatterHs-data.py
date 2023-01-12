@@ -1,4 +1,3 @@
-import argparse
 import os, re, glob, itertools
 from datetime import datetime
 import numpy as np
@@ -7,12 +6,6 @@ import h5py
 from src.interpolatePredictionToScatterData import interpolateModelToScatterData
 
 import src.utils as utils
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--year", help="specify a year")
-args = parser.parse_args()
-year = int(args.year)
 
 
 rootDir = os.path.dirname(os.path.realpath(__file__))
@@ -33,11 +26,9 @@ rootDir = os.path.dirname(os.path.realpath(__file__))
 # number of processes to be used for the interpolation
 nParWorker = 32
 
-startDate, endDate = datetime(year, 1, 1), datetime(year+1, 1, 1)
-
-doInterpolateModelTidalGauge = True
+doInterpolateModelTidalGauge = False
 if doInterpolateModelTidalGauge:
-    print(startDate, endDate)
+    startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 29)
 
     overwriteExisting = False
     scatterDataType = "TidalGauge_GESLA"
@@ -49,8 +40,6 @@ if doInterpolateModelTidalGauge:
     varsTidal = [lonTidal, latTidal, resTidal, timeTidal]
     varsModel = ["SCHISM_hgrid_node_x", "SCHISM_hgrid_node_y", "elev", "time"]
 
-    nodeFile = os.path.join(hsModelAndSatObsTidalDir, "TidalGauge_GESLA_nodes.npy")
-
     # interpolating the model ssh along tidal gauges
     interpolateModelToScatterData(
         varsTidal,
@@ -58,17 +47,16 @@ if doInterpolateModelTidalGauge:
         modelNcFilesDir,
         hsModelAndSatObsTidalDir,
         scatterDataType,
-        nodeFile,
         startDate,
         endDate,
         overwriteExisting=overwriteExisting,
         nParWorker=nParWorker,
     )
 
-print("==SUCCESS Tidal==")
 
 doInterpolateModelBuoys = True
 if doInterpolateModelBuoys:
+    startDate, endDate = datetime(1995, 1, 1), datetime(1999, 1, 1)
 
     overwriteExisting = False
     scatterDataType = "Buoys_CMEMS"
@@ -88,8 +76,6 @@ if doInterpolateModelBuoys:
 
     varsModel = ["SCHISM_hgrid_node_x", "SCHISM_hgrid_node_y", "WWM_1", "time"]
 
-    nodeFile = os.path.join(hsModelAndSatObsBuoysDir, "Buoys_CMEMS_nodes.npy")
-
     # interpolating the model ssh along tidal gauges
     interpolateModelToScatterData(
         varsBuoys,
@@ -97,15 +83,16 @@ if doInterpolateModelBuoys:
         modelNcFilesDir,
         hsModelAndSatObsBuoysDir,
         scatterDataType,
-        nodeFile,
         startDate,
         endDate,
         overwriteExisting=overwriteExisting,
         nParWorker=nParWorker,
     )
 
-print("==SUCCESS Buoy==")
 
+print("=== SUCCESS ===")
+
+exit
 
 r2Compute = False
 if r2Compute:

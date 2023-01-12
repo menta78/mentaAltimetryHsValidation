@@ -41,7 +41,7 @@ startDate, endDate = datetime(1993, 1, 1), datetime(2019, 12, 31)
 overwriteExisting = False
 
 # number of processes to be used for the interpolation
-nParWorker = 8
+nParWorker = 32
 
 # threshold above which hs should be considered
 filterSshMaximum = 100
@@ -58,12 +58,13 @@ if doCoarsenSatData:
     # You can do this once, then you can disable the coarseining, unless you want to change latdelta, or the time extent of the sat data
     latdelta = 0.5
     rawSatDataDir = "/eos/jeodpp/data/projects/CLIMEX/mentaAltimetryHsValidation/data/rawData"
+    crsSatDataDir = "/eos/jeodpp/data/projects/CLIMEX/mentaAltimetryHsValidation/data/crsSatDataNew/"
     coarsenCmemsSshSatData(
         rawSatDataDir, crsSatDataDir, startDate, endDate, latdelta
     )
 
 
-doInterpolateModelToSat = True
+doInterpolateModelToSat = False
 meanModelFile = None
 if doInterpolateModelToSat:
     # interpolating the model hs along the sat tracks
@@ -81,7 +82,8 @@ if doInterpolateModelToSat:
 
 
 print("==== SUCCESS ====")
-exit
+exit()
+fjrij
 
 # computing the statistics
 dx, dy = 1.0, 1.0
