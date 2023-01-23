@@ -5,7 +5,7 @@ from src.interpolateModelToCoarsenedSatData import (
     interpolateModelToCoarsenedSatData_schismWWM,
 )
 
-import src.computeHsStats_test as computeHsStats
+import src.computeHsStats as computeHsStats
 from datetime import datetime
 
 import src.utils as utils
@@ -15,21 +15,20 @@ rootDir = os.path.dirname(os.path.realpath(__file__))
 
 (
     tidalGaugeDataDir,
+    buoysDir,
     crsSatDataDir,
     crsWaveSatDataDir,
     modelNcFilesDir,
     hsModelAndSatObsSshDir,
     hsModelAndSatObsHsDir,
     hsModelAndSatObsTidalDir,
+    hsModelAndSatObsBuoysDir,
     statsDir,
 ) = utils.load_paths(rootDir)
 
 
 # time interval
-startDate, endDate = datetime(1995, 1, 1), datetime(1999, 12, 30)
-startDate, endDate = datetime(2012, 1, 1), datetime(2019, 12, 31)
-startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 29)
-startDate, endDate = datetime(2003, 1, 1), datetime(2009, 12, 30)
+startDate, endDate = datetime(2002, 1, 1), datetime(2006, 1, 1)
 
 overwriteExisting = True
 
@@ -37,6 +36,8 @@ pth = 0
 
 # number of processes to be used for the interpolation
 nParWorker = 8
+
+nminobs = 250
 
 # threshold above which hs should be considered
 filterSshMaximum = 100
@@ -61,4 +62,5 @@ computeHsStats.elaborateMeasures(
     filterSshMaximum=filterSshMaximum,
     latlims=latlims,
     pth=pth,
+    nminobs = nminobs
 )

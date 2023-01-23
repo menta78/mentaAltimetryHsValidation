@@ -16,3 +16,5 @@ env*
 *.kmz
 docs
 *.jpeg
+*.zip
+data/old

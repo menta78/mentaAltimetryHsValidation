@@ -32,6 +32,7 @@ def elaborateMeasures(
     dx=0.2,
     dy=0.2,
     pth=90,
+    nminobs = 1,
 ):
 
     years = []
@@ -78,6 +79,7 @@ def elaborateMeasures(
     dts = np.array([])
     mapdata = {}
 
+    print(fls)
     for f in fls:
         data_ = loadFile(f)
         dts_ = data_[:, 0]
@@ -98,37 +100,7 @@ def elaborateMeasures(
             lonlims=lonlims,
             latlims=latlims,
         )
-        # mapdata = mll.computeMean_cell(lons, lats, mapdata, mapdata)
 
-        # model = np.concatenate((model, model_), axis=0)
-        # obs = np.concatenate((obs, obs_), axis=0)
-        # dts = np.concatenate((dts, dts_), axis=0)
-
-    # fig, ax = plt.subplots()
-    # # It's missing time array
-    # ax.plot(obs, label='observation')
-    # ax.plot(model, label='model', alpha=.5)
-    # ax.legend()
-    # plt.savefig("testtt.png")
-
-    # fig, ax = plt.subplots()
-    # ix = 6
-    # iy = 69
-    # data = mapdata.get((ix, iy))
-    # obs = np.array(data[3])
-    # model = np.array(data[4])
-    # print(np.mean(mapdata.get((ix, iy))[1]), np.mean(mapdata.get((ix, iy))[2]))
-    # r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(obs, model, pth)
-    # print("r2 = ", r2_)
-    # print("pearson = ", pearson_)
-    # print("bias = ", ab_)
-    # print("rmse = ", rmse_)
-    # ax.plot(obs, label='observation')
-    # ax.plot(model, label='model', alpha=.5)
-    # ax.legend()
-    # plt.savefig("testtt.png")
-
-    # jfirjfir
 
     r2lst = []
     nselst = []
@@ -138,7 +110,7 @@ def elaborateMeasures(
     nrmselst = []
     pearsonlst = []
 
-    nminobs = 1
+    
 
     mpabBias = {}
     mpnrmse = {}

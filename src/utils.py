@@ -233,8 +233,8 @@ def computeStatsHs(obs_, model_, pth):
 
     N = len(obs)
 
-    for i in range(N):
-        print(obs[i], model[i])
+    # for i in range(N):
+    #     print(obs[i], model[i])
 
     devSum = np.nansum(model - obs)
     sqDevSum = np.nansum((model - obs) ** 2)
@@ -327,8 +327,8 @@ def load_paths(rootDir):
     # Directory where the coarsened satellite data are located
     # the coarsening is performed by the coarsenSatData function. If you already performed this operation you don't need to repeat it
     tidalGaugeDataDir = os.path.join(rootDir, "data/tidalGaugeData")
-    crsSatDataDir = os.path.join(rootDir, "data/crsSatData/")
-    crsWaveSatDataDir = os.path.join(rootDir, "data/crsSatDataWaves/")
+    crsSatDataDir = os.path.join(rootDir, "data/crsSatDataNew/")
+    crsWaveSatDataDir = os.path.join(rootDir, "data/crsSatDataHs/")
     buoysDir = os.path.join(rootDir, "data/buoys/")
     assert os.path.exists(tidalGaugeDataDir) == True
     assert os.path.exists(crsSatDataDir) == True
@@ -340,10 +340,10 @@ def load_paths(rootDir):
     assert os.path.exists(modelNcFilesDir) == True
 
     # Directory where the pairs observation/model are to be generated
-    hsModelAndSatObsSshDir = os.path.join(rootDir, "data/satModelPairs/")
-    hsModelAndSatObsHsDir = os.path.join(rootDir, "data/satWaveModelPairs/")
+    hsModelAndSatObsSshDir = os.path.join(rootDir, "data/satModelPairsSSH/")
+    hsModelAndSatObsHsDir = os.path.join(rootDir, "data/satModelPairsHS/")
     hsModelAndSatObsTidalDir = os.path.join(rootDir, "data/tidalModelPairsNew/")
-    hsModelAndSatObsBuoysDir = os.path.join(rootDir, "data/buoyModelPairs/")
+    hsModelAndSatObsBuoysDir = os.path.join(rootDir, "data/buoyModelPairs_before2015/")
     assert os.path.exists(hsModelAndSatObsSshDir) == True
     assert os.path.exists(hsModelAndSatObsHsDir) == True
     assert os.path.exists(hsModelAndSatObsTidalDir) == True

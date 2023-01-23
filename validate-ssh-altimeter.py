@@ -15,21 +15,20 @@ rootDir = os.path.dirname(os.path.realpath(__file__))
 
 (
     tidalGaugeDataDir,
+    buoysDir,
     crsSatDataDir,
     crsWaveSatDataDir,
     modelNcFilesDir,
     hsModelAndSatObsSshDir,
     hsModelAndSatObsHsDir,
     hsModelAndSatObsTidalDir,
+    hsModelAndSatObsBuoysDir,
     statsDir,
 ) = utils.load_paths(rootDir)
 
 
 # time interval
-startDate, endDate = datetime(1995, 1, 1), datetime(1999, 12, 30)
-startDate, endDate = datetime(2012, 1, 1), datetime(2019, 12, 31)
-startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 28)
-startDate, endDate = datetime(2003, 1, 1), datetime(2019, 12, 30)
+startDate, endDate = datetime(1995, 1, 1), datetime(2000, 1, 1)
 
 overwriteExisting = True
 
