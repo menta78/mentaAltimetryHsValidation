@@ -57,7 +57,7 @@ def elaborateMeasuresPlot(
         return satdts
 
     fls = getFiles(hsSatAndModelDir, startDate, endDate)
-
+    
     obs = np.array([])
     model = np.array([])
     Lonn = model

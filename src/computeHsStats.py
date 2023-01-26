@@ -46,6 +46,7 @@ def elaborateMeasures(
     Maplats = []
     Mapdata = []
 
+
     def getFiles(hsSatAndModelDir, startDate, endDate):
         fl = []
 
@@ -79,7 +80,6 @@ def elaborateMeasures(
     dts = np.array([])
     mapdata = {}
 
-    print(fls)
     for f in fls:
         data_ = loadFile(f)
         dts_ = data_[:, 0]
@@ -101,21 +101,33 @@ def elaborateMeasures(
             latlims=latlims,
         )
 
+    # fig, ax = plt.subplots()
+    # # It's missing time array
+    # ax.plot(obs, label='observation')
+    # ax.plot(model, label='model', alpha=.5)
+    # ax.legend()
+    # plt.savefig("testtt.png")
 
-    r2lst = []
-    nselst = []
-    ablst = []
-    rblst = []
-    rmselst = []
-    nrmselst = []
-    pearsonlst = []
+    # fig, ax = plt.subplots()
+    # ix = 6
+    # iy = 69
+    # data = mapdata.get((ix, iy))
+    # obs = np.array(data[3])
+    # model = np.array(data[4])
+    # print(np.mean(mapdata.get((ix, iy))[1]), np.mean(mapdata.get((ix, iy))[2]))
+    # r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(obs, model, pth)
+    # print("r2 = ", r2_)
+    # print("pearson = ", pearson_)
+    # print("bias = ", ab_)
+    # print("rmse = ", rmse_)
+    # ax.plot(obs, label='observation')
+    # ax.plot(model, label='model', alpha=.5)
+    # ax.legend()
+    # plt.savefig("testtt.png")
 
-    
+    # jfirjfir
 
-    mpabBias = {}
-    mpnrmse = {}
-    mpnbi = {}
-    mphh = {}
+    #nminobs = 1000
 
     bias = np.ones((len(maplats), len(maplons))) * 99999
     nrmse = np.ones((len(maplats), len(maplons))) * 99999
@@ -139,36 +151,26 @@ def elaborateMeasures(
             hh[iy, ix] = _hh
             nrmse[iy, ix] = _nrmse
 
-            # lst = mpabBias.get((ix, iy), []) # return empty if value doesn't exists
-            # lst = nbi
-            # mpabBias[(ix, iy)] = lst
+    mask = bias == 99999
+    bias = np.ma.masked_array(bias, mask)
+    nrmse = np.ma.masked_array(nrmse, mask)
+    nbi = np.ma.masked_array(nbi, mask)
+    hh = np.ma.masked_array(hh, mask)
 
-            # lst = mpnbi.get((ix, iy), []) # return empty if value doesn't exists
-            # lst = nbi
-            # mpnbi[(ix, iy)] = lst
+    # abArray = np.array(ablst)
+    # nrmseArray = np.array(nrmselst)
+    # nbiArray = np.array(nbilst)
+    # hhArray = np.array(hhlst)
 
-            # lst = mphh.get((ix, iy), []) # return empty if value doesn't exists
-            # lst = hh
-            # mphh[(ix, iy)] = lst
+    # abTot = np.nanmean(abArray)
+    # hhTot = np.nanmean(hhArray)
+    # nbiTot = np.nanmean(nbiArray)
+    # nrmseTot = np.nanmean(nrmseArray)
 
-            # lst = mpnrmse.get((ix, iy), []) # return empty if value doesn't exists
-            # lst = nrmse
-            # mpnrmse[(ix, iy)] = lst
-
-            ablst.append(_absBias)
-            nrmselst.append(_nrmse)
-            nbilst.append(_nbi)
-            hhlst.append(_hh)
-
-    abArray = np.array(ablst)
-    nrmseArray = np.array(nrmselst)
-    nbiArray = np.array(nbilst)
-    hhArray = np.array(hhlst)
-
-    abTot = np.nanmean(abArray)
-    hhTot = np.nanmean(hhArray)
-    nbiTot = np.nanmean(nbiArray)
-    nrmseTot = np.nanmean(nrmseArray)
+    abTot = np.nanmean(bias)
+    hhTot = np.nanmean(hh)
+    nbiTot = np.nanmean(nbi)
+    nrmseTot = np.nanmean(nrmse)
 
     # modssh_mean = np.nanmean(modssh_)
     # satssh_mean = np.nanmean(satssh_)
@@ -187,6 +189,9 @@ def elaborateMeasures(
 
     statFile = (
         "hs-altimeter_"
+        + "pth_"
+        + str(pth)
+        + "_"
         + startDate.strftime("%Y%m%d")
         + "_"
         + endDate.strftime("%Y%m%d")
@@ -213,6 +218,9 @@ def elaborateMeasures(
         os.path.join(
             outputDir,
             "HS-nrmse-altimeter_"
+            + "pth_"
+            + str(pth)
+            + "_"
             + startDate.strftime("%Y%m%d")
             + "_"
             + endDate.strftime("%Y%m%d")
@@ -224,6 +232,9 @@ def elaborateMeasures(
         os.path.join(
             outputDir,
             "HS-hh-altimeter_"
+            + "pth_"
+            + str(pth)
+            + "_"
             + startDate.strftime("%Y%m%d")
             + "_"
             + endDate.strftime("%Y%m%d")
@@ -235,6 +246,9 @@ def elaborateMeasures(
         os.path.join(
             outputDir,
             "HS-nbi-altimeter_"
+            + "pth_"
+            + str(pth)
+            + "_"
             + startDate.strftime("%Y%m%d")
             + "_"
             + endDate.strftime("%Y%m%d")
@@ -246,6 +260,9 @@ def elaborateMeasures(
         os.path.join(
             outputDir,
             "HS-bias-altimeter_"
+            + "pth_"
+            + str(pth)
+            + "_"
             + startDate.strftime("%Y%m%d")
             + "_"
             + endDate.strftime("%Y%m%d")

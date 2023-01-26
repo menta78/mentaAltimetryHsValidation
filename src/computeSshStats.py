@@ -160,6 +160,7 @@ def elaborateMeasures(
             obs = np.array(data[3])
             model = np.array(data[4])
 
+            #print(len(model))
             if len(model) <= nminobs:
                 continue
 

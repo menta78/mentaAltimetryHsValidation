@@ -28,16 +28,16 @@ rootDir = os.path.dirname(os.path.realpath(__file__))
 
 
 # time interval
-startDate, endDate = datetime(2002, 1, 1), datetime(2006, 1, 1)
+startDate, endDate = datetime(2002, 1, 1), datetime(2010, 1, 1)
 
 overwriteExisting = True
 
-pth = 0
+pth = 95
 
 # number of processes to be used for the interpolation
 nParWorker = 8
 
-nminobs = 250
+nminobs = 100
 
 # threshold above which hs should be considered
 filterSshMaximum = 100
@@ -47,7 +47,7 @@ filterHighSsh = True
 boundaries = None
 
 # computing the statistics
-dx, dy = 2.0, 2.0
+dx, dy = 1.0, 1.0
 computeHsStats.maskPointsCloseToTheCoast = False
 
 latlims = [-90, 90]

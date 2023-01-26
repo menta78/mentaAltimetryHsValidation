@@ -22,12 +22,14 @@ rootDir = os.path.dirname(os.path.realpath(__file__))
 
 (
     tidalGaugeDataDir,
+    buoysDir,
     crsSatDataDir,
     crsWaveSatDataDir,
     modelNcFilesDir,
     hsModelAndSatObsSshDir,
     hsModelAndSatObsHsDir,
     hsModelAndSatObsTidalDir,
+    hsModelAndSatObsBuoysDir,
     statsDir,
 ) = utils.load_paths(rootDir)
 
@@ -40,10 +42,8 @@ title_font = {
 }
 
 # time interval
-startDate, endDate = datetime(1995, 1, 1), datetime(1999, 12, 30)
-startDate, endDate = datetime(2012, 1, 1), datetime(2019, 12, 31)
-startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 29)
-startDate, endDate = datetime(2003, 1, 1), datetime(2019, 12, 30)
+startDate, endDate = datetime(1995, 1, 1), datetime(2000, 1, 1)
+startDate, endDate = datetime(2005, 1, 1), datetime(2010, 1, 1)
 
 pth= 95
 
@@ -245,7 +245,7 @@ grd = gridspec.GridSpec(1, 2, wspace=0.025, width_ratios=[1, 0.05])
 axMap = plt.subplot(grd[0, 0])
 
 plt1 = axMap.imshow(
-    bias, cmap="RdYlBu", origin="lower", extent=[-180, 180, -90, 90], vmin=-1, vmax=1
+    bias, cmap="RdYlBu", origin="lower", extent=[-180, 180, -90, 90], vmin=-0.5, vmax=0.5
 )
 m.drawcoastlines(linewidth=0.5)
 m.fillcontinents(color="gray")

@@ -227,7 +227,7 @@ def computeStatsHs(obs_, model_, pth):
 
     # print(pmodel, pobs)
     # considering the data above the 95th percentile of the observation
-    cnd = np.logical_and(obs_ >= pobs, model_ >= model_)
+    cnd = np.logical_or(obs_ >= pobs, model_ >= pmodel)
     model = model_[cnd]
     obs = obs_[cnd]
 
@@ -249,6 +249,62 @@ def computeStatsHs(obs_, model_, pth):
     hh = np.sqrt(sqDevSum / cov)
 
     return nbi, absBias, nrmse, hh
+
+
+def compute_stats_hs(obs, model, pth):
+    """
+    Compute statistics for significant wave height model evaluation against observations
+
+    Parameters:
+    obs (np.ndarray): Observation data
+    model (np.ndarray): Model data
+    pth (float): Percentile threshold for computation
+
+    Returns:
+    dict: A dictionary containing the computed statistics
+    """
+
+    # input validation
+    if not isinstance(obs, np.ndarray) or not isinstance(model, np.ndarray):
+        raise TypeError("Inputs obs and model must be numpy arrays.")
+    if not 0 <= pth <= 100:
+        raise ValueError("Percentile threshold must be between 0 and 100.")
+    
+    # handle missing values
+    obs = np.array(obs)
+    model = np.array(model)
+    obs[np.isnan(obs)] = np.nanmean(obs)
+    model[np.isnan(model)] = np.nanmean(model)
+
+    # computing percentile threshold
+    pth_model = np.nanpercentile(model, pth)
+    pth_obs = np.nanpercentile(obs, pth)
+
+    # considering the data above the pth percentile of the observation
+    cnd = np.logical_or(obs >= pth_obs, model >= pth_model)
+    model = model[cnd]
+    obs = obs[cnd]
+
+    N = len(obs)
+
+    dev_sum = np.nansum(model - obs)
+    sq_dev_sum = np.nansum((model - obs) ** 2)
+    obs_sum = np.nansum(obs)
+
+    cov = np.nansum(obs * model)
+
+    nbi = dev_sum / obs_sum
+    abs_bias = dev_sum / N
+    nrmse = np.sqrt(sq_dev_sum / np.nansum(obs**2))
+    hh = np.sqrt(sq_dev_sum / cov)
+
+    return {
+        "nbi": nbi,
+        "absolute_bias": abs_bias,
+        "normalized_rmse": nrmse,
+        "hh": hh
+    }
+
 
 
 def computeStats(obs_, model_, pth):
@@ -282,9 +338,6 @@ def computeStats(obs_, model_, pth):
     #     print(np.nanmean(model_), np.nanmean(obs_))
     #     print("===")
 
-    # for i in range(N):
-    #     print(obs[i], model[i])
-
     # Compute moving average applying a convolution
     # We use  uniform_filter1d because is much faster than numpy convolution
     obs = uniform_filter1d(obs, size=20)
@@ -292,22 +345,16 @@ def computeStats(obs_, model_, pth):
 
     ssres_ = np.nansum((obs - model) ** 2)
     sstot_ = np.nansum((obs) ** 2)
-    # sstot_ = np.nansum((obs - np.nanmean(obs_)) ** 2)
+
     nsc1 = np.nansum(np.abs(obs - model))
-    # nsc2 = np.nansum(np.abs(obs - np.nanmean(obs_)))
     nsc2 = np.nansum(np.abs(obs))
 
     absre_ = np.nansum(model - obs)
     nobs = np.nansum(obs)
 
-    # sigmaObs = np.sqrt(np.nansum((obs - np.nanmean(obs_)) ** 2))
     sigmaObs = np.sqrt(np.nansum((obs) ** 2))
 
-    # sigmaModel = np.sqrt(np.nansum((model - np.nanmean(model_)) ** 2))
-
     sigmaModel = np.sqrt(np.nansum((model) ** 2))
-
-    # cov_ = np.nansum((obs - np.nanmean(obs_)) * (model - np.nanmean(model_)))
 
     cov_ = np.nansum((obs) * (model))
 
@@ -318,9 +365,90 @@ def computeStats(obs_, model_, pth):
     rmse = np.sqrt(ssres_ / N)
     nrmse = rmse / max(obs) * 100
     pearson = cov_ / (sigmaModel * sigmaObs)
-    # pearson = (np.nansum( obs - np.nanmean(obs_)) ) / (sigmaModel * sigmaObs)
 
     return r2, nse, ab, rb, rmse, nrmse, pearson
+
+
+def compute_stats_ssh(obs, model, pth):
+    """
+    Compute statistics for sea surface height model evaluation against observations
+
+    Parameters:
+    obs (np.ndarray): Observation data
+    model (np.ndarray): Model data
+    pth (float): Percentile threshold for computation
+
+    Returns:
+    dict: A dictionary containing the computed statistics
+    """
+
+    # input validation
+    if not isinstance(obs, np.ndarray) or not isinstance(model, np.ndarray):
+        raise TypeError("Inputs obs and model must be numpy arrays.")
+    if not 0 <= pth <= 100:
+        raise ValueError("Percentile threshold must be between 0 and 100.")
+
+    # handle missing values
+    obs = np.array(obs)
+    model = np.array(model)
+    obs[np.isnan(obs)] = np.nanmean(obs)
+    model[np.isnan(model)] = np.nanmean(model)
+
+    # remove trend
+    obs_detrend = signal.detrend(obs)
+
+    mean_obs = np.nanmean(obs_detrend)
+    mean_model = np.nanmean(model)
+
+    model = model - mean_model
+    obs = obs_detrend - mean_obs
+
+    # computing percentile threshold
+    pth_model = np.nanpercentile(model, pth)
+    pth_obs = np.nanpercentile(obs, pth)
+
+    # considering the data above the pth percentile of the observation
+    cnd = np.logical_and(obs >= pth_obs, model >= pth_model)
+    model = model[cnd]
+    obs = obs[cnd]
+
+    N = len(obs)
+
+    # Apply moving average
+    obs = uniform_filter1d(obs, size=20)
+    model = uniform_filter1d(model, size=20)
+
+    ssres_ = np.nansum((obs - model) ** 2)
+    sstot_ = np.nansum((obs) ** 2)
+
+    nsc1 = np.nansum(np.abs(obs - model))
+    nsc2 = np.nansum(np.abs(obs))
+
+    absre_ = np.nansum(model - obs)
+
+    N = len(obs)
+    nobs = np.nansum(obs)
+    sigma_obs = np.sqrt(np.nansum((obs) ** 2))
+    sigma_model = np.sqrt(np.nansum((model) ** 2))
+    cov_ = np.nansum((obs) * (model))
+
+    r2 = 1 - ssres_ / sstot_
+    nse = 1 - nsc1 / nsc2
+    ab = absre_ / N
+    rb = absre_ / nobs * 100
+    rmse = np.sqrt(ssres_ / N)
+    nrmse = rmse / max(obs) * 100
+    pearson = cov_ / (sigma_model * sigma_obs)
+
+    return {
+        "r2": r2,
+        "nse": nse,
+        "absolute_bias": ab,
+        "relative_bias": rb,
+        "rmse": rmse,
+        "normalized_rmse": nrmse,
+        "pearson_coefficient": pearson
+    }
 
 
 def load_paths(rootDir):

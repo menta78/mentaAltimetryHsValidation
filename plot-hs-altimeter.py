@@ -22,14 +22,17 @@ rootDir = os.path.dirname(os.path.realpath(__file__))
 
 (
     tidalGaugeDataDir,
+    buoysDir,
     crsSatDataDir,
     crsWaveSatDataDir,
     modelNcFilesDir,
     hsModelAndSatObsSshDir,
     hsModelAndSatObsHsDir,
     hsModelAndSatObsTidalDir,
+    hsModelAndSatObsBuoysDir,
     statsDir,
 ) = utils.load_paths(rootDir)
+
 
 options_savefig = {"dpi": 150, "bbox_inches": "tight", "transparent": False}
 title_font = {
@@ -40,12 +43,9 @@ title_font = {
 }
 
 # time interval
-startDate, endDate = datetime(1995, 1, 1), datetime(1999, 12, 30)
-startDate, endDate = datetime(2012, 1, 1), datetime(2019, 12, 31)
-startDate, endDate = datetime(2003, 12, 20), datetime(2003, 12, 29)
-startDate, endDate = datetime(2003, 1, 1), datetime(2009, 12, 30)
+startDate, endDate = datetime(2002, 1, 1), datetime(2005, 1, 1)
 
-pth= 0 
+pth = 95
 
 
 lonFile = os.path.join(statsDir, "lons.csv")
@@ -100,6 +100,7 @@ biasFile = os.path.join(
     )
 
 # check that data exists
+print(nrmseFile)
 assert os.path.exists(lonFile) == True
 assert os.path.exists(latFile) == True
 assert os.path.exists(nrmseFile) == True
@@ -136,7 +137,7 @@ grd = gridspec.GridSpec(1, 2, wspace=0.025, width_ratios=[1, 0.05])
 axMap = plt.subplot(grd[0, 0])
 
 plt1 = axMap.imshow(
-    nrmse, cmap="rainbow", origin="lower", extent=[-180, 180, -90, 90], vmin=0, vmax=1
+    nrmse, cmap="rainbow", origin="lower", extent=[-180, 180, -90, 90], vmin=0, vmax=0.5
 )
 m.drawcoastlines(linewidth=0.5)
 m.fillcontinents(color="gray")
@@ -172,7 +173,7 @@ grd = gridspec.GridSpec(1, 2, wspace=0.025, width_ratios=[1, 0.05])
 axMap = plt.subplot(grd[0, 0])
 
 plt1 = axMap.imshow(
-    nbi, cmap="RdYlBu", origin="lower", extent=[-180, 180, -90, 90], vmin=-1, vmax=1
+    nbi, cmap="RdYlBu", origin="lower", extent=[-180, 180, -90, 90], vmin=-0.5, vmax=0.5
 )
 m.drawcoastlines(linewidth=0.5)
 m.fillcontinents(color="gray")
@@ -245,7 +246,7 @@ grd = gridspec.GridSpec(1, 2, wspace=0.025, width_ratios=[1, 0.05])
 axMap = plt.subplot(grd[0, 0])
 
 plt1 = axMap.imshow(
-    bias, cmap="RdYlBu", origin="lower", extent=[-180, 180, -90, 90], vmin=-5, vmax=5
+    bias, cmap="RdYlBu", origin="lower", extent=[-180, 180, -90, 90], vmin=-0.5, vmax=0.5
 )
 m.drawcoastlines(linewidth=0.5)
 m.fillcontinents(color="gray")
