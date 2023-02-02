@@ -306,32 +306,39 @@ def compute_stats_hs(obs, model, pth):
     }
 
 
+def moving_average(x, w):
+    return np.convolve(x, np.ones(w), 'valid') / w
 
-def computeStats(obs_, model_, pth):
 
-    not_nan_ind = ~np.isnan(obs_)
-    obs__ = signal.detrend(obs_[not_nan_ind])
+def computeStats(obs_, model_, pth, time_window=1):
+    # time_window is 6 months by default. The temporal resolution of L3 ssh
+    # product is daily as it is explained in the user manual
 
-    model__ = model_[not_nan_ind]
+    obsMovingAverage = uniform_filter1d(obs_, size=time_window)
+    modelMovingAverage = uniform_filter1d(model_, size=time_window)
+    
+    obs__ = obs_ - obsMovingAverage
+    model__ = model_ - modelMovingAverage
 
     meanobs = np.nanmean(obs__)
     meanmodel = np.nanmean(model__)
 
-    model_ = model__ - meanmodel
     obs_ = obs__ - meanobs
+    model_ = model__ - meanmodel
 
     # computing r2 (and other measures) gauge by gauge
-    pmodel = np.nanpercentile(model_, pth)
-    pobs = np.nanpercentile(obs_, pth)
-
-    # print(pmodel, pobs)
-    # considering the data above the 95th percentile of the observation
-    cnd = np.logical_and(obs_ >= pobs, model_ >= model_)
-    model = model_[cnd]
-    obs = obs_[cnd]
+    if pth > 0:
+        pobs = np.nanpercentile(obs_, pth)
+        pmodel = np.nanpercentile(model_, pth)
+        cnd = np.logical_and(obs_ >= pobs, model_ >= model_)
+        obs = obs_[cnd]
+        model = model_[cnd]
+    else:
+        obs = obs_
+        model = model_
 
     N = len(obs)
-
+    print(N)
     # for i in range(N):
     #     print("===")
     #     print(model[i], obs[i])
@@ -340,8 +347,6 @@ def computeStats(obs_, model_, pth):
 
     # Compute moving average applying a convolution
     # We use  uniform_filter1d because is much faster than numpy convolution
-    obs = uniform_filter1d(obs, size=20)
-    model = uniform_filter1d(model, size=20)
 
     ssres_ = np.nansum((obs - model) ** 2)
     sstot_ = np.nansum((obs) ** 2)
@@ -366,7 +371,7 @@ def computeStats(obs_, model_, pth):
     nrmse = rmse / max(obs) * 100
     pearson = cov_ / (sigmaModel * sigmaObs)
 
-    return r2, nse, ab, rb, rmse, nrmse, pearson
+    return r2, nse, ab, rb, rmse, nrmse, pearson, obs, model
 
 
 def compute_stats_ssh(obs, model, pth):

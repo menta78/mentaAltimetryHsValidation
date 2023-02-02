@@ -124,15 +124,20 @@ def elaborateMeasures(
         # obs = np.concatenate((obs, obs_), axis=0)
         # dts = np.concatenate((dts, dts_), axis=0)
 
+    time_window=180
     """
     fig, ax = plt.subplots()
-    ix = 50
-    iy = 40
+    #ix = 50
+    #iy = 40
+    #ix = 86
+    #iy =  110
+    ix = 20
+    iy =  40
     data = mapdata.get((ix, iy))
     obs = np.array(data[3])
     model = np.array(data[4])
     print(np.mean(mapdata.get((ix, iy))[1]), np.mean(mapdata.get((ix, iy))[2]))
-    r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(obs, model, pth)
+    r2_, nse_, ab_, rb_, rmse_, nrmse_, pearson_, obs, model = utils.computeStats(obs, model, pth, time_window=time_window)
     print("r2 = ", r2_)
     print("pearson = ", pearson_)
     print("bias = ", ab_)
@@ -140,7 +145,7 @@ def elaborateMeasures(
     ax.plot(obs, label="observation")
     ax.plot(model, label="model", alpha=0.5)
     ax.legend()
-    plt.savefig("testtt.png")
+    plt.show()
     """
 
 
@@ -160,18 +165,21 @@ def elaborateMeasures(
             obs = np.array(data[3])
             model = np.array(data[4])
 
-            #print(len(model))
+            not_nan_ind = ~np.isnan(obs)
+            obs   = obs[not_nan_ind]
+            model = model[not_nan_ind]
+
             if len(model) <= nminobs:
                 continue
 
-            r2_, nse_, absBias_, rb_, rmse_, nrmse_, pearson_ = utils.computeStats(
-                obs, model, pth
+            r2_, nse_, absBias_, rb_, rmse_, nrmse_, pearson_, _, _ = utils.computeStats(
+                obs, model, pth, time_window=time_window
             )
 
-            """
-            if (pearson_ > 0.9) & (r2_ > 0.8):
-                print("ix = ", ix, "iy = ", iy)
-            """
+
+            print("ix = ", ix, "iy = ", iy, "pearson = ", pearson_)
+            #if (pearson_ < 0.1) & (r2_ < 0.8):
+            #    print("ix = ", ix, "iy = ", iy)
 
             r2[iy, ix] = r2_
             nse[iy, ix] = nse_
@@ -212,18 +220,25 @@ def elaborateMeasures(
     totIndStr = """
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 TOTAL ERROR INDICATORS:
+Start date: {startDate}   :::::::   End date: {endDate}
+Percentile: {pth}
 rmse: {rmseTot:2.5f}
+nrmse: {nrmseTot:2.5f}
 NSE: {nseTot:2.5f}
 R2: {r2Tot:2.5f}
 NNSE: {nnseTot:2.5f}
 NR2: {nr2Tot:2.5f}
-Bias: {abTot:2.5f}
+Absolute Bias: {abTot:2.5f}
 RelBias: {relabTot:2.5f}
 Pearson: {pearsonTot:2.5f}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 """
     totIndStr = totIndStr.format(
+        startDate=startDate,
+        endDate=endDate,
+        pth=pth,
         rmseTot=rmseTot,
+        nrmseTot=nrmseTot,
         nseTot=nseTot,
         r2Tot=r2Tot,
         nnseTot=nnseTot,
