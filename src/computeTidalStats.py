@@ -63,17 +63,38 @@ def elaborateMeasures(
     nminobs=1,
     time_window = 1,
 ):
-    def loadFile(flpth):
-        # print("    loading file " + flpth)
-        satdts = np.load(flpth)
-        if filterHighSsh:
+    def load_file(flpth, filter_high_ssh=True):
+        """
+        Load data from a .npy file and apply optional filtering.
+
+        Parameters:
+        flpth (str): Filepath of the .npy file to load.
+        filter_high_ssh (bool): Flag to indicate whether to filter high SSH values.
+
+        Returns:
+        satdts (numpy.ndarray): Array of satellite data loaded from file.
+        """
+        try:
+            # Load data from file
+            satdts = np.load(flpth)
+
+        except FileNotFoundError:
+            print(f"Error: file '{flpth}' not found")
+            return None
+
+        except Exception as e:
+            print(f"Error loading file '{flpth}': {e}")
+            return None
+
+        # Apply filtering to remove high SSH values
+        if filter_high_ssh:
             sshsat = satdts[:, 0]
             sshmdl = satdts[:, 1]
             cnd = np.logical_and(sshsat > -100, sshmdl > -100)
             satdts = satdts[cnd, :]
-            cnd = np.logical_and(satdts[:, 0] < 100, satdts[:, 1] < 100)
-            satdts = satdts[cnd, :]
+
         return satdts
+
 
     fls = getFiles(hsSatAndModelDir, startDate, endDate)
     fls_organized = organize_strings(fls)
@@ -94,6 +115,8 @@ def elaborateMeasures(
         for f in fls_station:
             print(f"componing files: ", f)
             data = loadFile(f)
+            if not data:
+                continue
             obs_ = data[:, 0]
             model_ = data[:, 1]
             if len(model_) > 0:
