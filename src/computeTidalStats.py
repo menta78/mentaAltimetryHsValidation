@@ -471,7 +471,7 @@ def elaborateMeasures(
         lon,
         lat,
         s=20,
-        c=nrmse,
+        c=nrmse*100,
         cmap="rainbow",
         # edgecolors="black",
         linewidths=0.5,
