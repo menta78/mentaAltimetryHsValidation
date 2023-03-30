@@ -353,6 +353,7 @@ def computeStats(obs_, model_, pth, time_window=1):
         obs = obs_
         model = model_
 
+    N  = len(obs)
     # Handle empty obs or model
     if len(obs) == 0 or len(model) == 0:
         return None, None, None, None, None, None, None, obs_, model_
