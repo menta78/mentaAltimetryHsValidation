@@ -115,8 +115,6 @@ def elaborateMeasures(
         for f in fls_station:
             print(f"componing files: ", f)
             data = loadFile(f)
-            if not data:
-                continue
             obs_ = data[:, 0]
             model_ = data[:, 1]
             if len(model_) > 0:
