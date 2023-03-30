@@ -63,7 +63,7 @@ def elaborateMeasures(
     nminobs=1,
     time_window = 1,
 ):
-    def load_file(flpth, filter_high_ssh=True):
+    def loadFile(flpth, filter_high_ssh=True):
         """
         Load data from a .npy file and apply optional filtering.
 
