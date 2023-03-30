@@ -31,7 +31,7 @@ rootDir = os.path.dirname(os.path.realpath(__file__))
 
 # time interval
 #startDate, endDate = datetime(2005, 1, 1), datetime(2015, 1, 1)
-startDate, endDate = datetime(1995, 1, 1), datetime(2005, 1, 1)
+startDate, endDate = datetime(1995, 1, 1), datetime(2015, 1, 1)
 overwriteExisting = False
 
 # number of processes to be used for the interpolation

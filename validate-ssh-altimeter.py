@@ -30,6 +30,7 @@ rootDir = os.path.dirname(os.path.realpath(__file__))
 # time interval
 startDate, endDate = datetime(1995, 1, 1), datetime(2000, 1, 1)
 startDate, endDate = datetime(2005, 1, 1), datetime(2010, 1, 1)
+startDate, endDate = datetime(2005, 1, 1), datetime(2016, 1, 1)
 
 overwriteExisting = True
 

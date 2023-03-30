@@ -311,14 +311,27 @@ def moving_average(x, w):
 
 
 def computeStats(obs_, model_, pth, time_window=1):
-    # time_window is 6 months by default. The temporal resolution of L3 ssh
+# time_window is 6 months by default. The temporal resolution of L3 ssh
     # product is daily as it is explained in the user manual
+    nminobs_after_pth = 50
 
-    obsMovingAverage = uniform_filter1d(obs_, size=time_window)
-    modelMovingAverage = uniform_filter1d(model_, size=time_window)
-    
-    obs__ = obs_ - obsMovingAverage
-    model__ = model_ - modelMovingAverage
+    not_nan_ind = ~np.isnan(obs_)
+    obs_   = obs_[not_nan_ind]
+    model_ = model_[not_nan_ind]
+
+    if time_window > 1:
+        obsMovingAverage = uniform_filter1d(obs_, size=time_window)
+        modelMovingAverage = uniform_filter1d(model_, size=time_window)
+
+        obs__ = obs_ - obsMovingAverage
+        model__ = model_ - modelMovingAverage
+
+    else:
+        #print("HERE")
+        #obs__ = signal.detrend(obs_)
+        #mode__ = signal.detrend(model_)
+        obs__ = obs_
+        model__ = model_
 
     meanobs = np.nanmean(obs__)
     meanmodel = np.nanmean(model__)
@@ -339,9 +352,6 @@ def computeStats(obs_, model_, pth, time_window=1):
     else:
         obs = obs_
         model = model_
-
-    N = len(obs)
-    print(N)
 
     # Handle empty obs or model
     if len(obs) == 0 or len(model) == 0:

@@ -348,6 +348,21 @@ Pearson: {pearsonTot:2.5f}
     np.savetxt(
         os.path.join(
             outputDir,
+            "SSH-nrmse-newdef-altimeter_"
+            + "pth_"
+            + str(pth)
+            + "_"
+            + startDate.strftime("%Y%m%d")
+            + "_"
+            + endDate.strftime("%Y%m%d")
+            + ".csv",
+        ),
+        nrmse,
+    )
+
+    np.savetxt(
+        os.path.join(
+            outputDir,
             "SSH-rmse-altimeter_"
             + "pth_"
             + str(pth)
