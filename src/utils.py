@@ -339,6 +339,10 @@ def computeStats(obs_, model_, pth, time_window=1):
 
     N = len(obs)
     print(N)
+
+    # Handle empty obs or model
+    if len(obs) == 0 or len(model) == 0:
+        return None, None, None, None, None, None, None, obs_, model_
     # for i in range(N):
     #     print("===")
     #     print(model[i], obs[i])

@@ -176,6 +176,9 @@ def elaborateMeasures(
                 obs, model, pth, time_window=time_window
             )
 
+            # Skip adding the result if r2_ is None (indicating empty obs or model)
+            if r2_ is None:
+                continue
 
             print("ix = ", ix, "iy = ", iy, "pearson = ", pearson_)
             #if (pearson_ < 0.1) & (r2_ < 0.8):
