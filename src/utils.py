@@ -326,6 +326,9 @@ def computeStats(obs_, model_, pth, time_window=1):
     obs_ = obs__ - meanobs
     model_ = model__ - meanmodel
 
+    pobs1 = np.nanpercentile(obs_, 1)
+    pobs99 = np.nanpercentile(obs_, 99)
+
     # computing r2 (and other measures) gauge by gauge
     if pth > 0:
         pobs = np.nanpercentile(obs_, pth)
@@ -373,6 +376,7 @@ def computeStats(obs_, model_, pth, time_window=1):
     rb = absre_ / nobs * 100
     rmse = np.sqrt(ssres_ / N)
     nrmse = rmse / max(obs) * 100
+    nrmse = rmse / (pobs99-pobs1)
     pearson = cov_ / (sigmaModel * sigmaObs)
 
     return r2, nse, ab, rb, rmse, nrmse, pearson, obs, model
