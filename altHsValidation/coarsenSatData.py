@@ -10,20 +10,22 @@ from matplotlib import path
 import geodiccaCircUtils as circularUtils
 
 
-
 def coarsenSatData(rootdir, outputdir, startdate, enddate, latdelta, areaRectangles=[]):
+  drs = list([d for d in os.listdir(rootdir) if re.match('cci_obs-wave_glo_phy-swh_', d)])
+  for dr in drs:
+    drpth = os.path.join(rootdir, dr)
+    coarsenSatData1Sat(drpth, outputdir, startdate, enddate, latdelta,
+            areaRectangles=areaRectangles)
+
+
+def coarsenSatData1Sat(rootdir, outputdir, startdate, enddate, latdelta, 
+        areaRectangles=[]):
   # areaRectangles is a list of rectangles [minlon minlat, maxlon, maxlat]
 
   drs = list([d for d in os.listdir(rootdir) if re.match('[0-9]{4}', d)])
   drs.sort()
   
   os.chdir(rootdir)
-  
-  satelliteMap = {1: 'ERS-1', 2: 'ERS-2', 3: 'ENVISAT', 4: 'TOPEX', 5: 'Poseidon', 6: 'Jason-1',\
-                  7: 'GEOSAT', 8: 'Jason-2', 9: 'Cryosat-2', 10: 'SARAL-AltiKa'}
-  satIds = list(satelliteMap.keys())
-  satIds.sort()
-  
   
   tic = time.time()
   
@@ -39,7 +41,6 @@ def coarsenSatData(rootdir, outputdir, startdate, enddate, latdelta, areaRectang
     monthdirs.sort()
   
     year = dr
-    dataBySatellite = {}
   
     for mdr in monthdirs:
       actDate = datetime(int(dr), int(mdr), 1)
@@ -55,12 +56,12 @@ def coarsenSatData(rootdir, outputdir, startdate, enddate, latdelta, areaRectang
         print('elaborating file ' + f)
         fpath = os.path.join(mdrpath, f)
         ds = netCDF4.Dataset(fpath)
-        sats = np.array(ds.variables['satellite'])
+        satid = ds.platform
         timevar = ds.variables['time']
         times = np.array(timevar)
-        lons = np.array(ds.variables['lon'])
-        lats = np.array(ds.variables['lat'])
-        hss = np.array(ds.variables['swh'])
+        lons = np.array(ds.variables['longitude'])
+        lats = np.array(ds.variables['latitude'])
+        hss = np.array(ds.variables['VAVH'])
         for areaRectangle in areaRectangles:
           minlon = areaRectangle[0]
           minlat = areaRectangle[1]
@@ -75,60 +76,56 @@ def coarsenSatData(rootdir, outputdir, startdate, enddate, latdelta, areaRectang
           hss = hss[cnd]
           sats = sats[cnd]
   
-        for satid in satIds:
-          stms = times[sats == satid]
-          slons = lons[sats == satid]
-          slats = lats[sats == satid]
-          shss = hss[sats == satid]
+        stms = times
+        slons = lons
+        slats = lats
+        shss = hss
   
-          # average data are by time, lon, lat, hs
-          avgDt = dataBySatellite.get(satid, [[], [], [], []])
-          dataBySatellite[satid] = avgDt
+        # average data are by time, lon, lat, hs
+        avgDt = [[], [], [], []]
   
-          icoord = 0
-          ilat = 0
-          indexes = []
-          while icoord < len(slats):
-            # assiming a polar orbit and slicing by latitude
-            lat0 = int(np.floor(slats[ilat]/latdelta))
-            icoord = ilat
-            for lat in slats[ilat:]:
-              if int(np.floor(lat/latdelta)) == lat0:
-                indexes.append(icoord)
-                icoord += 1
-              else:
-                ltms = stms[indexes]
-                llons = slons[indexes]
-                llats = slats[indexes]
-                lhss = shss[indexes]
+        icoord = 0
+        ilat = 0
+        indexes = []
+        while icoord < len(slats):
+          # assiming a polar orbit and slicing by latitude
+          lat0 = int(np.floor(slats[ilat]/latdelta))
+          icoord = ilat
+          for lat in slats[ilat:]:
+            if int(np.floor(lat/latdelta)) == lat0:
+              indexes.append(icoord)
+              icoord += 1
+            else:
+              ltms = stms[indexes]
+              llons = slons[indexes]
+              llats = slats[indexes]
+              lhss = shss[indexes]
    
-                avgtm = np.mean(ltms)
-                avgtm = netCDF4.num2date(avgtm, timevar.units, only_use_cftime_datetimes=False)
-                avglon = circularUtils.angleMeanDeg(llons)
-                avglat = circularUtils.angleMeanDeg(llats)
-                avghs = np.mean(lhss)
+              avgtm = np.mean(ltms)
+              avgtm = netCDF4.num2date(avgtm, timevar.units, only_use_cftime_datetimes=False)
+              avglon = circularUtils.angleMeanDeg(llons)
+              avglat = circularUtils.angleMeanDeg(llats)
+              avghs = np.mean(lhss)
   
-                avgDt[0].append(datetime.timestamp(avgtm))
-                avgDt[1].append(avglon)
-                avgDt[2].append(avglat)
-                avgDt[3].append(avghs)
+              avgDt[0].append(datetime.timestamp(avgtm))
+              avgDt[1].append(avglon)
+              avgDt[2].append(avglat)
+              avgDt[3].append(avghs)
   
-                ilat = icoord
-                indexes = []
-                break
-        
-  
+              ilat = icoord
+              indexes = []
+              break
         ds.close()
   
     print('  ... year completed. Saving output ...')
-    for satid in dataBySatellite.keys():
-      data = dataBySatellite[satid]
-      if not len(data[0]):
-        continue
-      satname = satelliteMap[satid]
-      outputfile = os.path.join(outputdir, satname + '_' + year)
-      print('saving file for satellite ' + satname)
-      np.save(outputfile, np.array(data).transpose())
+    data = avgDt
+    if not len(data[0]):
+      continue
+    satname = satid
+    outputfile = os.path.join(outputdir, satname + '_' + year)
+    assert not os.path.isfile(outputfile), f"file {outputfile} already exists!!"
+    print('saving file for satellite ' + satname)
+    np.save(outputfile, np.array(data).transpose())
   
   toc = time.time()
   print('time elapsed: {t} s'.format(t = toc - tic))
